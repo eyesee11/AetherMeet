@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AetherMeet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'mono': ['JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', 'monospace'],
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Emoji font styling */
+        .emoji, #themeIcon, [data-emoji] {
+            font-family: 'Noto Emoji', sans-serif !important;
+            font-variation-settings: 'wght' 400;
+        }
+        
+        /* Apply Noto Emoji to elements containing common emoji characters */
+        .emoji-content {
+            font-family: 'Noto Emoji', sans-serif !important;
+        }
+        
+        .btn-brutal {
+            box-shadow: 4px 4px 0px 0px #000000;
+            transition: all 0.2s ease;
+        }
+        .btn-brutal:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px 0px #000000;
+        }
+        .btn-brutal:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px 0px #000000;
+        }
+        .card-brutal {
+            box-shadow: 8px 8px 0px 0px #000000;
+            transition: all 0.2s ease;
+        }
+        .card-brutal:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px 0px #000000;
+        }
+        .input-brutal {
+            box-shadow: 2px 2px 0px 0px #000000;
+        }
+        
+        /* Emoji font styling */
+        .emoji, #themeIcon, [data-emoji], 
+        .theme-toggle-btn span,
+        .pdf-export-btn span,
+        button span[role="img"],
+        [aria-label*="emoji"] {
+            font-family: 'Noto Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif !important;
+            font-variation-settings: 'wght' 400;
+        }
+        
+        /* Dark theme styles */
+        .dark {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .dark .bg-white { background-color: #2a2a2a !important; }
+        .dark .bg-gray-100 { background-color: #3a3a3a !important; }
+        .dark .bg-gray-200 { background-color: #4a4a4a !important; }
+        .dark .bg-gray-50 { background-color: #2a2a2a !important; }
+        .dark .text-black { color: #ffffff !important; }
+        .dark .text-gray-600 { color: #cccccc !important; }
+        .dark .text-gray-500 { color: #aaaaaa !important; }
+        .dark .border-black { border-color: #ffffff !important; }
+        .dark .border-gray-400 { border-color: #666666 !important; }
+        .dark #themeToggle { background-color: #2a2a2a !important; color: #ffffff !important; border-color: #ffffff !important; }
+        .dark .btn-brutal { box-shadow: 4px 4px 0px 0px #ffffff !important; }
+        .dark .btn-brutal:hover { box-shadow: 2px 2px 0px 0px #ffffff !important; }
+        .dark .card-brutal { box-shadow: 8px 8px 0px 0px #ffffff !important; }
+        .dark .card-brutal:hover { box-shadow: 4px 4px 0px 0px #ffffff !important; }
+        .dark .input-brutal { box-shadow: 2px 2px 0px 0px #ffffff !important; }
+    </style>
+</head>
+<body class="bg-white text-black font-sans min-h-screen transition-colors duration-300">
+    <!-- Theme Toggle -->
+    <div class="fixed top-4 right-4 z-50">
+        <button id="themeToggle" class="btn-brutal px-4 py-2 bg-white border-2 border-black font-bold uppercase tracking-wide text-sm hover:bg-gray-100">
+            <span id="themeIcon">DARK</span>
+            <span id="themeText">MODE</span>
+        </button>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white border-b-4 border-black px-6 py-4">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="w-8 h-8 bg-black"></div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight">AetherMeet</h1>
+                    <p class="text-sm text-gray-600 font-mono">Dashboard</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="welcomeUser" class="font-mono text-sm">Welcome, User!</span>
+                <a href="/notes" class="btn-brutal px-4 py-2 bg-yellow-400 text-black border-2 border-black font-bold uppercase tracking-wide text-sm">
+                    Notes
+                </a>
+                <button id="logoutBtn" class="btn-brutal px-4 py-2 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-sm">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard -->
+    <main class="max-w-6xl mx-auto px-6 py-12">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Create Room Section -->
+            <section class="card-brutal bg-white border-2 border-black p-6">
+                <h2 class="text-xl font-black uppercase tracking-tight mb-6">Create New Room</h2>
+                <div class="space-y-4">
+                    <button id="createInstantBtn" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide text-sm">
+                        Create Instant Room
+                    </button>
+                    <button id="createScheduledBtn" class="btn-brutal w-full px-6 py-3 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-sm">
+                        Schedule Room
+                    </button>
+                </div>
+            </section>
+
+            <!-- Join Room Section -->
+            <section class="card-brutal bg-white border-2 border-black p-6">
+                <h2 class="text-xl font-black uppercase tracking-tight mb-6">Join Room</h2>
+                <form id="joinRoomForm" class="space-y-4">
+                    <div>
+                        <label for="roomCode" class="block text-sm font-bold uppercase tracking-wide mb-2">Room Code:</label>
+                        <input type="text" id="roomCode" name="roomCode" placeholder="Enter 6-digit room code" maxlength="6" required 
+                               value="<%= typeof roomCode !== 'undefined' ? roomCode : '' %>"
+                               class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50 font-mono">
+                    </div>
+                    <button type="submit" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide text-sm">
+                        Find Room
+                    </button>
+                </form>
+            </section>
+
+            <!-- My Rooms Section -->
+            <section class="card-brutal bg-white border-2 border-black p-6 md:col-span-2 lg:col-span-1">
+                <h2 class="text-xl font-black uppercase tracking-tight mb-6">My Rooms</h2>
+                <div id="myRoomsList" class="space-y-3 max-h-64 overflow-y-auto">
+                    <p class="text-gray-600 font-mono text-sm">Loading your rooms...</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Create Instant Room Modal -->
+    <div id="instantRoomModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-white border-4 border-black p-8 max-w-lg w-full mx-4 max-h-screen overflow-y-auto transform transition-all duration-300" style="box-shadow: 16px 16px 0px 0px #000000;">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-3xl font-black uppercase tracking-tight text-black">⚡ Create Instant Room</h3>
+                <button class="close text-3xl font-black text-black hover:text-red-600 transition-colors duration-200 btn-brutal-small px-3 py-1 bg-red-100 border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000;">&times;</button>
+            </div>
+            <form id="instantRoomForm" class="space-y-6">
+                <div>
+                    <label for="instantRoomName" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">🏠 Room Name:</label>
+                    <input type="text" id="instantRoomName" name="name" required 
+                           class="input-brutal w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-green-50 transition-all duration-200 font-mono"
+                           style="box-shadow: 4px 4px 0px 0px #000000;"
+                           placeholder="Enter your room name">
+                </div>
+                <div>
+                    <label for="instantRoomDescription" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">Description (Optional):</label>
+                    <textarea id="instantRoomDescription" name="description" rows="3"
+                              class="input-brutal w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-green-50 transition-all duration-200 font-mono"
+                              style="box-shadow: 4px 4px 0px 0px #000000;"
+                              placeholder="Describe what this room is for..."></textarea>
+                </div>
+                <div>
+                    <label for="instantPrimaryPassword" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">🔑 Primary Password:</label>
+                    <input type="text" id="instantPrimaryPassword" name="primaryPassword" required 
+                           class="input-brutal w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-green-50 transition-all duration-200 font-mono"
+                           style="box-shadow: 4px 4px 0px 0px #000000;"
+                           placeholder="Enter dictionary word">
+                    <small class="text-gray-700 text-xs font-black uppercase tracking-wider bg-yellow-100 px-2 py-1 border-2 border-black inline-block mt-2" style="box-shadow: 2px 2px 0px 0px #000000;">📚 Must be a valid English dictionary word</small>
+                </div>
+                <div>
+                    <label for="instantSecondaryPassword" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">Secondary Password (Optional):</label>
+                    <input type="text" id="instantSecondaryPassword" name="secondaryPassword" 
+                           class="input-brutal w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-green-50 transition-all duration-200 font-mono"
+                           style="box-shadow: 4px 4px 0px 0px #000000;"
+                           placeholder="Optional second word">
+                    <small class="text-gray-700 text-xs font-black uppercase tracking-wider bg-blue-100 px-2 py-1 border-2 border-black inline-block mt-2" style="box-shadow: 2px 2px 0px 0px #000000;">📖 Also must be a valid English dictionary word</small>
+                </div>
+                <div>
+                    <label for="instantAdmissionType" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">🚪 Admission Control:</label>
+                    <select id="instantAdmissionType" name="admissionType" 
+                            class="input-brutal w-full px-4 py-4 border-4 border-black bg-white text-black focus:outline-none focus:bg-green-50 transition-all duration-200 font-mono"
+                            style="box-shadow: 4px 4px 0px 0px #000000;">
+                        <option value="owner_approval">👑 Owner Approval</option>
+                        <option value="democratic_voting">Democratic Voting</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-brutal w-full px-6 py-4 bg-black text-white border-4 border-black font-black uppercase tracking-wider text-lg hover:bg-gray-800 transition-all duration-200">
+                    ⚡ CREATE ROOM NOW
+                </button>
+            </form>
+            <div id="instantRoomError" class="hidden bg-red-100 border-4 border-red-600 text-red-800 p-4 mt-6 font-mono text-sm font-bold" style="box-shadow: 6px 6px 0px 0px #dc2626;">
+                <span class="font-black">ERROR:</span> <span id="instantRoomErrorText"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Scheduled Room Modal -->
+    <div id="scheduledRoomModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white border-4 border-black p-8 max-w-lg w-full mx-4 max-h-screen overflow-y-auto" style="box-shadow: 12px 12px 0px 0px #000000;">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-black uppercase tracking-tight">Schedule Room</h3>
+                <button class="close text-2xl font-bold">&times;</button>
+            </div>
+            <form id="scheduledRoomForm" class="space-y-4">
+                <div>
+                    <label for="scheduledRoomName" class="block text-sm font-bold uppercase tracking-wide mb-2">Room Name:</label>
+                    <input type="text" id="scheduledRoomName" name="name" required 
+                           class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50">
+                </div>
+                <div>
+                    <label for="scheduledRoomDescription" class="block text-sm font-bold uppercase tracking-wide mb-2">Description (Optional):</label>
+                    <textarea id="scheduledRoomDescription" name="description" rows="3"
+                              class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"></textarea>
+                </div>
+                <div>
+                    <label for="scheduledTime" class="block text-sm font-bold uppercase tracking-wide mb-2">Scheduled Time:</label>
+                    <input type="datetime-local" id="scheduledTime" name="scheduledTime" required 
+                           class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black focus:outline-none focus:bg-gray-50">
+                </div>
+                <div>
+                    <label for="scheduledPrimaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Primary Password:</label>
+                    <input type="text" id="scheduledPrimaryPassword" name="primaryPassword" required 
+                           class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50">
+                    <small class="text-gray-600 text-xs font-mono">Must be a valid English dictionary word</small>
+                </div>
+                <div>
+                    <label for="scheduledSecondaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Secondary Password (Optional):</label>
+                    <input type="text" id="scheduledSecondaryPassword" name="secondaryPassword" 
+                           class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50">
+                    <small class="text-gray-600 text-xs font-mono">Also must be a valid English dictionary word</small>
+                </div>
+                <div>
+                    <label for="scheduledAdmissionType" class="block text-sm font-bold uppercase tracking-wide mb-2">Admission Control:</label>
+                    <select id="scheduledAdmissionType" name="admissionType" 
+                            class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black focus:outline-none focus:bg-gray-50">
+                        <option value="owner_approval">Owner Approval</option>
+                        <option value="democratic_voting">Democratic Voting</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
+                    Schedule Room
+                </button>
+            </form>
+            <div id="scheduledRoomError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm" style="box-shadow: 4px 4px 0px 0px #dc2626;"></div>
+        </div>
+    </div>
+
+    <!-- Join Room Details Modal -->
+    <div id="joinRoomModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-black uppercase tracking-tight">Join Room</h3>
+                <button class="close text-2xl font-bold">&times;</button>
+            </div>
+            <div id="roomDetails" class="mb-6"></div>
+            <form id="joinRoomPasswordForm" class="space-y-4">
+                <div>
+                    <label for="joinPrimaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Primary Password:</label>
+                    <input type="text" id="joinPrimaryPassword" name="primaryPassword" required 
+                           class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50">
+                </div>
+                <div id="secondaryPasswordGroup" class="hidden">
+                    <label for="joinSecondaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Secondary Password:</label>
+                    <input type="text" id="joinSecondaryPassword" name="secondaryPassword" 
+                           class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50">
+                </div>
+                <button type="submit" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
+                    Join Room
+                </button>
+            </form>
+            <div id="joinRoomError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm" style="box-shadow: 4px 4px 0px 0px #dc2626;"></div>
+        </div>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        // Auto-trigger room lookup if room code is pre-filled from share link
+        document.addEventListener('DOMContentLoaded', function() {
+            const roomCodeInput = document.getElementById('roomCode');
+            if (roomCodeInput.value && roomCodeInput.value.length === 6) {
+                // Auto-trigger the form submission to check room and show password modal
+                setTimeout(() => {
+                    document.getElementById('joinRoomForm').dispatchEvent(new Event('submit'));
+                }, 100);
+            }
+        });
+    </script>
+
+    <!-- Socket.IO for real-time admission notifications -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Connect to socket for admission result notifications
+        const token = localStorage.getItem('token');
+        if (token) {
+            const socket = io({
+                auth: { token: token }
+            });
+
+            // Listen for admission results
+            socket.on('admissionResult', (data) => {
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (data.username === user.username) {
+                    if (data.result === 'admitted') {
+                        alert('You have been admitted to the room!');
+                        window.location.href = `/room/${data.roomCode}`;
+                    } else {
+                        alert('Your admission request was denied.');
+                        // Stay on dashboard
+                    }
+                }
+            });
+
+            // Handle connection errors
+            socket.on('connect_error', (error) => {
+                console.error('Socket connection error:', error);
+            });
+        }
+        
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeText = document.getElementById('themeText');
+        
+        // Check for saved theme preference or default to light
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        
+        // Apply theme on page load
+        if (currentTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            themeIcon.textContent = 'LIGHT';
+            themeText.textContent = 'MODE';
+        }
+        
+        // Theme toggle event listener
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            if (isDark) {
+                // Switch to light theme
+                document.documentElement.classList.remove('dark');
+                themeIcon.textContent = 'DARK';
+                themeText.textContent = 'MODE';
+                localStorage.setItem('theme', 'light');
+            } else {
+                // Switch to dark theme
+                document.documentElement.classList.add('dark');
+                themeIcon.textContent = 'LIGHT';
+                themeText.textContent = 'MODE';
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+    </script>
+</body>
+</html>

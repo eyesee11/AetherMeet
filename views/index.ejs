@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherMeet - Secure & Ephemeral Team Chat Rooms</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'mono': ['JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', 'monospace'],
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'brutal': '4px 4px 0px 0px #000000',
+                        'brutal-lg': '8px 8px 0px 0px #000000',
+                        'brutal-xl': '12px 12px 0px 0px #000000'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .btn-brutal {
+            box-shadow: 4px 4px 0px 0px #000000;
+            transition: all 0.2s ease;
+        }
+        .btn-brutal:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px 0px #000000;
+        }
+        .btn-brutal:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px 0px #000000;
+        }
+        .card-brutal {
+            box-shadow: 8px 8px 0px 0px #000000;
+            transition: all 0.2s ease;
+        }
+        .card-brutal:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px 0px #000000;
+        }
+        
+        /* Dark theme styles */
+        .dark {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .dark .bg-white { background-color: #2a2a2a !important; }
+        .dark .bg-gray-100 { background-color: #3a3a3a !important; }
+        .dark .bg-gray-200 { background-color: #4a4a4a !important; }
+        .dark .bg-gray-50 { background-color: #2a2a2a !important; }
+        .dark .bg-yellow-100 { background-color: #4a4a2a !important; }
+        .dark .bg-red-100 { background-color: #4a2a2a !important; }
+        .dark .bg-green-100 { background-color: #2a4a2a !important; }
+        .dark .text-black { color: #ffffff !important; }
+        .dark .text-gray-600 { color: #cccccc !important; }
+        .dark .text-gray-500 { color: #aaaaaa !important; }
+        .dark .border-black { border-color: #ffffff !important; }
+        .dark .border-gray-400 { border-color: #666666 !important; }
+        .dark #themeToggle { background-color: #2a2a2a !important; color: #ffffff !important; border-color: #ffffff !important; }
+        .dark .btn-brutal { box-shadow: 4px 4px 0px 0px #ffffff !important; }
+        .dark .btn-brutal:hover { box-shadow: 2px 2px 0px 0px #ffffff !important; }
+        .dark .card-brutal { box-shadow: 8px 8px 0px 0px #ffffff !important; }
+        .dark .card-brutal:hover { box-shadow: 4px 4px 0px 0px #ffffff !important; }
+    </style>
+</head>
+<body class="bg-white text-black font-sans min-h-screen transition-colors duration-300">
+    <!-- Theme Toggle -->
+    <div class="fixed top-4 right-4 z-50">
+        <button id="themeToggle" class="btn-brutal px-4 py-2 bg-white border-2 border-black font-bold uppercase tracking-wide text-sm hover:bg-gray-100">
+            <span id="themeIcon">🌙</span>
+            <span id="themeText">DARK</span>
+        </button>
+    </div>
+    <!-- Header -->
+    <header class="bg-white border-b-4 border-black px-6 py-4">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="w-8 h-8 bg-black"></div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight">AetherMeet</h1>
+                    <p class="text-sm text-gray-600 font-mono">Secure & Ephemeral Team Chat Rooms</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-4">
+                <button id="tryDemoBtn" class="btn-brutal px-6 py-2 bg-yellow-400 text-black border-2 border-black font-bold uppercase tracking-wide text-sm">
+                    Try Demo
+                </button>
+                <button id="getStartedBtn" class="btn-brutal px-6 py-2 bg-blue-500 text-white border-2 border-black font-bold uppercase tracking-wide text-sm">
+                    Get Started
+                </button>
+                <button id="loginBtn" class="btn-brutal px-6 py-2 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-sm">
+                    Sign In
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <main class="max-w-6xl mx-auto px-6 py-16">
+        <div class="text-center mb-20">
+            <h2 class="text-5xl md:text-7xl font-black uppercase tracking-tight mb-8 leading-none">
+                "You already have zero privacy–get over it"<br>
+                <span class="text-gray-600">(Scott McNealy)</span>
+            </h2>
+            <p class="text-lg md:text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
+                AetherMeet lets you create temporary, secure chat rooms with sensible passwords and democratic admission controls.
+            </p>
+            
+            <div class="flex flex-col md:flex-row gap-6 justify-center items-center mb-16">
+                <button id="registerBtn" class="btn-brutal px-8 py-4 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
+                    Get Started
+                </button>
+                <button id="loginBtn2" class="btn-brutal px-8 py-4 bg-white text-black border-2 border-black font-bold uppercase tracking-wide">
+                    Sign In
+                </button>
+            </div>
+        </div>
+
+        <!-- Demo Section -->
+        <div class="grid md:grid-cols-2 gap-8 mb-20">
+            <!-- Request Card -->
+            <div class="card-brutal bg-white border-2 border-black p-8">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold uppercase tracking-wide mb-4">1. What do you wish to create?</h3>
+                    <div class="bg-gray-50 border-2 border-black p-4">
+                        <div class="mb-4">
+                            <span class="font-mono text-sm font-bold">ROOM NAME:</span>
+                            <p class="font-mono text-sm mt-1">BreakUp Party @9</p>
+                        </div>
+                        <div>
+                            <span class="font-mono text-sm font-bold">NEED:</span>
+                            <p class="font-mono text-sm mt-1">#Want a temporary room with high security just to mock the friend</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Response Card -->
+            <div class="card-brutal bg-white border-2 border-black p-8">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold uppercase tracking-wide mb-4">2. Your Instant Room & Data</h3>
+                    <div class="bg-gray-50 border-2 border-black p-4">
+                        <div class="mb-4">
+                            <span class="font-mono text-sm font-bold">ROOM CODE:</span>
+                            <p class="font-mono text-sm mt-1 bg-black text-white px-2 py-1 inline-block">ABC123</p>
+                        </div>
+                        <div>
+                            <span class="font-mono text-sm font-bold">STATUS:</span>
+                            <div class="font-mono text-sm mt-2 space-y-1">
+                                <div>✓ Password: "algorithm" validated</div>
+                                <div>✓ Democratic voting enabled</div>
+                                <div>✓ Real-time chat active</div>
+                                <div>✓ PDF export ready</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <section class="mb-20">
+            <h3 class="text-3xl md:text-4xl font-black uppercase tracking-tight text-center mb-12">Key Features</h3>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card-brutal bg-white border-2 border-black p-6">
+                    <div class="text-2xl mb-4 font-black">◉</div>
+                    <h4 class="text-lg font-bold uppercase tracking-wide mb-3">Secure Authentication</h4>
+                    <p class="text-gray-600">JWT-based authentication system for secure access</p>
+                </div>
+                
+                <div class="card-brutal bg-white border-2 border-black p-6">
+                    <div class="text-2xl mb-4 font-black">◐</div>
+                    <h4 class="text-lg font-bold uppercase tracking-wide mb-3">Ephemeral Rooms</h4>
+                    <p class="text-gray-600">Temporary rooms that auto-destroy based on user-defined rules</p>
+                </div>
+                
+                <div class="card-brutal bg-white border-2 border-black p-6">
+                    <div class="text-2xl mb-4 font-black">▣</div>
+                    <h4 class="text-lg font-bold uppercase tracking-wide mb-3">Dictionary Passwords</h4>
+                    <p class="text-gray-600">Password validation using real dictionary words</p>
+                </div>
+                
+                <div class="card-brutal bg-white border-2 border-black p-6">
+                    <div class="text-2xl mb-4 font-black">▢</div>
+                    <h4 class="text-lg font-bold uppercase tracking-wide mb-3">Democratic Voting</h4>
+                    <p class="text-gray-600">Member voting system for admission control</p>
+                </div>
+                
+                <div class="card-brutal bg-white border-2 border-black p-6">
+                    <div class="text-2xl mb-4 font-black">▦</div>
+                    <h4 class="text-lg font-bold uppercase tracking-wide mb-3">PDF Export</h4>
+                    <p class="text-gray-600">Export complete chat history to PDF</p>
+                </div>
+                
+                <div class="card-brutal bg-white border-2 border-black p-6">
+                    <div class="text-2xl mb-4 font-black">▤</div>
+                    <h4 class="text-lg font-bold uppercase tracking-wide mb-3">Scheduled Rooms</h4>
+                    <p class="text-gray-600">Create rooms for future activation</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Policy Section -->
+        <section class="mb-20">
+            <div class="card-brutal bg-gray-50 border-2 border-black p-8">
+                <h3 class="text-2xl md:text-3xl font-black uppercase tracking-tight mb-8 text-center">Our No BS Policy</h3>
+                
+                <div class="space-y-6 text-sm md:text-base">
+                    <div class="bg-white border-2 border-black p-6" style="box-shadow: 4px 4px 0px 0px #000000;">
+                        <p class="font-bold text-lg mb-3">▲ Free to use, periodt.</p>
+                        <p class="text-gray-700">We're not here to milk your wallet. AetherMeet is free and will stay free because we're not monsters.</p>
+                    </div>
+
+                    <div class="bg-white border-2 border-black p-6" style="box-shadow: 4px 4px 0px 0px #000000;">
+                        <p class="font-bold text-lg mb-3">■ We don't store your room passwords and honestly don't want to.</p>
+                        <p class="text-gray-700">Your passwords = your business. We're just here to vibe check that they're real dictionary words. That's it, that's the tweet.</p>
+                    </div>
+
+                    <div class="bg-white border-2 border-black p-6" style="box-shadow: 4px 4px 0px 0px #000000;">
+                        <p class="font-bold text-lg mb-3">◆ If hackers somehow breach our entire server...</p>
+                        <p class="text-gray-700">Your rooms are still unreadable because only you hold the passwords to find and decrypt them (assuming you didn't use "password123" like a boomer).</p>
+                    </div>
+
+                    <div class="bg-white border-2 border-black p-6" style="box-shadow: 4px 4px 0px 0px #000000;">
+                        <p class="font-bold text-lg mb-3">▼ If the government wants to read our database...</p>
+                        <p class="text-gray-700">Your rooms are still unreadable because we literally can't decrypt them without your passwords. We're not snitches AND we're technically unable to snitch. Win-win fr.</p>
+                    </div>
+
+                    <div class="bg-white border-2 border-black p-6" style="box-shadow: 4px 4px 0px 0px #000000;">
+                        <p class="font-bold text-lg mb-3">● We don't care what you chat about...</p>
+                        <p class="text-gray-700">Because we literally don't know and can't check. Only you hold the room codes and passwords. Keep it legal though, broos.</p>
+                    </div>
+
+                    <div class="bg-white border-2 border-black p-6" style="box-shadow: 4px 4px 0px 0px #000000;">
+                        <p class="font-bold text-lg mb-3">◯ If you find a room with your content...</p>
+                        <p class="text-gray-700">Just delete it yourself broo. If you can find it, you can edit it. Democracy in action</p>
+                    </div>
+
+                    <div class="bg-red-50 border-2 border-red-500 p-6" style="box-shadow: 4px 4px 0px 0px #dc2626;">
+                        <p class="font-bold text-lg mb-3 text-red-800">▲ We are NOT responsible for:</p>
+                        <ul class="text-red-700 space-y-2 list-disc list-inside">
+                            <li>If you use a room password like "1234" and someone else accesses it (that's on you broo)</li>
+                            <li>If someone randomly guesses your "totally unique" password and finds your room (probability is not our problem)</li>
+                            <li>If a meteor hits our servers or aliens steal our hard drives (we backup everything but acts of God/aliens are beyond our pay grade)</li>
+                            <li>Your poor life choices in general (we provide the platform, you provide the drama)</li>
+                        </ul>
+                    </div>
+
+                    <div class="text-center mt-8">
+                        <p class="text-gray-600 font-mono text-sm">
+                            TLDR: We built this for you, not against you. Don't be dumb with passwords and we'll all be fine. 
+                            <br>
+                            No cap. ▣
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-black uppercase tracking-tight">Login</h3>
+                <button class="close text-2xl font-bold">&times;</button>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label for="loginUsername" class="block text-sm font-bold uppercase tracking-wide mb-2">Username or Email:</label>
+                    <input type="text" id="loginUsername" name="username" required 
+                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
+                           style="box-shadow: 2px 2px 0px 0px #000000;">
+                </div>
+                <div>
+                    <label for="loginPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Password:</label>
+                    <input type="password" id="loginPassword" name="password" required 
+                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
+                           style="box-shadow: 2px 2px 0px 0px #000000;">
+                </div>
+                <button type="submit" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
+                    Login
+                </button>
+            </form>
+            <div id="loginError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm" style="box-shadow: 4px 4px 0px 0px #dc2626;"></div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-black uppercase tracking-tight">Register</h3>
+                <button class="close text-2xl font-bold">&times;</button>
+            </div>
+            <form id="registerForm" class="space-y-4">
+                <div>
+                    <label for="registerUsername" class="block text-sm font-bold uppercase tracking-wide mb-2">Username:</label>
+                    <input type="text" id="registerUsername" name="username" required 
+                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
+                           style="box-shadow: 2px 2px 0px 0px #000000;">
+                </div>
+                <div>
+                    <label for="registerEmail" class="block text-sm font-bold uppercase tracking-wide mb-2">Email:</label>
+                    <input type="email" id="registerEmail" name="email" required 
+                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
+                           style="box-shadow: 2px 2px 0px 0px #000000;">
+                </div>
+                <div>
+                    <label for="registerPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Password:</label>
+                    <input type="password" id="registerPassword" name="password" required 
+                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
+                           style="box-shadow: 2px 2px 0px 0px #000000;">
+                    <small class="text-gray-600 text-xs font-mono">Minimum 6 characters</small>
+                </div>
+                <button type="submit" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
+                    Register
+                </button>
+            </form>
+            <div id="registerError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm" style="box-shadow: 4px 4px 0px 0px #dc2626;"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white border-t-4 border-black">
+        <div class="max-w-6xl mx-auto px-6 py-12">
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Brand -->
+                <div>
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="w-6 h-6 bg-white"></div>
+                        <h3 class="text-xl font-black uppercase tracking-tight">AetherMeet</h3>
+                    </div>
+                    <p class="text-gray-300 text-sm">
+                        Secure & ephemeral team chat rooms with democratic controls.
+                    </p>
+                </div>
+
+                <!-- Features -->
+                <div>
+                    <h4 class="text-lg font-bold uppercase tracking-wide mb-4">Features</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li>▣ Temporary Chat Rooms</li>
+                        <li>◉ Secure Authentication</li>
+                        <li>▢ Democratic Voting</li>
+                        <li>▦ PDF Export</li>
+                        <li class="text-yellow-400 font-bold">● Personal Notes (Coming Soon)</li>
+                    </ul>
+                </div>
+
+                <!-- Quick Actions -->
+                <div>
+                    <h4 class="text-lg font-bold uppercase tracking-wide mb-4">Quick Actions</h4>
+                    <div class="space-y-3">
+                        <button id="footerLoginBtn" class="btn-brutal w-full px-4 py-2 bg-white text-black border-2 border-white font-bold uppercase tracking-wide text-sm">
+                            Sign In
+                        </button>
+                        <button id="footerRegisterBtn" class="btn-brutal w-full px-4 py-2 bg-gray-800 text-white border-2 border-white font-bold uppercase tracking-wide text-sm">
+                            Get Started
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom -->
+            <div class="border-t border-gray-600 mt-8 pt-8 text-center">
+                <p class="text-gray-400 text-xs font-mono">
+                    © 2025 AetherMeet. Free forever. No cap. ▣
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Pass pending room code to JavaScript
+        window.pendingRoomCode = '<%= pendingRoomCode || "" %>';
+    </script>
+    <script src="/js/auth.js"></script>
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeText = document.getElementById('themeText');
+        
+        // Check for saved theme preference or default to light
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        
+        // Apply theme on page load
+        if (currentTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            themeIcon.textContent = '☀️';
+            themeText.textContent = 'LIGHT';
+        }
+        
+        // Theme toggle event listener
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            if (isDark) {
+                // Switch to light theme
+                document.documentElement.classList.remove('dark');
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'DARK';
+                localStorage.setItem('theme', 'light');
+            } else {
+                // Switch to dark theme
+                document.documentElement.classList.add('dark');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'LIGHT';
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // Footer button events
+        document.getElementById('footerLoginBtn').addEventListener('click', () => {
+            document.getElementById('loginBtn').click();
+        });
+        document.getElementById('footerRegisterBtn').addEventListener('click', () => {
+            document.getElementById('registerBtn').click();
+        });
+
+        // Demo button functionality
+        document.getElementById('tryDemoBtn').addEventListener('click', async () => {
+            try {
+                // Disable button and show loading state
+                const button = document.getElementById('tryDemoBtn');
+                button.disabled = true;
+                button.textContent = 'Creating...';
+
+                // Create demo room
+                const response = await fetch('/api/rooms/create-demo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Redirect to the demo room
+                    window.location.href = `/room/${data.roomCode}?demo=true`;
+                } else {
+                    alert('Failed to create demo room: ' + data.message);
+                    button.disabled = false;
+                    button.textContent = 'Try Demo';
+                }
+            } catch (error) {
+                console.error('Error creating demo room:', error);
+                alert('Failed to create demo room. Please try again.');
+                const button = document.getElementById('tryDemoBtn');
+                button.disabled = false;
+                button.textContent = 'Try Demo';
+            }
+        });
+
+        // Get Started button functionality
+        document.getElementById('getStartedBtn').addEventListener('click', () => {
+            window.location.href = '/dashboard';
+        });
+    </script>
+</body>
+</html>

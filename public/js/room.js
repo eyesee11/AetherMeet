@@ -1,0 +1,1005 @@
+// Room JavaScript with Socket.IO
+
+// Check if this is a demo room
+const urlParams = new URLSearchParams(window.location.search);
+const isDemoRoom = urlParams.get('demo') === 'true';
+
+// Get authentication data and validate
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+// Authentication check (skip for demo rooms)
+if (!isDemoRoom && !token) {
+    window.location.href = '/';
+}
+
+// Demo room user setup
+if (isDemoRoom) {
+    // Generate a guest username for demo users
+    const guestUser = {
+        username: 'Guest' + Math.floor(Math.random() * 10000),
+        id: 'demo-' + Date.now()
+    };
+    
+    // Store demo user temporarily
+    localStorage.setItem('demoUser', JSON.stringify(guestUser));
+}
+
+// Socket.IO connection
+const socket = isDemoRoom ? io({
+    query: {
+        demo: 'true'
+    }
+}) : io({
+    auth: {
+        token: token
+    }
+});
+
+// DOM Elements
+const roomName = document.getElementById('roomName');
+const roomDescription = document.getElementById('roomDescription');
+const roomCodeDisplay = document.getElementById('roomCode');
+const memberCount = document.getElementById('memberCount');
+const ownerInfo = document.getElementById('ownerInfo');
+const membersList = document.getElementById('membersList');
+const pendingAdmissions = document.getElementById('pendingAdmissions');
+const pendingList = document.getElementById('pendingList');
+const chatMessages = document.getElementById('chatMessages');
+const messageForm = document.getElementById('messageForm');
+const messageInput = document.getElementById('messageInput');
+const exportPdfBtn = document.getElementById('exportPdfBtn');
+const leaveRoomBtn = document.getElementById('leaveRoomBtn');
+const shareLinkBtn = document.getElementById('shareLinkBtn');
+const connectionStatus = document.getElementById('connectionStatus');
+const statusText = document.getElementById('statusText');
+
+// Media elements
+const mediaUpload = document.getElementById('mediaUpload');
+const audioRecordBtn = document.getElementById('audioRecordBtn');
+const audioRecording = document.getElementById('audioRecording');
+const stopRecording = document.getElementById('stopRecording');
+const cancelRecording = document.getElementById('cancelRecording');
+const recordingTime = document.getElementById('recordingTime');
+const uploadProgress = document.getElementById('uploadProgress');
+const uploadStatus = document.getElementById('uploadStatus');
+const uploadBar = document.getElementById('uploadBar');
+
+// Modals
+const leaveRoomModal = document.getElementById('leaveRoomModal');
+const admissionModal = document.getElementById('admissionModal');
+const shareLinkModal = document.getElementById('shareLinkModal');
+
+// Room state
+let currentRoom = null;
+let isOwner = false;
+
+// Media state
+let mediaRecorder = null;
+let audioChunks = [];
+let recordingStartTime = null;
+let recordingInterval = null;
+
+// Initialize room
+document.addEventListener('DOMContentLoaded', () => {
+    // Join the room
+    socket.emit('joinRoom', roomCode);
+});
+
+// Socket event handlers
+socket.on('connect', () => {
+    statusText.textContent = 'Connected';
+    connectionStatus.className = 'connection-status connected';
+});
+
+socket.on('disconnect', () => {
+    statusText.textContent = 'Disconnected';
+    connectionStatus.className = 'connection-status disconnected';
+});
+
+socket.on('roomJoined', (roomInfo) => {
+    currentRoom = roomInfo;
+    isOwner = roomInfo.owner === user.username;
+    
+    // Update room info
+    roomName.textContent = roomInfo.name;
+    roomDescription.textContent = roomInfo.description || '';
+    roomCodeDisplay.textContent = `Code: ${roomInfo.roomCode}`;
+    memberCount.textContent = `Members: ${roomInfo.members.length}`;
+    ownerInfo.textContent = `Owner: ${roomInfo.owner}`;
+    
+    // Update members list
+    updateMembersList(roomInfo.members);
+    
+    // Show/hide owner controls
+    if (isOwner) {
+        leaveRoomBtn.textContent = 'Leave Room (Owner)';
+    }
+});
+
+socket.on('messageHistory', (messages) => {
+    chatMessages.innerHTML = '';
+    messages.forEach(message => {
+        displayMessage(message);
+    });
+    scrollToBottom();
+});
+
+socket.on('newMessage', (message) => {
+    displayMessage(message);
+    scrollToBottom();
+});
+
+socket.on('userJoined', (data) => {
+    displaySystemMessage(`${data.username} joined the room`);
+    memberCount.textContent = `Members: ${data.memberCount}`;
+    
+    // Update members list if we have room info
+    if (currentRoom) {
+        currentRoom.members.push({ username: data.username, joinedAt: new Date() });
+        updateMembersList(currentRoom.members);
+    }
+});
+
+socket.on('userLeft', (data) => {
+    displaySystemMessage(`${data.username} left the room`);
+    memberCount.textContent = `Members: ${data.memberCount}`;
+    
+    // Update members list
+    if (currentRoom) {
+        currentRoom.members = currentRoom.members.filter(member => member.username !== data.username);
+        updateMembersList(currentRoom.members);
+    }
+});
+
+socket.on('userRemoved', (data) => {
+    displaySystemMessage(`${data.username} was removed from the room by ${data.removedBy}`);
+    memberCount.textContent = `Members: ${data.memberCount}`;
+    
+    // Update members list
+    if (currentRoom) {
+        currentRoom.members = currentRoom.members.filter(member => member.username !== data.username);
+        updateMembersList(currentRoom.members);
+    }
+});
+
+socket.on('removedFromRoom', (data) => {
+    if (data.username === user.username) {
+        alert(`You have been removed from the room by ${data.removedBy}`);
+        window.location.href = '/dashboard';
+    }
+});
+
+socket.on('userAdmitted', (data) => {
+    displaySystemMessage(`${data.username} was admitted to the room`);
+    memberCount.textContent = `Members: ${data.memberCount}`;
+    
+    // Update members list
+    if (currentRoom) {
+        currentRoom.members.push({ username: data.username, joinedAt: new Date() });
+        updateMembersList(currentRoom.members);
+    }
+});
+
+socket.on('admissionRequired', (data) => {
+    if (isOwner || currentRoom.admissionType === 'democratic_voting') {
+        showAdmissionRequest(data);
+    }
+});
+
+socket.on('pendingAdmissions', (pending) => {
+    updatePendingAdmissions(pending);
+});
+
+socket.on('voteUpdate', (data) => {
+    displaySystemMessage(`Vote update for ${data.username}: ${data.voteResult.admit} admit, ${data.voteResult.deny} deny (${data.requiredVotes} required)`);
+});
+
+socket.on('ownerTransfer', (data) => {
+    displaySystemMessage(`Room ownership transferred from ${data.oldOwner} to ${data.newOwner}`);
+    
+    // Update owner info
+    if (currentRoom) {
+        currentRoom.owner = data.newOwner;
+        ownerInfo.textContent = `Owner: ${data.newOwner}`;
+        isOwner = data.newOwner === user.username;
+        
+        if (isOwner) {
+            leaveRoomBtn.textContent = 'Leave Room (Owner)';
+        }
+    }
+});
+
+socket.on('roomDestroyed', (data) => {
+    displaySystemMessage(`Room destroyed: ${data.reason}`);
+    setTimeout(() => {
+        alert(`Room has been destroyed: ${data.reason}`);
+        window.location.href = '/dashboard';
+    }, 2000);
+});
+
+socket.on('admissionResult', (data) => {
+    if (data.username === user.username) {
+        if (data.result === 'admitted') {
+            alert('You have been admitted to the room!');
+            // If we're already on the room page, just refresh to show the room content
+            if (window.location.pathname.includes('/room/')) {
+                window.location.reload();
+            } else {
+                window.location.href = `/room/${data.roomCode}`;
+            }
+        } else {
+            alert('Your admission request was denied.');
+            window.location.href = '/dashboard';
+        }
+    }
+});
+
+socket.on('error', (data) => {
+    alert(`Error: ${data.message}`);
+    if (data.message.includes('Cannot join room')) {
+        window.location.href = '/dashboard';
+    }
+});
+
+// Message form submission
+messageForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const content = messageInput.value.trim();
+    if (content) {
+        sendMessage(content);
+        messageInput.value = '';
+    }
+});
+
+// Media upload event listener
+mediaUpload.addEventListener('change', handleMediaUpload);
+
+// Audio recording event listeners
+audioRecordBtn.addEventListener('click', startAudioRecording);
+stopRecording.addEventListener('click', stopAudioRecording);
+cancelRecording.addEventListener('click', cancelAudioRecording);
+
+// Share link event listeners
+shareLinkBtn.addEventListener('click', showShareLink);
+document.getElementById('copyLinkBtn').addEventListener('click', copyShareLink);
+document.getElementById('copyCodeBtn').addEventListener('click', copyRoomCode);
+
+// Modal helper functions
+function showModal(modal) {
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+function closeModal(modal) {
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Share link functions
+function showShareLink() {
+    const currentUrl = window.location.origin;
+    const shareUrl = `${currentUrl}/join/${roomCode}`;
+    document.getElementById('shareLink').textContent = shareUrl;
+    showModal(shareLinkModal);
+}
+
+function copyShareLink() {
+    const shareLink = document.getElementById('shareLink').textContent;
+    navigator.clipboard.writeText(shareLink).then(() => {
+        showNotification('✅ Share link copied to clipboard!');
+    }).catch(() => {
+        showError('Failed to copy link');
+    });
+}
+
+function copyRoomCode() {
+    navigator.clipboard.writeText(roomCode).then(() => {
+        showNotification('✅ Room code copied to clipboard!');
+    }).catch(() => {
+        showError('Failed to copy room code');
+    });
+}
+
+function showNotification(message) {
+    const notificationDiv = document.createElement('div');
+    notificationDiv.className = 'fixed top-4 right-4 bg-green-500 text-white p-3 border-2 border-black font-mono text-sm z-50';
+    notificationDiv.style.boxShadow = '3px 3px 0px 0px #000000';
+    notificationDiv.textContent = message;
+    
+    document.body.appendChild(notificationDiv);
+    
+    setTimeout(() => {
+        if (notificationDiv.parentNode) {
+            notificationDiv.parentNode.removeChild(notificationDiv);
+        }
+    }, 3000);
+}
+
+// Message handling
+function sendMessage(content, type = 'text', mediaData = null) {
+    const messageData = {
+        content: content.trim(),
+        type,
+        timestamp: new Date()
+    };
+
+    if (mediaData) {
+        messageData.mediaUrl = mediaData.url;
+        messageData.mediaName = mediaData.name;
+        messageData.mediaSize = mediaData.size;
+        if (type === 'audio') {
+            messageData.audioDuration = mediaData.duration;
+        }
+    }
+
+    socket.emit('sendMessage', messageData);
+}
+
+// Media handling functions
+function handleMediaUpload() {
+    const file = mediaUpload.files[0];
+    if (!file) return;
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+        showError('File size must be less than 10MB');
+        mediaUpload.value = '';
+        return;
+    }
+
+    // Determine file type
+    let messageType = 'file';
+    if (file.type.startsWith('image/')) {
+        messageType = 'image';
+    } else if (file.type.startsWith('video/')) {
+        messageType = 'video';
+    } else if (file.type.startsWith('audio/')) {
+        messageType = 'audio';
+    }
+
+    uploadFile(file, messageType);
+}
+
+function uploadFile(file, messageType) {
+    const formData = new FormData();
+    formData.append('media', file);
+
+    // Show upload progress
+    uploadProgress.style.display = 'block';
+    uploadStatus.textContent = 'Uploading...';
+    uploadBar.style.width = '0%';
+
+    // Build headers - only include Authorization for non-demo users
+    const headers = {};
+    if (!isDemoRoom) {
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+    }
+
+    fetch('/api/media/upload', {
+        method: 'POST',
+        headers: headers,
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const mediaData = {
+                url: data.mediaUrl,
+                name: data.mediaName,
+                size: data.mediaSize
+            };
+
+            // Send message with media
+            const messageContent = file.name;
+            sendMessage(messageContent, messageType, mediaData);
+            
+            uploadStatus.textContent = 'Upload complete!';
+            uploadBar.style.width = '100%';
+            
+            setTimeout(() => {
+                uploadProgress.style.display = 'none';
+            }, 2000);
+        } else {
+            throw new Error(data.message || 'Upload failed');
+        }
+    })
+    .catch(error => {
+        console.error('Upload error:', error);
+        showError('Failed to upload file: ' + error.message);
+        uploadStatus.textContent = 'Upload failed';
+        uploadBar.style.width = '0%';
+        
+        setTimeout(() => {
+            uploadProgress.style.display = 'none';
+        }, 3000);
+    })
+    .finally(() => {
+        mediaUpload.value = '';
+    });
+}
+
+// Audio recording functions
+async function startAudioRecording() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        recordingStartTime = Date.now();
+        
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
+            
+            // Create audio file for upload
+            const audioFile = new File([audioBlob], `audio-${Date.now()}.webm`, {
+                type: 'audio/webm'
+            });
+            
+            // Upload the audio file
+            uploadAudioFile(audioFile, duration);
+            
+            // Stop all tracks
+            stream.getTracks().forEach(track => track.stop());
+        };
+        
+        mediaRecorder.start();
+        
+        // Update UI
+        audioRecordBtn.style.display = 'none';
+        audioRecording.style.display = 'flex';
+        
+        // Start recording timer
+        updateRecordingTime();
+        recordingInterval = setInterval(updateRecordingTime, 1000);
+        
+    } catch (error) {
+        console.error('Error starting recording:', error);
+        showError('Failed to start recording. Please check microphone permissions.');
+    }
+}
+
+function stopAudioRecording() {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        clearInterval(recordingInterval);
+        resetRecordingUI();
+    }
+}
+
+function cancelAudioRecording() {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        audioChunks = [];
+        clearInterval(recordingInterval);
+        resetRecordingUI();
+    }
+}
+
+function resetRecordingUI() {
+    audioRecordBtn.style.display = 'block';
+    audioRecording.style.display = 'none';
+    recordingTime.textContent = '0:00';
+}
+
+function updateRecordingTime() {
+    if (recordingStartTime) {
+        const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        recordingTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+}
+
+function uploadAudioFile(audioFile, duration) {
+    const formData = new FormData();
+    formData.append('media', audioFile);
+
+    uploadProgress.style.display = 'block';
+    uploadStatus.textContent = 'Uploading audio...';
+    uploadBar.style.width = '0%';
+
+    fetch('/api/media/upload', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const mediaData = {
+                url: data.mediaUrl,
+                name: data.mediaName,
+                size: data.mediaSize,
+                duration: duration
+            };
+
+            sendMessage('🎙️ Audio message', 'audio', mediaData);
+            
+            uploadStatus.textContent = 'Audio uploaded!';
+            uploadBar.style.width = '100%';
+            
+            setTimeout(() => {
+                uploadProgress.style.display = 'none';
+            }, 2000);
+        } else {
+            throw new Error(data.message || 'Upload failed');
+        }
+    })
+    .catch(error => {
+        console.error('Audio upload error:', error);
+        showError('Failed to upload audio: ' + error.message);
+        uploadStatus.textContent = 'Upload failed';
+        uploadBar.style.width = '0%';
+        
+        setTimeout(() => {
+            uploadProgress.style.display = 'none';
+        }, 3000);
+    });
+}
+
+// Utility functions
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function formatDuration(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Export PDF
+exportPdfBtn.addEventListener('click', async () => {
+    // Show options modal
+    const choice = confirm('Choose export option:\nOK = Download PDF immediately\nCancel = Save to Personal Notes');
+    
+    if (choice) {
+        // Download PDF immediately
+        await downloadPdf();
+    } else {
+        // Save to notes
+        await savePdfToNotes();
+    }
+});
+
+async function downloadPdf() {
+    try {
+        const response = await fetch(`/api/rooms/${roomCode}/export`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${roomCode}_chat_export.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            const data = await response.json();
+            alert(`Failed to export PDF: ${data.message}`);
+        }
+    } catch (error) {
+        console.error('PDF export error:', error);
+        alert('Failed to export PDF. Please try again.');
+    }
+}
+
+async function savePdfToNotes() {
+    try {
+        const response = await fetch(`/api/rooms/${roomCode}/export?format=base64`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                // Store PDF data in session storage and redirect to notes page
+                sessionStorage.setItem('pendingPdfData', data.pdfData);
+                sessionStorage.setItem('pendingRoomCode', data.roomCode);
+                
+                // Open notes page in new tab or redirect
+                const notesUrl = '/notes?action=save-pdf';
+                if (confirm('PDF ready to save to notes. Open notes page?\nOK = Open in new tab\nCancel = Redirect current page')) {
+                    window.open(notesUrl, '_blank');
+                } else {
+                    window.location.href = notesUrl;
+                }
+            } else {
+                alert(`Failed to prepare PDF for notes: ${data.message}`);
+            }
+        } else {
+            const data = await response.json();
+            alert(`Failed to export PDF: ${data.message}`);
+        }
+    } catch (error) {
+        console.error('PDF save to notes error:', error);
+        alert('Failed to prepare PDF for notes. Please try again.');
+    }
+}
+
+// Leave room
+leaveRoomBtn.addEventListener('click', () => {
+    if (isOwner) {
+        showModal(leaveRoomModal);
+    } else {
+        if (confirm('Are you sure you want to leave the room?')) {
+            socket.emit('leaveRoom', 'leave');
+        }
+    }
+});
+
+// Owner leave options
+document.getElementById('destroyRoomBtn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to end the room for everyone? This cannot be undone.')) {
+        socket.emit('leaveRoom', 'destroy');
+        closeModal(leaveRoomModal);
+    }
+});
+
+document.getElementById('transferOwnershipBtn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to transfer ownership and leave the room?')) {
+        socket.emit('leaveRoom', 'transfer');
+        closeModal(leaveRoomModal);
+    }
+});
+
+document.getElementById('cancelLeaveBtn').addEventListener('click', () => {
+    closeModal(leaveRoomModal);
+});
+
+// Close modal handlers
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('close')) {
+        closeModal(e.target.closest('.fixed'));
+    }
+    if (e.target.classList.contains('fixed') && e.target.classList.contains('inset-0')) {
+        closeModal(e.target);
+    }
+});
+
+// Helper functions
+function displayMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `p-3 mb-2 border-2 border-black ${message.username === user.username ? 'bg-gray-200 ml-8' : 'bg-white mr-8'}`;
+    messageDiv.style.boxShadow = '2px 2px 0px 0px #000000';
+    
+    const timestamp = new Date(message.timestamp).toLocaleTimeString();
+    
+    let messageContent = '';
+    
+    // Use messageType field from the message object
+    const messageType = message.messageType || message.type || 'text';
+    
+    if (messageType === 'text') {
+        messageContent = `
+            <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-sm uppercase tracking-wide">${message.username}</span>
+                <span class="text-xs font-mono text-gray-600">${timestamp}</span>
+            </div>
+            <div class="font-mono text-sm">${escapeHtml(message.content)}</div>
+        `;
+    } else if (messageType === 'image') {
+        messageContent = `
+            <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-sm uppercase tracking-wide">${message.username}</span>
+                <span class="text-xs font-mono text-gray-600">${timestamp}</span>
+            </div>
+            <div class="font-mono text-sm mb-2">${escapeHtml(message.content)}</div>
+            <img src="${message.mediaUrl}" alt="${message.mediaName}" 
+                 class="max-w-full h-auto border-2 border-black cursor-pointer hover:border-gray-600"
+                 onclick="window.open('${message.mediaUrl}', '_blank')"
+                 style="box-shadow: 2px 2px 0px 0px #000000;">
+            <div class="font-mono text-xs text-gray-500 mt-1">${message.mediaName} (${formatFileSize(message.mediaSize)})</div>
+        `;
+    } else if (messageType === 'audio') {
+        messageContent = `
+            <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-sm uppercase tracking-wide">${message.username}</span>
+                <span class="text-xs font-mono text-gray-600">${timestamp}</span>
+            </div>
+            <div class="font-mono text-sm mb-2">${escapeHtml(message.content)}</div>
+            <div class="bg-gray-100 border-2 border-black p-2" style="box-shadow: 1px 1px 0px 0px #000000;">
+                <audio controls class="w-full">
+                    <source src="${message.mediaUrl}" type="audio/webm">
+                    <source src="${message.mediaUrl}" type="audio/mp4">
+                    <source src="${message.mediaUrl}" type="audio/wav">
+                    Your browser does not support audio playback.
+                </audio>
+                <div class="font-mono text-xs text-gray-500 mt-1">
+                    ${message.mediaName} • Duration: ${formatDuration(message.audioDuration)} • ${formatFileSize(message.mediaSize)}
+                </div>
+            </div>
+        `;
+    } else if (messageType === 'video') {
+        messageContent = `
+            <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-sm uppercase tracking-wide">${message.username}</span>
+                <span class="text-xs font-mono text-gray-600">${timestamp}</span>
+            </div>
+            <div class="font-mono text-sm mb-2">${escapeHtml(message.content)}</div>
+            <video controls class="max-w-full h-auto border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000;">
+                <source src="${message.mediaUrl}" type="video/mp4">
+                <source src="${message.mediaUrl}" type="video/webm">
+                Your browser does not support video playback.
+            </video>
+            <div class="font-mono text-xs text-gray-500 mt-1">${message.mediaName} (${formatFileSize(message.mediaSize)})</div>
+        `;
+    } else if (messageType === 'file') {
+        messageContent = `
+            <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-sm uppercase tracking-wide">${message.username}</span>
+                <span class="text-xs font-mono text-gray-600">${timestamp}</span>
+            </div>
+            <div class="font-mono text-sm mb-2">${escapeHtml(message.content)}</div>
+            <div class="bg-gray-100 border-2 border-black p-2 hover:bg-gray-200 cursor-pointer"
+                 style="box-shadow: 1px 1px 0px 0px #000000;"
+                 onclick="window.open('${message.mediaUrl}', '_blank')">
+                <div class="font-bold">📎 ${message.mediaName}</div>
+                <div class="font-mono text-xs text-gray-500">${formatFileSize(message.mediaSize)}</div>
+            </div>
+        `;
+    }
+    
+    messageDiv.innerHTML = messageContent;
+    chatMessages.appendChild(messageDiv);
+}
+
+function displaySystemMessage(content) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'p-2 mb-2 bg-gray-100 border-2 border-gray-400 italic text-center text-sm font-mono text-gray-600';
+    messageDiv.style.boxShadow = '1px 1px 0px 0px #6b7280';
+    
+    messageDiv.innerHTML = `
+        <div>${escapeHtml(content)}</div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+}
+
+function updateMembersList(members) {
+    membersList.innerHTML = '';
+    
+    members.forEach(member => {
+        const memberDiv = document.createElement('div');
+        memberDiv.className = `p-2 mb-2 bg-white border-2 border-black ${member.username === currentRoom.owner ? 'bg-yellow-100' : ''}`;
+        memberDiv.style.boxShadow = '1px 1px 0px 0px #000000';
+        
+        const isOwner = member.username === currentRoom.owner;
+        const canRemove = isOwner === false && user.username === currentRoom.owner;
+        
+        memberDiv.innerHTML = `
+            <div class="flex justify-between items-center">
+                <div>
+                    <span class="font-mono text-sm">${member.username}</span>
+                    ${isOwner ? '<span class="text-yellow-600 ml-2">👑</span>' : ''}
+                </div>
+                ${canRemove ? `
+                    <button onclick="removeUser('${member.username}')" 
+                            class="px-2 py-1 bg-red-500 text-white text-xs font-bold border border-black hover:bg-red-600"
+                            style="box-shadow: 1px 1px 0px 0px #000000;"
+                            title="Remove user from room">
+                        ✕
+                    </button>
+                ` : ''}
+            </div>
+        `;
+        
+        membersList.appendChild(memberDiv);
+    });
+}
+
+function updatePendingAdmissions(pending) {
+    if (pending.length === 0) {
+        pendingAdmissions.classList.add('hidden');
+        return;
+    }
+    
+    pendingAdmissions.classList.remove('hidden');
+    pendingList.innerHTML = '';
+    
+    pending.forEach(member => {
+        const pendingDiv = document.createElement('div');
+        pendingDiv.className = 'p-3 mb-2 bg-yellow-50 border-2 border-yellow-600';
+        pendingDiv.style.boxShadow = '2px 2px 0px 0px #d97706';
+        
+        const voteInfo = currentRoom.admissionType === 'democratic_voting' 
+            ? `<div class="text-xs font-mono text-gray-600">Votes: ${member.votes ? member.votes.length : 0}</div>`
+            : '';
+        
+        pendingDiv.innerHTML = `
+            <div class="font-bold text-sm uppercase tracking-wide mb-1">${member.username}</div>
+            ${voteInfo}
+            <div class="mt-2">
+                ${getAdmissionActions(member)}
+            </div>
+        `;
+        
+        pendingList.appendChild(pendingDiv);
+    });
+}
+
+function getAdmissionActions(member) {
+    if (currentRoom.admissionType === 'owner_approval' && isOwner) {
+        return `
+            <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide mr-2" 
+                    style="box-shadow: 1px 1px 0px 0px #000000;" 
+                    onclick="approveAdmission('${member.username}', 'admit')">Admit</button>
+            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide" 
+                    style="box-shadow: 1px 1px 0px 0px #000000;" 
+                    onclick="approveAdmission('${member.username}', 'deny')">Deny</button>
+        `;
+    } else if (currentRoom.admissionType === 'democratic_voting') {
+        const hasVoted = member.votes && member.votes.some(vote => vote.voter === user.username);
+        if (hasVoted) {
+            return '<div class="text-xs font-mono text-gray-600">You have voted</div>';
+        }
+        return `
+            <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide mr-2" 
+                    style="box-shadow: 1px 1px 0px 0px #000000;" 
+                    onclick="castVote('${member.username}', 'admit')">Vote Admit</button>
+            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide" 
+                    style="box-shadow: 1px 1px 0px 0px #000000;" 
+                    onclick="castVote('${member.username}', 'deny')">Vote Deny</button>
+        `;
+    }
+    return '';
+}
+
+function showAdmissionRequest(data) {
+    const admissionDetails = document.getElementById('admissionDetails');
+    const admissionActions = document.getElementById('admissionActions');
+    
+    admissionDetails.innerHTML = `
+        <p><strong>${data.username}</strong> wants to join the room.</p>
+        <p>Requested at: ${new Date(data.requestedAt).toLocaleString()}</p>
+    `;
+    
+    admissionActions.innerHTML = getAdmissionActions({ username: data.username, votes: [] });
+    
+    openModal(admissionModal);
+}
+
+// Global functions for admission actions
+window.approveAdmission = async function(username, decision) {
+    try {
+        const response = await fetch(`/api/rooms/${roomCode}/admission/${username}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ decision })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            displaySystemMessage(data.message);
+            if (data.voteResult) {
+                displaySystemMessage(`Vote count: ${data.voteResult.admit} admit, ${data.voteResult.deny} deny`);
+            }
+        } else {
+            displaySystemMessage(`Error: ${data.message}`);
+        }
+    } catch (error) {
+        console.error('Admission decision error:', error);
+        displaySystemMessage('Failed to process admission decision');
+    }
+    closeModal(admissionModal);
+};
+
+// Remove user from room (owner only)
+window.removeUser = async function(username) {
+    if (!confirm(`Are you sure you want to remove ${username} from the room?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/rooms/${roomCode}/members/${username}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            displaySystemMessage(data.message);
+        } else {
+            displaySystemMessage(`Error: ${data.message}`);
+        }
+    } catch (error) {
+        console.error('Remove user error:', error);
+        displaySystemMessage('Failed to remove user from room');
+    }
+};
+
+window.castVote = async function(username, decision) {
+    try {
+        const response = await fetch(`/api/rooms/${roomCode}/admission/${username}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ decision })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            displaySystemMessage(data.message);
+            if (data.voteResult) {
+                displaySystemMessage(`Vote count: ${data.voteResult.admit} admit, ${data.voteResult.deny} deny (${data.voteResult.required} required)`);
+            }
+        } else {
+            displaySystemMessage(`Error: ${data.message}`);
+        }
+    } catch (error) {
+        console.error('Vote error:', error);
+        displaySystemMessage('Failed to cast vote');
+    }
+    closeModal(admissionModal);
+};
+
+function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showError(message) {
+    // Create error notification
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white p-3 border-2 border-black font-mono text-sm z-50';
+    errorDiv.style.boxShadow = '3px 3px 0px 0px #000000';
+    errorDiv.textContent = message;
+    
+    document.body.appendChild(errorDiv);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+        if (errorDiv.parentNode) {
+            errorDiv.parentNode.removeChild(errorDiv);
+        }
+    }, 5000);
+}
+
+// Handle page unload
+window.addEventListener('beforeunload', () => {
+    socket.disconnect();
+});
