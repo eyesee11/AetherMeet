@@ -11,6 +11,14 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
+// Import security middleware
+const { 
+    generalLimiter, 
+    authLimiter, 
+    helmetConfig,
+    sanitizeInput 
+} = require('./middleware/security');
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -20,7 +28,14 @@ const authRoutes = require('./routes/auth');
 const roomRoutes = require('./routes/rooms');
 const notesRoutes = require('./routes/notes');
 const mediaRoutes = require('./routes/media');
+const analyticsRoutes = require('./routes/analytics');
+const moderationRoutes = require('./routes/moderation');
+const i18nRoutes = require('./routes/i18n');
 const socketHandler = require('./socket/socketHandler');
+
+// Security middleware
+app.use(helmetConfig);
+app.use(generalLimiter);
 
 // Middleware
 app.use(express.json());
@@ -37,21 +52,26 @@ app.use('/storage', express.static('storage'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// MongoDB connection
+// MongoDB connection with optimized settings
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aethermeet', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
+    maxPoolSize: 10, // Maintain up to 10 socket connections
+    serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+    bufferCommands: false // Disable mongoose buffering
 }).then(() => {
     console.log('Connected to MongoDB');
 }).catch(err => {
     console.error('MongoDB connection error:', err);
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
+// Routes with rate limiting
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/rooms', roomRoutes(io)); // Pass io instance to room routes
 app.use('/api/notes', notesRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/moderation', moderationRoutes);
+app.use('/api/i18n', i18nRoutes);
 
 // Serve frontend pages
 app.get('/', (req, res) => {

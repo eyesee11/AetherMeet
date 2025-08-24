@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const { authenticateToken } = require('../utils/helpers');
+const { mediaUploadLimiter, validateFileUpload } = require('../middleware/security');
 const router = express.Router();
 
 // Configure multer for file uploads
@@ -75,13 +76,25 @@ const conditionalAuth = (req, res, next) => {
     return authenticateToken(req, res, next);
 };
 
-// Upload media file
-router.post('/upload', conditionalAuth, upload.single('media'), async (req, res) => {
+// Upload media file with rate limiting
+router.post('/upload', mediaUploadLimiter, conditionalAuth, upload.single('media'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({
                 success: false,
                 message: 'No file uploaded'
+            });
+        }
+
+        // Validate file upload
+        try {
+            validateFileUpload(req.file);
+        } catch (validationError) {
+            // Delete the uploaded file if validation fails
+            fs.unlinkSync(req.file.path);
+            return res.status(400).json({
+                success: false,
+                message: validationError.message
             });
         }
 
@@ -108,8 +121,8 @@ router.post('/upload', conditionalAuth, upload.single('media'), async (req, res)
     }
 });
 
-// Upload audio recording
-router.post('/upload-audio', conditionalAuth, (req, res) => {
+// Upload audio recording with rate limiting
+router.post('/upload-audio', mediaUploadLimiter, conditionalAuth, (req, res) => {
     const upload = multer({
         storage: multer.memoryStorage(),
         limits: {

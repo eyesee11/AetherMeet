@@ -6,12 +6,13 @@ const fs = require('fs');
 const path = require('path');
 const Room = require('../models/Room');
 const { validatePassword, authenticateToken } = require('../utils/helpers');
+const { roomCreationLimiter, sanitizeInput, validateRoomCode } = require('../middleware/security');
 
 module.exports = (io) => {
 const router = express.Router();
 
-// Create instant demo room (no authentication required)
-router.post('/create-demo', async (req, res) => {
+// Create instant demo room (no authentication required) - with rate limiting
+router.post('/create-demo', roomCreationLimiter, async (req, res) => {
     try {
         // Generate a simple room code
         const generateRoomCode = () => {

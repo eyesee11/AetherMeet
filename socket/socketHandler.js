@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
 const Room = require('../models/Room');
+const Message = require('../models/Message');
 const User = require('../models/User');
 const { isRoomMember, calculateVoteResult, sanitizeInput } = require('../utils/helpers');
+const { sanitizeInput: securitySanitize } = require('../middleware/security');
 
 module.exports = (io) => {
     // Socket authentication middleware
@@ -94,8 +96,9 @@ module.exports = (io) => {
                     memberCount: room.members.length
                 });
 
-                // Send recent messages
-                socket.emit('messageHistory', room.messages);
+                // Send recent messages from separate Message collection
+                const recentMessages = await Message.getRoomMessages(room._id, 50);
+                socket.emit('messageHistory', recentMessages.reverse()); // Reverse to show oldest first
 
                 // Send pending admission requests if user is owner or member
                 if (room.owner === socket.user.username || room.admissionType === 'democratic_voting') {
@@ -137,10 +140,12 @@ module.exports = (io) => {
                         return;
                     }
                     
-                    // Sanitize and validate content
-                    const sanitizedContent = sanitizeInput(content);
+                    // Sanitize and validate content using both sanitization methods
+                    let sanitizedContent = securitySanitize(content);
+                    sanitizedContent = sanitizeInput(sanitizedContent);
+                    
                     if (sanitizedContent.length === 0 || sanitizedContent.length > 1000) {
-                        socket.emit('error', { message: 'Invalid message content' });
+                        socket.emit('error', { message: 'Invalid message content (0-1000 characters allowed)' });
                         return;
                     }
                     
@@ -172,11 +177,23 @@ module.exports = (io) => {
                     }
                 }
 
-                room.messages.push(message);
-                await room.save();
+                // Create and save message in separate collection
+                const newMessage = new Message({
+                    roomId: room._id,
+                    username: socket.user.username,
+                    messageType: messageType,
+                    content: message.content,
+                    mediaUrl: message.mediaUrl,
+                    mediaName: message.mediaName,
+                    mediaSize: message.mediaSize,
+                    audioDuration: message.audioDuration,
+                    timestamp: message.timestamp
+                });
+
+                await newMessage.save();
 
                 // Broadcast message to all room members
-                io.to(roomCode).emit('newMessage', message);
+                io.to(roomCode).emit('newMessage', newMessage);
 
             } catch (error) {
                 console.error('Send message error:', error);
