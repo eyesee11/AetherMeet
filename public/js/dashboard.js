@@ -36,7 +36,45 @@ const joinRoomError = document.getElementById('joinRoomError');
 document.addEventListener('DOMContentLoaded', () => {
     welcomeUser.textContent = `Welcome, ${user.username}!`;
     loadMyRooms();
+    
+    // Check if there's a room code in the URL parameters (from shared link)
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomCode = urlParams.get('roomCode');
+    
+    if (roomCode) {
+        // Pre-fill the room code input and automatically trigger join process
+        document.getElementById('roomCode').value = roomCode.toUpperCase();
+        
+        // Automatically check if room exists and show password modal
+        checkAndJoinRoom(roomCode.toUpperCase());
+    }
 });
+
+// Function to check room and start join process
+async function checkAndJoinRoom(roomCode) {
+    try {
+        const response = await fetch(`/api/rooms/${roomCode}/info`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Room exists, show password modal automatically
+            joinRoomPasswordForm.dataset.roomCode = roomCode;
+            openModal(joinRoomModal);
+        } else {
+            alert(data.message || 'Room not found or not active');
+        }
+    } catch (error) {
+        console.error('Room check error:', error);
+        alert('Failed to check room. Please try again.');
+    }
+}
 
 // Logout functionality
 logoutBtn.addEventListener('click', async () => {
@@ -208,29 +246,8 @@ joinRoomForm.addEventListener('submit', async (e) => {
         return;
     }
     
-    // First check if room exists and is active
-    try {
-        const response = await fetch(`/api/rooms/${roomCode}/info`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // Room exists, show password modal
-            joinRoomPasswordForm.dataset.roomCode = roomCode;
-            openModal(joinRoomModal);
-        } else {
-            alert(data.message || 'Room not found or not active');
-        }
-    } catch (error) {
-        console.error('Room check error:', error);
-        alert('Failed to check room. Please try again.');
-    }
+    // Use the same function for manual joins
+    await checkAndJoinRoom(roomCode);
 });
 
 // Join room with password

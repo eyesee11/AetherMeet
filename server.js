@@ -1,3 +1,4 @@
+
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -11,17 +12,21 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
-// Import security middleware
+// Import security middleware and memory management
 const { 
     generalLimiter, 
     authLimiter, 
     helmetConfig,
     sanitizeInput 
 } = require('./middleware/security');
+const memoryManager = require('./utils/memoryManager');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
+
+// Trust proxy - important for rate limiting to work correctly when behind reverse proxy or using ngrok
+app.set('trust proxy', 1);
 
 // Import routes and models
 const authRoutes = require('./routes/auth');
@@ -31,6 +36,7 @@ const mediaRoutes = require('./routes/media');
 const analyticsRoutes = require('./routes/analytics');
 const moderationRoutes = require('./routes/moderation');
 const i18nRoutes = require('./routes/i18n');
+const memoryRoutes = require('./routes/memory');
 const socketHandler = require('./socket/socketHandler');
 
 // Security middleware
@@ -72,6 +78,7 @@ app.use('/api/media', mediaRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/moderation', moderationRoutes);
 app.use('/api/i18n', i18nRoutes);
+app.use('/api/memory', memoryRoutes);
 
 // Serve frontend pages
 app.get('/', (req, res) => {
@@ -156,10 +163,33 @@ app.get('/join/:roomCode', (req, res) => {
 // Socket.IO handling
 socketHandler(io);
 
+// Start memory management system
+memoryManager.startCleanup(30); // Cleanup every 30 minutes
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('🛑 SIGTERM received, shutting down gracefully');
+    memoryManager.stopCleanup();
+    server.close(() => {
+        mongoose.connection.close();
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', () => {
+    console.log('🛑 SIGINT received, shutting down gracefully');
+    memoryManager.stopCleanup();
+    server.close(() => {
+        mongoose.connection.close();
+        process.exit(0);
+    });
+});
+
 // Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
     console.log(`AetherMeet server running on port ${PORT}`);
+    console.log(`🧹 Memory management active - cleanup every 30 minutes`);
 });
 
 module.exports = app;

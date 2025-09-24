@@ -5,9 +5,12 @@ if (!window.authInitialized) {
     window.authInitialized = true;
 
 // DOM Elements (only if they exist on this page)
-const loginBtn = document.getElementById('loginBtn');
-const loginBtn2 = document.getElementById('loginBtn2');
-const registerBtn = document.getElementById('registerBtn');
+const loginBtn2 = document.getElementById('loginBtn2'); // Hero section login button
+const registerBtn = document.getElementById('registerBtn'); // Hero section register button
+const headerLoginBtn = document.getElementById('headerLoginBtn'); // Header login button
+const headerGetStartedBtn = document.getElementById('headerGetStartedBtn'); // Header get started button
+const footerLoginBtn = document.getElementById('footerLoginBtn'); // Footer login button
+const footerRegisterBtn = document.getElementById('footerRegisterBtn'); // Footer register button
 const loginModal = document.getElementById('loginModal');
 const registerModal = document.getElementById('registerModal');
 const loginForm = document.getElementById('loginForm');
@@ -15,8 +18,8 @@ const registerForm = document.getElementById('registerForm');
 const loginError = document.getElementById('loginError');
 const registerError = document.getElementById('registerError');
 
-// Only add event listeners if elements exist (on home page)
-if (loginBtn && registerBtn && loginModal && registerModal) {
+// Only add event listeners if modals exist (on home page)
+if (loginModal && registerModal) {
 
 // Check if user is already logged in (only on home/login page)
 if (localStorage.getItem('token') && window.location.pathname === '/') {
@@ -38,10 +41,12 @@ function closeModal(modal) {
     }
 }
 
-// Event listeners for modal buttons
-loginBtn.addEventListener('click', () => openModal(loginModal));
+// Event listeners for modal buttons - add them if the elements exist
 if (loginBtn2) loginBtn2.addEventListener('click', () => openModal(loginModal));
-registerBtn.addEventListener('click', () => openModal(registerModal));
+if (registerBtn) registerBtn.addEventListener('click', () => openModal(registerModal));
+if (headerLoginBtn) headerLoginBtn.addEventListener('click', () => openModal(loginModal));
+if (footerLoginBtn) footerLoginBtn.addEventListener('click', () => openModal(loginModal));
+if (footerRegisterBtn) footerRegisterBtn.addEventListener('click', () => openModal(registerModal));
 
 // Close modal when clicking close button or outside modal
 document.addEventListener('click', (e) => {

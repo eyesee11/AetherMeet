@@ -425,23 +425,26 @@ module.exports = (io) => {
                 const username = socket.user.username;
                 const isOwner = room.owner === username;
 
-                if (isOwner && action === 'destroy') {
-                    // Owner chooses to destroy room
+                // Check destruction rules
+                const canDestroy = room.isDemoRoom || (room.destructionRules?.ownerOnlyDestroy && isOwner);
+
+                if (isOwner && action === 'destroy' && canDestroy) {
+                    // Owner chooses to destroy room (or anyone can destroy demo room)
                     room.isActive = false;
                     room.destroyedAt = new Date();
                     await room.save();
 
                     // Notify all members
                     io.to(roomCode).emit('roomDestroyed', {
-                        reason: 'Owner ended the room',
+                        reason: room.isDemoRoom ? 'Demo room ended' : 'Owner ended the room',
                         destroyedBy: username
                     });
 
                     // Disconnect all clients from room
                     io.in(roomCode).socketsLeave(roomCode);
 
-                } else if (isOwner && action === 'transfer') {
-                    // Owner chooses to transfer ownership
+                } else if (isOwner && action === 'transfer' && !room.isDemoRoom) {
+                    // Owner chooses to transfer ownership (authenticated rooms only)
                     const newOwner = room.transferOwnership();
                     
                     if (newOwner) {
@@ -474,17 +477,34 @@ module.exports = (io) => {
                     // Regular member leaving
                     room.removeMember(username);
                     
-                    // Check if room is empty
+                    // Check if room should auto-destroy when empty
                     if (room.members.length === 0) {
-                        room.isActive = false;
-                        room.destroyedAt = new Date();
-                        await room.save();
+                        if (room.isDemoRoom || room.destructionRules?.autoDestroyOnEmpty) {
+                            // Demo rooms auto-destroy when last member leaves
+                            room.isActive = false;
+                            room.destroyedAt = new Date();
+                            await room.save();
 
-                        io.to(roomCode).emit('roomDestroyed', {
-                            reason: 'Last member left the room'
-                        });
+                            console.log(`🗑️  Room ${roomCode} auto-destroyed: ${room.isDemoRoom ? 'Demo room' : 'Empty room'} - last member left`);
+                            console.log(`📊 Room stats: ${room.members.length} members, created: ${room.createdAt}`);
+
+                            io.to(roomCode).emit('roomDestroyed', {
+                                reason: room.isDemoRoom ? 'Demo room ended - last member left' : 'Last member left the room'
+                            });
+                        } else {
+                            // Authenticated rooms stay active even when empty
+                            await room.save();
+                            
+                            console.log(`⚠️  Room ${roomCode} is now empty but remains active (authenticated room)`);
+                            
+                            io.to(roomCode).emit('roomEmpty', {
+                                message: 'Room is now empty but remains active'
+                            });
+                        }
                     } else {
                         await room.save();
+                        
+                        console.log(`👋 User ${username} left room ${roomCode} (${room.members.length} members remaining)`);
                         
                         // Notify remaining members
                         socket.to(roomCode).emit('userLeft', {

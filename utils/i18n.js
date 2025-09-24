@@ -38,9 +38,12 @@ class InternationalizationManager {
             'nav.login': 'Login',
             'nav.register': 'Register',
             'nav.tryDemo': 'Try Demo',
+            'nav.getStarted': 'Get Started',
+            'nav.startDemoRoom': 'Start Demo Room',
 
             // Common
             'common.loading': 'Loading...',
+            'common.creating': 'Creating...',
             'common.save': 'Save',
             'common.cancel': 'Cancel',
             'common.delete': 'Delete',
@@ -53,6 +56,7 @@ class InternationalizationManager {
             'common.error': 'Error',
             'common.success': 'Success',
             'common.warning': 'Warning',
+            'common.tagline': 'Secure & Ephemeral Team Chat Rooms',
 
             // Landing Page
             'landing.title': 'AetherMeet',
@@ -75,6 +79,8 @@ class InternationalizationManager {
             'auth.login.password': 'Password',
             'auth.login.button': 'Login',
             'auth.login.register': 'Don\'t have an account? Register here',
+            'auth.signIn': 'Sign In',
+            'auth.signUp': 'Sign Up',
             'auth.register.title': 'Create Account',
             'auth.register.username': 'Username',
             'auth.register.email': 'Email',
@@ -162,6 +168,8 @@ class InternationalizationManager {
             'error.notFound': 'The requested resource was not found.',
             'error.validationError': 'Please check your input and try again.',
             'error.rateLimitExceeded': 'Too many requests. Please wait and try again.',
+            'error.createDemoRoom': 'Failed to create demo room',
+            'error.createDemoRoomGeneric': 'Failed to create demo room. Please try again.',
 
             // Success Messages
             'success.roomCreated': 'Room created successfully',
@@ -182,8 +190,11 @@ class InternationalizationManager {
             'nav.login': 'Iniciar Sesión',
             'nav.register': 'Registrarse',
             'nav.tryDemo': 'Probar Demo',
+            'nav.getStarted': 'Comenzar',
+            'nav.startDemoRoom': 'Iniciar Sala Demo',
 
             'common.loading': 'Cargando...',
+            'common.creating': 'Creando...',
             'common.save': 'Guardar',
             'common.cancel': 'Cancelar',
             'common.delete': 'Eliminar',
@@ -196,6 +207,10 @@ class InternationalizationManager {
             'common.error': 'Error',
             'common.success': 'Éxito',
             'common.warning': 'Advertencia',
+            'common.tagline': 'Salas de Chat Seguras y Efímeras',
+
+            'auth.signIn': 'Iniciar Sesión',
+            'auth.signUp': 'Registrarse',
 
             'landing.title': 'AetherMeet',
             'landing.subtitle': 'Salas de Chat Seguras y Efímeras',
@@ -223,6 +238,8 @@ class InternationalizationManager {
 
             'error.generic': 'Ocurrió un error. Por favor, inténtalo de nuevo.',
             'error.networkError': 'Error de red. Por favor, verifica tu conexión.',
+            'error.createDemoRoom': 'Error al crear sala de demostración',
+            'error.createDemoRoomGeneric': 'Error al crear sala de demostración. Por favor, inténtalo de nuevo.',
             'success.roomCreated': 'Sala creada exitosamente',
             'success.loginSuccessful': 'Inicio de sesión exitoso'
         };

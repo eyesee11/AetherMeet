@@ -47,6 +47,11 @@ const roomSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    // Room destruction rules based on room type
+    destructionRules: {
+        autoDestroyOnEmpty: { type: Boolean, default: false }, // Demo rooms: true, Auth rooms: false
+        ownerOnlyDestroy: { type: Boolean, default: false }    // Demo rooms: false, Auth rooms: true
+    },
     expiresAt: {
         type: Date,
         default: null

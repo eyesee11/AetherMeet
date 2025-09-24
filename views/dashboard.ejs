@@ -93,8 +93,8 @@
     <!-- Theme Toggle -->
     <div class="fixed top-4 right-4 z-50">
         <button id="themeToggle" class="btn-brutal px-4 py-2 bg-white border-2 border-black font-bold uppercase tracking-wide text-sm hover:bg-gray-100">
-            <span id="themeIcon">DARK</span>
-            <span id="themeText">MODE</span>
+            <span id="themeIcon" class="emoji">🌙</span>
+            <span id="themeText">DARK</span>
         </button>
     </div>
 
@@ -346,34 +346,43 @@
         const themeIcon = document.getElementById('themeIcon');
         const themeText = document.getElementById('themeText');
         
-        // Check for saved theme preference or default to light
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        
-        // Apply theme on page load
-        if (currentTheme === 'dark') {
-            document.documentElement.classList.add('dark');
-            themeIcon.textContent = 'LIGHT';
-            themeText.textContent = 'MODE';
-        }
-        
-        // Theme toggle event listener
-        themeToggle.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.contains('dark');
+        // Ensure elements exist before proceeding
+        if (themeToggle && themeIcon && themeText) {
+            // Check for saved theme preference or default to light
+            const currentTheme = localStorage.getItem('theme') || 'light';
             
-            if (isDark) {
-                // Switch to light theme
-                document.documentElement.classList.remove('dark');
-                themeIcon.textContent = 'DARK';
-                themeText.textContent = 'MODE';
-                localStorage.setItem('theme', 'light');
+            // Apply theme on page load
+            if (currentTheme === 'dark') {
+                document.body.classList.add('dark');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'LIGHT';
             } else {
-                // Switch to dark theme
-                document.documentElement.classList.add('dark');
-                themeIcon.textContent = 'LIGHT';
-                themeText.textContent = 'MODE';
-                localStorage.setItem('theme', 'dark');
+                document.body.classList.remove('dark');
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'DARK';
             }
-        });
+            
+            // Theme toggle event listener
+            themeToggle.addEventListener('click', () => {
+                const isDark = document.body.classList.contains('dark');
+                
+                if (isDark) {
+                    // Switch to light theme
+                    document.body.classList.remove('dark');
+                    themeIcon.textContent = '🌙';
+                    themeText.textContent = 'DARK';
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    // Switch to dark theme
+                    document.body.classList.add('dark');
+                    themeIcon.textContent = '☀️';
+                    themeText.textContent = 'LIGHT';
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+        } else {
+            console.error('Theme toggle elements not found');
+        }
     </script>
 </body>
 </html>

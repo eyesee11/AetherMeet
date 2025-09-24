@@ -5,6 +5,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 const Room = require('../models/Room');
+const Message = require('../models/Message');
 const { validatePassword, authenticateToken } = require('../utils/helpers');
 const { roomCreationLimiter, sanitizeInput, validateRoomCode } = require('../middleware/security');
 
@@ -44,6 +45,10 @@ router.post('/create-demo', roomCreationLimiter, async (req, res) => {
             messages: [],
             isActive: true,
             isDemoRoom: true,
+            destructionRules: {
+                autoDestroyOnEmpty: true,  // Demo rooms auto-destroy when empty
+                ownerOnlyDestroy: false    // Anyone can destroy demo rooms
+            },
             createdAt: new Date(),
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
         });
@@ -161,7 +166,11 @@ router.post('/instant', authenticateToken, async (req, res) => {
             owner: username,
             primaryPassword,
             secondaryPassword,
-            admissionType: admissionType || 'owner_approval'
+            admissionType: admissionType || 'owner_approval',
+            destructionRules: {
+                autoDestroyOnEmpty: false, // Authenticated rooms don't auto-destroy
+                ownerOnlyDestroy: true     // Only owner can destroy authenticated rooms
+            }
         });
 
         // Add owner as first member
@@ -252,7 +261,11 @@ router.post('/schedule', authenticateToken, async (req, res) => {
             admissionType: admissionType || 'owner_approval',
             isScheduled: true,
             scheduledTime: scheduleDate,
-            isActive: false
+            isActive: false,
+            destructionRules: {
+                autoDestroyOnEmpty: false, // Authenticated scheduled rooms don't auto-destroy
+                ownerOnlyDestroy: true     // Only owner can destroy authenticated rooms
+            }
         });
 
         await room.save();
@@ -301,14 +314,30 @@ router.post('/:roomCode/join', authenticateToken, async (req, res) => {
         const { primaryPassword, secondaryPassword } = req.body;
         const username = req.user.username;
 
+        console.log('Join room request:', {
+            roomCode,
+            username,
+            primaryPassword: primaryPassword ? '[PROVIDED]' : '[MISSING]',
+            secondaryPassword: secondaryPassword ? '[PROVIDED]' : '[MISSING]'
+        });
+
         // Find room
         const room = await Room.findOne({ roomCode, isActive: true });
         if (!room) {
+            console.log('Room not found:', roomCode);
             return res.status(404).json({ 
                 success: false, 
                 message: 'Room not found or not active' 
             });
         }
+
+        console.log('Room found:', {
+            roomCode: room.roomCode,
+            name: room.name,
+            owner: room.owner,
+            primaryPassword: room.primaryPassword ? '[SET]' : '[MISSING]',
+            secondaryPassword: room.secondaryPassword ? '[SET]' : '[MISSING]'
+        });
 
         // Check if user is already a member
         if (room.members.find(member => member.username === username)) {
@@ -319,7 +348,14 @@ router.post('/:roomCode/join', authenticateToken, async (req, res) => {
         }
 
         // Validate passwords
+        console.log('Password validation:', {
+            provided: primaryPassword,
+            expected: room.primaryPassword,
+            match: primaryPassword === room.primaryPassword
+        });
+
         if (primaryPassword !== room.primaryPassword) {
+            console.log('Primary password mismatch');
             return res.status(401).json({ 
                 success: false, 
                 message: 'Invalid primary password' 
@@ -327,6 +363,7 @@ router.post('/:roomCode/join', authenticateToken, async (req, res) => {
         }
 
         if (room.secondaryPassword && secondaryPassword !== room.secondaryPassword) {
+            console.log('Secondary password mismatch');
             return res.status(401).json({ 
                 success: false, 
                 message: 'Invalid secondary password' 
@@ -384,6 +421,8 @@ router.post('/:roomCode/join', authenticateToken, async (req, res) => {
         room.addMember(username);
         await room.save();
 
+        console.log('User successfully joined room:', username);
+
         res.json({
             success: true,
             message: 'Successfully joined the room',
@@ -407,13 +446,12 @@ router.post('/:roomCode/join', authenticateToken, async (req, res) => {
 });
 
 // Export chat history as PDF
-router.get('/:roomCode/export', authenticateToken, async (req, res) => {
+router.get('/:roomCode/export', async (req, res) => {
     try {
         const { roomCode } = req.params;
         const { format } = req.query; // 'download' or 'base64'
-        const username = req.user.username;
-
-        // Find room and check membership
+        
+        // Find room
         const room = await Room.findOne({ roomCode });
         if (!room) {
             return res.status(404).json({ 
@@ -422,8 +460,45 @@ router.get('/:roomCode/export', authenticateToken, async (req, res) => {
             });
         }
 
-        const isMember = room.members.find(member => member.username === username);
-        if (!isMember) {
+        // Fetch messages for this room
+        const messages = await Message.find({ 
+            roomId: room._id, 
+            isDeleted: false 
+        }).sort({ timestamp: 1 }).lean();
+
+        // Check if user has access to the room
+        let hasAccess = false;
+        
+        if (room.isDemoRoom) {
+            // Demo rooms allow anyone to export
+            hasAccess = true;
+        } else {
+            // Regular rooms require authentication and membership
+            const authHeader = req.headers['authorization'];
+            const token = authHeader && authHeader.split(' ')[1];
+            
+            if (!token) {
+                return res.status(401).json({ 
+                    success: false, 
+                    message: 'Access token required for non-demo rooms' 
+                });
+            }
+            
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                const isMember = room.members.find(member => member.username === decoded.username);
+                if (isMember) {
+                    hasAccess = true;
+                }
+            } catch (err) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'Invalid or expired token' 
+                });
+            }
+        }
+        
+        if (!hasAccess) {
             return res.status(403).json({ 
                 success: false, 
                 message: 'You must be a member to export chat history' 
@@ -434,41 +509,53 @@ router.get('/:roomCode/export', authenticateToken, async (req, res) => {
         const doc = new PDFDocument();
         const filename = `${roomCode}_chat_export_${Date.now()}.pdf`;
 
-        // Ensure temp directory exists
-        const tempDir = path.join(__dirname, '../temp');
-        if (!fs.existsSync(tempDir)) {
-            fs.mkdirSync(tempDir, { recursive: true });
-        }
-        
-        const filepath = path.join(tempDir, filename);
-
-        // PDF content generation (before piping to output)
+        // PDF content generation
         doc.fontSize(20).text('AetherMeet Chat Export', 100, 100);
         doc.fontSize(14).text(`Room: ${room.name} (${room.roomCode})`, 100, 140);
-        doc.text(`Export Date: ${new Date().toLocaleString()}`, 100, 160);
-        doc.text(`Total Messages: ${room.messages.length}`, 100, 180);
+        if (room.isDemoRoom) {
+            doc.text(`Room Type: Demo Room`, 100, 160);
+            doc.text(`Export Date: ${new Date().toLocaleString()}`, 100, 180);
+            doc.text(`Total Messages: ${messages.length}`, 100, 200);
+        } else {
+            doc.text(`Export Date: ${new Date().toLocaleString()}`, 100, 160);
+            doc.text(`Total Messages: ${messages.length}`, 100, 180);
+        }
 
-        let yPosition = 220;
+        let yPosition = room.isDemoRoom ? 240 : 220;
         doc.fontSize(12);
 
-        if (room.messages.length === 0) {
+        if (messages.length === 0) {
             doc.text('No messages in this room yet.', 100, yPosition);
         } else {
-            room.messages.forEach((message, index) => {
+            messages.forEach((message, index) => {
                 if (yPosition > 700) {
                     doc.addPage();
                     yPosition = 100;
                 }
 
                 const timestamp = new Date(message.timestamp).toLocaleString();
-                const messageContent = message.content || message.message || '[Media file]';
+                let messageContent = '';
+                
+                // Handle different message types
+                if (message.messageType === 'text') {
+                    messageContent = message.content || '[No content]';
+                } else if (message.messageType === 'system') {
+                    messageContent = message.content || '[System message]';
+                } else {
+                    // Media files
+                    messageContent = message.mediaName ? 
+                        `[${message.messageType.toUpperCase()}: ${message.mediaName}]` : 
+                        `[${message.messageType.toUpperCase()} file]`;
+                }
+                
                 doc.text(`[${timestamp}] ${message.username}: ${messageContent}`, 100, yPosition);
                 yPosition += 20;
             });
         }
 
-        // For base64 format, collect chunks instead of writing to file
+        // Handle different response formats
         if (format === 'base64') {
+            // Collect PDF data as base64
             const chunks = [];
             
             doc.on('data', (chunk) => {
@@ -489,33 +576,20 @@ router.get('/:roomCode/export', authenticateToken, async (req, res) => {
             
             doc.end();
         } else {
-            // Original file download behavior
-            const stream = fs.createWriteStream(filepath);
-            doc.pipe(stream);
+            // Default: stream PDF directly to response for download
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
             
-            // Handle stream finish event for file download
+            doc.pipe(res);
             doc.end();
-            
-            stream.on('finish', () => {
-                res.download(filepath, filename, (err) => {
-                    if (err) {
-                        console.error('Error sending file:', err);
-                    }
-                    // Clean up temporary file
-                    fs.unlink(filepath, (unlinkErr) => {
-                        if (unlinkErr) {
-                            console.error('Error deleting temporary file:', unlinkErr);
-                        }
-                    });
-                });
-            });
         }
 
     } catch (error) {
         console.error('PDF export error:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({ 
             success: false, 
-            message: 'Internal server error' 
+            message: 'Internal server error: ' + error.message 
         });
     }
 });

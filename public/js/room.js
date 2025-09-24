@@ -99,7 +99,10 @@ socket.on('disconnect', () => {
 
 socket.on('roomJoined', (roomInfo) => {
     currentRoom = roomInfo;
-    isOwner = roomInfo.owner === user.username;
+    
+    // Get the current user (demo or authenticated)
+    const currentUser = isDemoRoom ? JSON.parse(localStorage.getItem('demoUser') || '{}') : user;
+    isOwner = roomInfo.owner === currentUser.username;
     
     // Update room info
     roomName.textContent = roomInfo.name;
@@ -111,9 +114,13 @@ socket.on('roomJoined', (roomInfo) => {
     // Update members list
     updateMembersList(roomInfo.members);
     
-    // Show/hide owner controls
-    if (isOwner) {
+    // Update leave button text based on room type
+    if (isDemoRoom) {
+        leaveRoomBtn.textContent = 'Leave Demo Room';
+    } else if (isOwner) {
         leaveRoomBtn.textContent = 'Leave Room (Owner)';
+    } else {
+        leaveRoomBtn.textContent = 'Leave Room';
     }
 });
 
@@ -164,9 +171,14 @@ socket.on('userRemoved', (data) => {
 });
 
 socket.on('removedFromRoom', (data) => {
-    if (data.username === user.username) {
+    const currentUser = isDemoRoom ? JSON.parse(localStorage.getItem('demoUser') || '{}') : user;
+    if (data.username === currentUser.username) {
         alert(`You have been removed from the room by ${data.removedBy}`);
-        window.location.href = '/dashboard';
+        if (isDemoRoom) {
+            window.location.href = '/';
+        } else {
+            window.location.href = '/dashboard';
+        }
     }
 });
 
@@ -214,8 +226,12 @@ socket.on('roomDestroyed', (data) => {
     displaySystemMessage(`Room destroyed: ${data.reason}`);
     setTimeout(() => {
         alert(`Room has been destroyed: ${data.reason}`);
-        window.location.href = '/dashboard';
+        window.location.href = isDemoRoom ? '/' : '/dashboard';
     }, 2000);
+});
+
+socket.on('roomEmpty', (data) => {
+    displaySystemMessage(`Room is now empty but remains active. You can invite others to rejoin.`);
 });
 
 socket.on('admissionResult', (data) => {
@@ -263,8 +279,18 @@ cancelRecording.addEventListener('click', cancelAudioRecording);
 
 // Share link event listeners
 shareLinkBtn.addEventListener('click', showShareLink);
-document.getElementById('copyLinkBtn').addEventListener('click', copyShareLink);
-document.getElementById('copyCodeBtn').addEventListener('click', copyRoomCode);
+
+// Use more specific selectors to avoid ID conflicts
+document.addEventListener('click', (e) => {
+    // Handle copy link button in share modal
+    if (e.target.id === 'copyLinkBtn' && e.target.closest('#shareLinkModal')) {
+        copyShareLink();
+    }
+    // Handle copy code button in share modal  
+    if (e.target.id === 'copyCodeBtn' && e.target.closest('#shareLinkModal')) {
+        copyRoomCode();
+    }
+});
 
 // Modal helper functions
 function showModal(modal) {
@@ -289,19 +315,54 @@ function showShareLink() {
 
 function copyShareLink() {
     const shareLink = document.getElementById('shareLink').textContent;
-    navigator.clipboard.writeText(shareLink).then(() => {
-        showNotification('✅ Share link copied to clipboard!');
-    }).catch(() => {
-        showError('Failed to copy link');
-    });
+    
+    // Try modern clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(shareLink).then(() => {
+            showNotification('✅ Share link copied to clipboard!');
+        }).catch(() => {
+            fallbackCopyTextToClipboard(shareLink, 'share link');
+        });
+    } else {
+        fallbackCopyTextToClipboard(shareLink, 'share link');
+    }
 }
 
 function copyRoomCode() {
-    navigator.clipboard.writeText(roomCode).then(() => {
-        showNotification('✅ Room code copied to clipboard!');
-    }).catch(() => {
-        showError('Failed to copy room code');
-    });
+    // Try modern clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(roomCode).then(() => {
+            showNotification('✅ Room code copied to clipboard!');
+        }).catch(() => {
+            fallbackCopyTextToClipboard(roomCode, 'room code');
+        });
+    } else {
+        fallbackCopyTextToClipboard(roomCode, 'room code');
+    }
+}
+
+function fallbackCopyTextToClipboard(text, itemName) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showNotification(`✅ ${itemName.charAt(0).toUpperCase() + itemName.slice(1)} copied to clipboard!`);
+        } else {
+            showError(`Failed to copy ${itemName}`);
+        }
+    } catch (err) {
+        showError(`Failed to copy ${itemName}`);
+    }
+    
+    document.body.removeChild(textArea);
 }
 
 function showNotification(message) {
@@ -582,11 +643,18 @@ exportPdfBtn.addEventListener('click', async () => {
 
 async function downloadPdf() {
     try {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        // Only add authorization header for authenticated users
+        if (!isDemoRoom && token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         const response = await fetch(`/api/rooms/${roomCode}/export`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            headers: headers
         });
         
         if (response.ok) {
@@ -599,23 +667,31 @@ async function downloadPdf() {
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
+            showNotification('✅ PDF exported successfully!');
         } else {
             const data = await response.json();
-            alert(`Failed to export PDF: ${data.message}`);
+            showError(`Failed to export PDF: ${data.message}`);
         }
     } catch (error) {
         console.error('PDF export error:', error);
-        alert('Failed to export PDF. Please try again.');
+        showError('Failed to export PDF. Please try again.');
     }
 }
 
 async function savePdfToNotes() {
     try {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        // Only add authorization header for authenticated users
+        if (!isDemoRoom && token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         const response = await fetch(`/api/rooms/${roomCode}/export?format=base64`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            headers: headers
         });
         
         if (response.ok) {
@@ -633,30 +709,49 @@ async function savePdfToNotes() {
                     window.location.href = notesUrl;
                 }
             } else {
-                alert(`Failed to prepare PDF for notes: ${data.message}`);
+                showError(`Failed to prepare PDF for notes: ${data.message}`);
             }
         } else {
             const data = await response.json();
-            alert(`Failed to export PDF: ${data.message}`);
+            showError(`Failed to export PDF: ${data.message}`);
         }
     } catch (error) {
         console.error('PDF save to notes error:', error);
-        alert('Failed to prepare PDF for notes. Please try again.');
+        showError('Failed to prepare PDF for notes. Please try again.');
     }
 }
 
 // Leave room
 leaveRoomBtn.addEventListener('click', () => {
-    if (isOwner) {
+    if (isDemoRoom) {
+        // Demo rooms: simple confirmation
+        if (confirm('Are you sure you want to leave the demo room? Demo rooms are destroyed when the last member leaves.')) {
+            socket.emit('leaveRoom', 'leave');
+            // Show immediate feedback
+            showNotification('Leaving demo room...');
+            // Redirect after a short delay to allow socket processing
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        }
+    } else if (isOwner) {
+        // Authenticated rooms: show owner options
         showModal(leaveRoomModal);
     } else {
+        // Regular authenticated user
         if (confirm('Are you sure you want to leave the room?')) {
             socket.emit('leaveRoom', 'leave');
+            // Show immediate feedback
+            showNotification('Leaving room...');
+            // Redirect after a short delay to allow socket processing
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1000);
         }
     }
 });
 
-// Owner leave options
+// Owner leave options (only for authenticated rooms)
 document.getElementById('destroyRoomBtn').addEventListener('click', () => {
     if (confirm('Are you sure you want to end the room for everyone? This cannot be undone.')) {
         socket.emit('leaveRoom', 'destroy');

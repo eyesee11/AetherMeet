@@ -17,6 +17,34 @@ body {
     background-color: #ffffff;
     color: #000000;
     line-height: 1.5;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark theme styles */
+body.dark {
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+}
+
+body.dark * {
+    color: #ffffff !important;
+}
+
+body.dark .bg-white {
+    background-color: #374151 !important;
+}
+
+body.dark .bg-yellow-400 {
+    background-color: #eab308 !important;
+    color: #000000 !important;
+}
+
+body.dark .border-black {
+    border-color: #ffffff !important;
+}
+
+body.dark .text-black {
+    color: #ffffff !important;
 }
 
 /* Custom Components */

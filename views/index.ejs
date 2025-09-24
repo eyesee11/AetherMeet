@@ -56,15 +56,26 @@
         .dark .bg-gray-100 { background-color: #3a3a3a !important; }
         .dark .bg-gray-200 { background-color: #4a4a4a !important; }
         .dark .bg-gray-50 { background-color: #2a2a2a !important; }
+        .dark .bg-yellow-50 { background-color: #4a4a2a !important; }
+        .dark .bg-blue-50 { background-color: #2a2a4a !important; }
         .dark .bg-yellow-100 { background-color: #4a4a2a !important; }
         .dark .bg-red-100 { background-color: #4a2a2a !important; }
         .dark .bg-green-100 { background-color: #2a4a2a !important; }
+        .dark .bg-red-50 { background-color: #4a2a2a !important; }
         .dark .text-black { color: #ffffff !important; }
         .dark .text-gray-600 { color: #cccccc !important; }
         .dark .text-gray-500 { color: #aaaaaa !important; }
+        .dark .text-gray-700 { color: #dddddd !important; }
+        .dark .text-gray-800 { color: #ffffff !important; }
+        .dark .text-red-700 { color: #ff9999 !important; }
+        .dark .text-red-800 { color: #ffaaaa !important; }
         .dark .border-black { border-color: #ffffff !important; }
         .dark .border-gray-400 { border-color: #666666 !important; }
+        .dark .border-red-500 { border-color: #ff6666 !important; }
         .dark #themeToggle { background-color: #2a2a2a !important; color: #ffffff !important; border-color: #ffffff !important; }
+        .dark #languageToggle { background-color: #2a2a2a !important; color: #ffffff !important; border-color: #ffffff !important; }
+        .dark #languageDropdown { background-color: #2a2a2a !important; color: #ffffff !important; border-color: #ffffff !important; box-shadow: 4px 4px 0px 0px #ffffff !important; }
+        .dark .language-option:hover { background-color: #3a3a3a !important; }
         .dark .btn-brutal { box-shadow: 4px 4px 0px 0px #ffffff !important; }
         .dark .btn-brutal:hover { box-shadow: 2px 2px 0px 0px #ffffff !important; }
         .dark .card-brutal { box-shadow: 8px 8px 0px 0px #ffffff !important; }
@@ -72,13 +83,33 @@
     </style>
 </head>
 <body class="bg-white text-black font-sans min-h-screen transition-colors duration-300">
-    <!-- Theme Toggle -->
-    <div class="fixed top-4 right-4 z-50">
+    <!-- Theme Toggle & Language Selector -->
+    <div class="fixed top-4 right-4 z-50 flex gap-2">
         <button id="themeToggle" class="btn-brutal px-4 py-2 bg-white border-2 border-black font-bold uppercase tracking-wide text-sm hover:bg-gray-100">
-            <span id="themeIcon">🌙</span>
+            <!-- <span id="themeIcon">🌙</span> -->
             <span id="themeText">DARK</span>
         </button>
+        <!-- <button id="languageToggle" class="btn-brutal px-4 py-2 bg-white border-2 border-black font-bold uppercase tracking-wide text-sm hover:bg-gray-100">
+            <span id="languageIcon">🌍</span>
+            <span id="languageText">EN</span>
+        </button> -->
     </div>
+    
+    <!-- Language Dropdown -->
+    <!-- <div id="languageDropdown" class="fixed top-16 right-4 z-50 bg-white border-2 border-black hidden" style="box-shadow: 4px 4px 0px 0px #000000;">
+        <div class="py-2">
+            <button class="language-option w-full px-4 py-2 text-left hover:bg-gray-100 font-mono text-sm" data-lang="en">🇺🇸 English</button>
+            <button class="language-option w-full px-4 py-2 text-left hover:bg-gray-100 font-mono text-sm" data-lang="es">🇪🇸 Español</button>
+            <button class="language-option w-full px-4 py-2 text-left hover:bg-gray-100 font-mono text-sm" data-lang="fr">🇫🇷 Français</button>
+            <button class="language-option w-full px-4 py-2 text-left hover:bg-gray-100 font-mono text-sm" data-lang="de">🇩🇪 Deutsch</button>
+            <button class="language-option w-full px-4 py-2 text-left hover:bg-gray-100 font-mono text-sm" data-lang="it">🇮🇹 Italiano</button>
+            <button class="language-option w-full px-4 py-2 text-left hover:bg-gray-100 font-mono text-sm" data-lang="pt">🇵🇹 Português</button>
+            <button class="language-option w-full px-4 py-2 text-left hover:bg-gray-100 font-mono text-sm" data-lang="ru">🇷🇺 Русский</button>
+            <button class="language-option w-full px-4 py-2 text-left hover:bg-gray-100 font-mono text-sm" data-lang="ja">🇯🇵 日本語</button>
+            <button class="language-option w-full px-4 py-2 text-left hover:bg-gray-100 font-mono text-sm" data-lang="ko">🇰🇷 한국어</button>
+            <button class="language-option w-full px-4 py-2 text-left hover:bg-gray-100 font-mono text-sm" data-lang="zh">🇨🇳 中文</button>
+        </div>
+    </div> -->
     <!-- Header -->
     <header class="bg-white border-b-4 border-black px-6 py-4">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
@@ -86,17 +117,17 @@
                 <div class="w-8 h-8 bg-black"></div>
                 <div>
                     <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight">AetherMeet</h1>
-                    <p class="text-sm text-gray-600 font-mono">Secure & Ephemeral Team Chat Rooms</p>
+                    <p class="text-sm text-gray-600 font-mono" data-i18n="common.tagline">Secure & Ephemeral Team Chat Rooms</p>
                 </div>
             </div>
             <div class="hidden md:flex items-center space-x-4">
-                <button id="tryDemoBtn" class="btn-brutal px-6 py-2 bg-yellow-400 text-black border-2 border-black font-bold uppercase tracking-wide text-sm">
+                <button id="tryDemoBtn" class="btn-brutal px-6 py-2 bg-yellow-400 text-black border-2 border-black font-bold uppercase tracking-wide text-sm" data-i18n="nav.tryDemo">
                     Try Demo
                 </button>
-                <button id="getStartedBtn" class="btn-brutal px-6 py-2 bg-blue-500 text-white border-2 border-black font-bold uppercase tracking-wide text-sm">
+                <button id="headerGetStartedBtn" class="btn-brutal px-6 py-2 bg-black text-white border-2 border-black font-bold uppercase tracking-wide" data-i18n="nav.getStarted">
                     Get Started
                 </button>
-                <button id="loginBtn" class="btn-brutal px-6 py-2 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-sm">
+                <button id="headerLoginBtn" class="btn-brutal px-6 py-2 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-sm" data-i18n="auth.signIn">
                     Sign In
                 </button>
             </div>
@@ -111,16 +142,23 @@
                 <span class="text-gray-600">(Scott McNealy)</span>
             </h2>
             <p class="text-lg md:text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
-                AetherMeet lets you create temporary, secure chat rooms with sensible passwords and democratic admission controls.
+                AetherMeet lets you create temporary, secure chat rooms with sensible passwords and democratic admission controls. <strong>Try it instantly - no signup required!</strong>
             </p>
             
             <div class="flex flex-col md:flex-row gap-6 justify-center items-center mb-16">
-                <button id="registerBtn" class="btn-brutal px-8 py-4 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
-                    Get Started
+                <!-- Primary CTA: Demo Room -->
+                <button id="demoBtn" class="btn-brutal px-12 py-3 bg-yellow-400 text-black border-2 border-black font-black uppercase tracking-wide text-lg" data-i18n="nav.startDemoRoom">
+                     Start Demo Room
                 </button>
-                <button id="loginBtn2" class="btn-brutal px-8 py-4 bg-white text-black border-2 border-black font-bold uppercase tracking-wide">
-                    Sign In
-                </button>
+                <!-- Secondary CTAs -->
+                <div class="flex gap-4">
+                    <button id="registerBtn" class="btn-brutal px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide" data-i18n="auth.signUp">
+                        Sign Up
+                    </button>
+                    <button id="loginBtn2" class="btn-brutal px-6 py-3 bg-white text-black border-2 border-black font-bold uppercase tracking-wide" data-i18n="auth.signIn">
+                        Sign In
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -165,6 +203,80 @@
                 </div>
             </div>
         </div>
+
+        <!-- Feature Comparison Section -->
+        <section class="mb-20">
+            <h3 class="text-3xl md:text-4xl font-black uppercase tracking-tight text-center mb-12">Choose Your Experience</h3>
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Demo Rooms -->
+                <div class="card-brutal bg-yellow-50 border-2 border-black p-8">
+                    <div class="text-center mb-6">
+                        <!-- <div class="text-4xl mb-4">🚀</div> -->
+                        <h4 class="text-2xl font-black uppercase tracking-wide mb-2">Demo Rooms</h4>
+                        <p class="text-gray-600 font-medium">Try instantly, no signup required</p>
+                    </div>
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center gap-3">
+                            <span class="text-green-600 font-bold">✓</span>
+                            <span class="font-mono text-sm">Real-time Chat</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-green-600 font-bold">✓</span>
+                            <span class="font-mono text-sm">Media Sharing</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-green-600 font-bold">✓</span>
+                            <span class="font-mono text-sm">Instant Access</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-orange-600 font-bold">✓</span>
+                            <span class="font-mono text-sm">Auto-destroy when empty</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-orange-600 font-bold">✓</span>
+                            <span class="font-mono text-sm">24-hour expiry</span>
+                        </div>
+                    </div>
+                    <button onclick="document.getElementById('demoBtn').click()" class="btn-brutal w-full px-6 py-3 bg-yellow-400 text-black border-2 border-black font-bold uppercase tracking-wide">
+                        Start Demo Now
+                    </button>
+                </div>
+
+                <!-- Authenticated Rooms -->
+                <div class="card-brutal bg-blue-50 border-2 border-black p-8">
+                    <div class="text-center mb-6">
+                        <!-- <div class="text-4xl mb-4">🔐</div> -->
+                        <h4 class="text-2xl font-black uppercase tracking-wide mb-2">Full Access</h4>
+                        <p class="text-gray-600 font-medium">Complete features with your account</p>
+                    </div>
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center gap-3">
+                            <span class="text-green-600 font-bold">✓</span>
+                            <span class="font-mono text-sm">All Demo Features</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-blue-600 font-bold">★</span>
+                            <span class="font-mono text-sm">Persistent Rooms</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-blue-600 font-bold">★</span>
+                            <span class="font-mono text-sm">Room Scheduling</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-blue-600 font-bold">★</span>
+                            <span class="font-mono text-sm">Advanced Moderation</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-blue-600 font-bold">★</span>
+                            <span class="font-mono text-sm">Owner Controls</span>
+                        </div>
+                    </div>
+                    <button onclick="document.getElementById('registerBtn').click()" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
+                        Sign Up Free
+                    </button>
+                </div>
+            </div>
+        </section>
 
         <!-- Features Grid -->
         <section class="mb-20">
@@ -373,7 +485,7 @@
             <!-- Bottom -->
             <div class="border-t border-gray-600 mt-8 pt-8 text-center">
                 <p class="text-gray-400 text-xs font-mono">
-                    © 2025 AetherMeet. Free forever. No cap. ▣
+                    © 2025 AetherMeet. Free forever. Made With All-Nighters. ▣
                 </p>
             </div>
         </div>
@@ -383,6 +495,7 @@
         // Pass pending room code to JavaScript
         window.pendingRoomCode = '<%= pendingRoomCode || "" %>';
     </script>
+    <script src="/js/i18n-frontend.js"></script>
     <script src="/js/auth.js"></script>
     <script>
         // Theme toggle functionality
@@ -396,7 +509,7 @@
         // Apply theme on page load
         if (currentTheme === 'dark') {
             document.documentElement.classList.add('dark');
-            themeIcon.textContent = '☀️';
+            //themeIcon.textContent = '☀️';
             themeText.textContent = 'LIGHT';
         }
         
@@ -407,33 +520,81 @@
             if (isDark) {
                 // Switch to light theme
                 document.documentElement.classList.remove('dark');
-                themeIcon.textContent = '🌙';
+              //  themeIcon.textContent = '🌙';
                 themeText.textContent = 'DARK';
                 localStorage.setItem('theme', 'light');
             } else {
                 // Switch to dark theme
                 document.documentElement.classList.add('dark');
-                themeIcon.textContent = '☀️';
+                //themeIcon.textContent = '☀️';
                 themeText.textContent = 'LIGHT';
                 localStorage.setItem('theme', 'dark');
             }
         });
 
-        // Footer button events
-        document.getElementById('footerLoginBtn').addEventListener('click', () => {
-            document.getElementById('loginBtn').click();
+        // Header button events
+        document.getElementById('headerGetStartedBtn')?.addEventListener('click', () => {
+            window.location.href = '/dashboard';
         });
-        document.getElementById('footerRegisterBtn').addEventListener('click', () => {
-            document.getElementById('registerBtn').click();
+        
+        document.getElementById('headerLoginBtn')?.addEventListener('click', () => {
+            // Use the login modal functionality from auth.js
+            const loginModal = document.getElementById('loginModal');
+            if (loginModal) {
+                loginModal.classList.remove('hidden');
+            }
         });
 
-        // Demo button functionality
-        document.getElementById('tryDemoBtn').addEventListener('click', async () => {
+        // Footer button events
+        document.getElementById('footerLoginBtn')?.addEventListener('click', () => {
+            const loginModal = document.getElementById('loginModal');
+            if (loginModal) {
+                loginModal.classList.remove('hidden');
+            }
+        });
+        
+        document.getElementById('footerRegisterBtn')?.addEventListener('click', () => {
+            const registerModal = document.getElementById('registerModal');
+            if (registerModal) {
+                registerModal.classList.remove('hidden');
+            }
+        });
+
+        // Hero section button events
+        document.getElementById('registerBtn')?.addEventListener('click', () => {
+            const registerModal = document.getElementById('registerModal');
+            if (registerModal) {
+                registerModal.classList.remove('hidden');
+            }
+        });
+        
+        document.getElementById('loginBtn2')?.addEventListener('click', () => {
+            const loginModal = document.getElementById('loginModal');
+            if (loginModal) {
+                loginModal.classList.remove('hidden');
+            }
+        });
+
+        // Primary Demo button functionality
+        document.getElementById('demoBtn')?.addEventListener('click', async () => {
+            await createDemoRoom(document.getElementById('demoBtn'));
+        });
+
+        // Demo button functionality (existing)
+        document.getElementById('tryDemoBtn')?.addEventListener('click', async () => {
+            await createDemoRoom(document.getElementById('tryDemoBtn'));
+        });
+
+        // Shared demo room creation function
+        async function createDemoRoom(button) {
             try {
                 // Disable button and show loading state
-                const button = document.getElementById('tryDemoBtn');
+                const originalText = button.textContent;
                 button.disabled = true;
-                button.textContent = 'Creating...';
+                
+                // Use translation if available, fallback to default
+                const creatingText = 'Creating...';
+                button.textContent = creatingText;
 
                 // Create demo room
                 const response = await fetch('/api/rooms/create-demo', {
@@ -449,18 +610,23 @@
                     // Redirect to the demo room
                     window.location.href = `/room/${data.roomCode}?demo=true`;
                 } else {
-                    alert('Failed to create demo room: ' + data.message);
+                    const errorMessage = window.i18n ? 
+                        window.i18n.translate('error.createDemoRoom') + ': ' + data.message :
+                        'Failed to create demo room: ' + data.message;
+                    alert(errorMessage);
                     button.disabled = false;
-                    button.textContent = 'Try Demo';
+                    button.textContent = originalText;
                 }
             } catch (error) {
-                console.error('Error creating demo room:', error);
-                alert('Failed to create demo room. Please try again.');
-                const button = document.getElementById('tryDemoBtn');
+                console.error('Demo room creation error:', error);
+                const errorMessage = window.i18n ? 
+                    window.i18n.translate('error.createDemoRoomGeneric') : 
+                    'Failed to create demo room. Please try again.';
+                alert(errorMessage);
                 button.disabled = false;
-                button.textContent = 'Try Demo';
+                button.textContent = originalText;
             }
-        });
+        }
 
         // Get Started button functionality
         document.getElementById('getStartedBtn').addEventListener('click', () => {

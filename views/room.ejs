@@ -100,14 +100,6 @@
     </style>
 </head>
 <body class="bg-white text-black font-sans h-screen flex flex-col transition-colors duration-300">
-    <!-- Theme Toggle -->
-    <div class="fixed top-4 right-4 z-50">
-        <button id="themeToggle" class="btn-brutal px-4 py-2 bg-white border-2 border-black font-bold uppercase tracking-wide text-sm hover:bg-gray-100">
-            <span id="themeIcon">🌙</span>
-            <span id="themeText">DARK</span>
-        </button>
-    </div>
-
     <!-- Room Header -->
     <header class="bg-white border-b-4 border-black px-6 py-4 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div class="flex-1">
@@ -285,8 +277,8 @@
                 <div>
                     <label class="block text-sm font-bold mb-2">Room Code:</label>
                     <div class="flex items-center">
-                        <input id="roomCodeInput" type="text" readonly class="flex-1 p-3 border-2 border-black font-mono bg-gray-50" value="<%= roomCode %>">
-                        <button id="copyCodeBtn" class="ml-2 px-4 py-3 bg-yellow-400 border-2 border-black font-bold text-sm">
+                        <input id="demoRoomCodeInput" type="text" readonly class="flex-1 p-3 border-2 border-black font-mono bg-gray-50" value="<%= roomCode %>">
+                        <button id="demoCopyCodeBtn" class="ml-2 px-4 py-3 bg-yellow-400 border-2 border-black font-bold text-sm">
                             COPY
                         </button>
                     </div>
@@ -295,8 +287,8 @@
                 <div>
                     <label class="block text-sm font-bold mb-2">Share Link:</label>
                     <div class="flex items-center">
-                        <input id="shareLinkInput" type="text" readonly class="flex-1 p-3 border-2 border-black font-mono bg-gray-50 text-xs">
-                        <button id="copyLinkBtn" class="ml-2 px-4 py-3 bg-blue-500 text-white border-2 border-black font-bold text-sm">
+                        <input id="demoShareLinkInput" type="text" readonly class="flex-1 p-3 border-2 border-black font-mono bg-gray-50 text-xs">
+                        <button id="demoCopyLinkBtn" class="ml-2 px-4 py-3 bg-blue-500 text-white border-2 border-black font-bold text-sm">
                             COPY
                         </button>
                     </div>
@@ -322,39 +314,13 @@
     </script>
     <script src="/js/room.js"></script>
     <script>
-        // Theme toggle functionality
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const themeText = document.getElementById('themeText');
-        
-        // Check for saved theme preference or default to light
+        // Apply theme from landing page preference (no toggle in room)
         const currentTheme = localStorage.getItem('theme') || 'light';
         
         // Apply theme on page load
         if (currentTheme === 'dark') {
             document.documentElement.classList.add('dark');
-            themeIcon.textContent = '☀️';
-            themeText.textContent = 'LIGHT';
         }
-        
-        // Theme toggle event listener
-        themeToggle.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.contains('dark');
-            
-            if (isDark) {
-                // Switch to light theme
-                document.documentElement.classList.remove('dark');
-                themeIcon.textContent = '🌙';
-                themeText.textContent = 'DARK';
-                localStorage.setItem('theme', 'light');
-            } else {
-                // Switch to dark theme
-                document.documentElement.classList.add('dark');
-                themeIcon.textContent = '☀️';
-                themeText.textContent = 'LIGHT';
-                localStorage.setItem('theme', 'dark');
-            }
-        });
 
         // Demo room functionality
         const isDemo = new URLSearchParams(window.location.search).get('demo') === 'true';
@@ -363,46 +329,68 @@
             // Show demo share modal
             const modal = document.getElementById('demoShareModal');
             const shareLink = window.location.origin + window.location.pathname + '?demo=true';
-            document.getElementById('shareLinkInput').value = shareLink;
+            document.getElementById('demoShareLinkInput').value = shareLink;
             modal.classList.remove('hidden');
         }
 
         // Copy functionality
-        document.getElementById('copyCodeBtn').addEventListener('click', () => {
-            const input = document.getElementById('roomCodeInput');
-            input.select();
-            document.execCommand('copy');
+        document.getElementById('demoCopyCodeBtn').addEventListener('click', () => {
+            const input = document.getElementById('demoRoomCodeInput');
+            const code = input.value;
             
-            const btn = document.getElementById('copyCodeBtn');
-            const originalText = btn.textContent;
-            btn.textContent = 'COPIED!';
-            btn.classList.add('bg-green-500');
-            btn.classList.remove('bg-yellow-400');
-            
-            setTimeout(() => {
-                btn.textContent = originalText;
-                btn.classList.remove('bg-green-500');
-                btn.classList.add('bg-yellow-400');
-            }, 2000);
+            // Try modern clipboard API first
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(() => {
+                    updateButtonSuccess('demoCopyCodeBtn', 'bg-yellow-400', 'bg-green-500');
+                }).catch(() => {
+                    fallbackCopy(input, 'demoCopyCodeBtn', 'bg-yellow-400', 'bg-green-500');
+                });
+            } else {
+                fallbackCopy(input, 'demoCopyCodeBtn', 'bg-yellow-400', 'bg-green-500');
+            }
         });
 
-        document.getElementById('copyLinkBtn').addEventListener('click', () => {
-            const input = document.getElementById('shareLinkInput');
-            input.select();
-            document.execCommand('copy');
+        document.getElementById('demoCopyLinkBtn').addEventListener('click', () => {
+            const input = document.getElementById('demoShareLinkInput');
+            const link = input.value;
             
-            const btn = document.getElementById('copyLinkBtn');
+            // Try modern clipboard API first
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(link).then(() => {
+                    updateButtonSuccess('demoCopyLinkBtn', 'bg-blue-500', 'bg-green-500');
+                }).catch(() => {
+                    fallbackCopy(input, 'demoCopyLinkBtn', 'bg-blue-500', 'bg-green-500');
+                });
+            } else {
+                fallbackCopy(input, 'demoCopyLinkBtn', 'bg-blue-500', 'bg-green-500');
+            }
+        });
+        
+        function fallbackCopy(input, btnId, originalClass, successClass) {
+            input.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    updateButtonSuccess(btnId, originalClass, successClass);
+                }
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+            }
+        }
+        
+        function updateButtonSuccess(btnId, originalClass, successClass) {
+            const btn = document.getElementById(btnId);
             const originalText = btn.textContent;
             btn.textContent = 'COPIED!';
-            btn.classList.add('bg-green-500');
-            btn.classList.remove('bg-blue-500');
+            btn.classList.add(successClass);
+            btn.classList.remove(originalClass);
             
             setTimeout(() => {
                 btn.textContent = originalText;
-                btn.classList.remove('bg-green-500');
-                btn.classList.add('bg-blue-500');
+                btn.classList.remove(successClass);
+                btn.classList.add(originalClass);
             }, 2000);
-        });
+        }
 
         document.getElementById('closeDemoModal').addEventListener('click', () => {
             document.getElementById('demoShareModal').classList.add('hidden');
