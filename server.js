@@ -70,6 +70,28 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aethermeet'
     console.error('MongoDB connection error:', err);
 });
 
+// Health check endpoint for production monitoring
+app.get('/api/health', (req, res) => {
+    const healthCheck = {
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString(),
+        status: 'OK',
+        memory: process.memoryUsage(),
+        version: require('./package.json').version
+    };
+    
+    // Check database connection
+    if (mongoose.connection.readyState === 1) {
+        healthCheck.database = 'Connected';
+    } else {
+        healthCheck.database = 'Disconnected';
+        healthCheck.status = 'ERROR';
+    }
+    
+    const statusCode = healthCheck.status === 'OK' ? 200 : 503;
+    res.status(statusCode).json(healthCheck);
+});
+
 // Routes with rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/rooms', roomRoutes(io)); // Pass io instance to room routes
