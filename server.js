@@ -143,18 +143,14 @@ app.get('/join/:roomCode', (req, res) => {
     const token = req.cookies.token;
     
     if (!token) {
-        // Store room code in session and redirect to login
         req.session.pendingRoomCode = roomCode.toUpperCase();
         return res.redirect('/');
     }
     
     try {
-        // Verify token
         jwt.verify(token, process.env.JWT_SECRET);
-        // User is authenticated, redirect to dashboard with room code
         res.redirect(`/dashboard?roomCode=${roomCode.toUpperCase()}`);
     } catch (error) {
-        // Invalid token, store room code and redirect to login
         req.session.pendingRoomCode = roomCode.toUpperCase();
         res.redirect('/');
     }
