@@ -66,8 +66,15 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aethermeet'
     bufferCommands: false // Disable mongoose buffering
 }).then(() => {
     console.log('Connected to MongoDB');
+    // Start server only after DB is ready
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, () => {
+        console.log(`AetherMeet server running on port ${PORT}`);
+        console.log(`🧹 Memory management active - cleanup every 30 minutes`);
+    });
 }).catch(err => {
     console.error('MongoDB connection error:', err);
+    process.exit(1);
 });
 
 // Health check endpoint for production monitoring
@@ -203,11 +210,6 @@ process.on('SIGINT', () => {
     });
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-    console.log(`AetherMeet server running on port ${PORT}`);
-    console.log(`🧹 Memory management active - cleanup every 30 minutes`);
-});
+
 
 module.exports = app;
