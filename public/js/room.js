@@ -290,6 +290,26 @@ document.addEventListener('click', (e) => {
     if (e.target.id === 'copyCodeBtn' && e.target.closest('#shareLinkModal')) {
         copyRoomCode();
     }
+    
+    // Handle admission buttons (owner approval)
+    if (e.target.classList.contains('admission-btn')) {
+        e.preventDefault();
+        const username = e.target.dataset.username;
+        const decision = e.target.dataset.decision;
+        if (username && decision) {
+            approveAdmission(username, decision);
+        }
+    }
+    
+    // Handle vote buttons (democratic voting)
+    if (e.target.classList.contains('vote-btn')) {
+        e.preventDefault();
+        const username = e.target.dataset.username;
+        const decision = e.target.dataset.decision;
+        if (username && decision) {
+            castVote(username, decision);
+        }
+    }
 });
 
 // Modal helper functions
@@ -942,27 +962,30 @@ function updatePendingAdmissions(pending) {
 }
 
 function getAdmissionActions(member) {
+    // Get current user properly for both demo and auth modes
+    const currentUser = isDemoRoom ? JSON.parse(localStorage.getItem('demoUser') || '{}') : user;
+    
     if (currentRoom.admissionType === 'owner_approval' && isOwner) {
         return `
-            <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide mr-2" 
+            <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide mr-2 admission-btn" 
                     style="box-shadow: 1px 1px 0px 0px #000000;" 
-                    onclick="approveAdmission('${member.username}', 'admit')">Admit</button>
-            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide" 
+                    data-username="${member.username}" data-decision="admit">Admit</button>
+            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide admission-btn" 
                     style="box-shadow: 1px 1px 0px 0px #000000;" 
-                    onclick="approveAdmission('${member.username}', 'deny')">Deny</button>
+                    data-username="${member.username}" data-decision="deny">Deny</button>
         `;
     } else if (currentRoom.admissionType === 'democratic_voting') {
-        const hasVoted = member.votes && member.votes.some(vote => vote.voter === user.username);
+        const hasVoted = member.votes && member.votes.some(vote => vote.voter === currentUser.username);
         if (hasVoted) {
             return '<div class="text-xs font-mono text-gray-600">You have voted</div>';
         }
         return `
-            <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide mr-2" 
+            <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide mr-2 vote-btn" 
                     style="box-shadow: 1px 1px 0px 0px #000000;" 
-                    onclick="castVote('${member.username}', 'admit')">Vote Admit</button>
-            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide" 
+                    data-username="${member.username}" data-decision="admit">Vote Admit</button>
+            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide vote-btn" 
                     style="box-shadow: 1px 1px 0px 0px #000000;" 
-                    onclick="castVote('${member.username}', 'deny')">Vote Deny</button>
+                    data-username="${member.username}" data-decision="deny">Vote Deny</button>
         `;
     }
     return '';
@@ -985,6 +1008,12 @@ function showAdmissionRequest(data) {
 // Global functions for admission actions
 window.approveAdmission = async function(username, decision) {
     try {
+        // Don't allow admission actions in demo rooms
+        if (isDemoRoom) {
+            displaySystemMessage('Admission control not available in demo rooms');
+            return;
+        }
+
         const response = await fetch(`/api/rooms/${roomCode}/admission/${username}`, {
             method: 'POST',
             headers: {
@@ -1009,6 +1038,12 @@ window.approveAdmission = async function(username, decision) {
         displaySystemMessage('Failed to process admission decision');
     }
     closeModal(admissionModal);
+};
+
+// Global function for voting in democratic rooms
+window.castVote = async function(username, decision) {
+    // castVote is the same as approveAdmission for democratic voting
+    return window.approveAdmission(username, decision);
 };
 
 // Remove user from room (owner only)
@@ -1037,34 +1072,6 @@ window.removeUser = async function(username) {
         console.error('Remove user error:', error);
         displaySystemMessage('Failed to remove user from room');
     }
-};
-
-window.castVote = async function(username, decision) {
-    try {
-        const response = await fetch(`/api/rooms/${roomCode}/admission/${username}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ decision })
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-            displaySystemMessage(data.message);
-            if (data.voteResult) {
-                displaySystemMessage(`Vote count: ${data.voteResult.admit} admit, ${data.voteResult.deny} deny (${data.voteResult.required} required)`);
-            }
-        } else {
-            displaySystemMessage(`Error: ${data.message}`);
-        }
-    } catch (error) {
-        console.error('Vote error:', error);
-        displaySystemMessage('Failed to cast vote');
-    }
-    closeModal(admissionModal);
 };
 
 function scrollToBottom() {

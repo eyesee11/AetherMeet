@@ -9,6 +9,39 @@ if (!token) {
     window.location.href = '/';
 }
 
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Socket.IO connection for real-time admission notifications
+    const socket = io({
+        auth: {
+            token: token
+        }
+    });
+
+    // Handle socket connection events
+    socket.on('connect', () => {
+        console.log('Connected to server for admission notifications');
+    });
+
+    socket.on('admissionResult', (data) => {
+        if (data.username === user.username) {
+            if (data.result === 'admitted') {
+                hideJoinPendingStatus();
+                showNotification('✅ You have been admitted to the room!', 'success');
+                setTimeout(() => {
+                    window.location.href = `/room/${data.roomCode}`;
+                }, 1500);
+            } else if (data.result === 'denied') {
+                hideJoinPendingStatus();
+                showNotification('❌ Your admission request was denied.', 'error');
+            }
+        }
+    });
+
+    socket.on('error', (data) => {
+        console.error('Socket error:', data);
+    });
+
 // DOM Elements
 const welcomeUser = document.getElementById('welcomeUser');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -280,7 +313,7 @@ joinRoomPasswordForm.addEventListener('submit', async (e) => {
                 window.location.href = `/room/${roomCode}`;
             } else if (data.status === 'pending') {
                 closeModal(joinRoomModal);
-                alert(data.message);
+                showJoinPendingStatus(roomCode, data.message);
             }
         } else {
             showError(joinRoomError, data.message);
@@ -317,3 +350,74 @@ function showError(errorElement, message) {
     errorElement.textContent = message;
     errorElement.classList.remove('hidden');
 }
+
+// Show pending join status
+function showJoinPendingStatus(roomCode, message) {
+    // Create or update pending status element
+    let pendingElement = document.getElementById('joinPendingStatus');
+    if (!pendingElement) {
+        pendingElement = document.createElement('div');
+        pendingElement.id = 'joinPendingStatus';
+        pendingElement.className = 'fixed top-4 right-4 bg-yellow-100 border-2 border-yellow-600 p-4 z-50';
+        pendingElement.style.cssText = 'box-shadow: 4px 4px 0px 0px #d97706; max-width: 300px;';
+        document.body.appendChild(pendingElement);
+    }
+    
+    pendingElement.innerHTML = `
+        <div class="flex items-center justify-between">
+            <div>
+                <h4 class="font-bold text-sm uppercase tracking-wide text-yellow-800">Join Request Pending</h4>
+                <p class="text-xs text-yellow-700 font-mono mt-1">Room: ${roomCode}</p>
+                <p class="text-xs text-yellow-700 mt-1">${message}</p>
+                <div class="flex items-center mt-2">
+                    <div class="animate-spin rounded-full h-3 w-3 border-2 border-yellow-600 border-t-transparent mr-2"></div>
+                    <span class="text-xs text-yellow-700">Waiting for approval...</span>
+                </div>
+            </div>
+            <button onclick="hideJoinPendingStatus()" class="ml-4 text-yellow-800 hover:text-yellow-900 font-bold">×</button>
+        </div>
+    `;
+    
+    pendingElement.classList.remove('hidden');
+}
+
+// Hide pending join status
+function hideJoinPendingStatus() {
+    const pendingElement = document.getElementById('joinPendingStatus');
+    if (pendingElement) {
+        pendingElement.remove();
+    }
+}
+
+// Global function for hiding pending status (called from onclick)
+window.hideJoinPendingStatus = hideJoinPendingStatus;
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 z-50 border-2 border-black font-bold text-sm uppercase tracking-wide transition-all duration-300`;
+    
+    if (type === 'success') {
+        notification.classList.add('bg-green-100', 'text-green-800', 'border-green-600');
+        notification.style.boxShadow = '4px 4px 0px 0px #16a34a';
+    } else if (type === 'error') {
+        notification.classList.add('bg-red-100', 'text-red-800', 'border-red-600');
+        notification.style.boxShadow = '4px 4px 0px 0px #dc2626';
+    } else {
+        notification.classList.add('bg-blue-100', 'text-blue-800', 'border-blue-600');
+        notification.style.boxShadow = '4px 4px 0px 0px #2563eb';
+    }
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Auto remove after 4 seconds
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.remove(), 300);
+    }, 4000);
+}
+
+// Closing brace for DOMContentLoaded event
+});

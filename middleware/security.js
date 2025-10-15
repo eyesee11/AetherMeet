@@ -108,6 +108,8 @@ const helmetConfig = helmet({
                 "'self'", 
                 "ws:", 
                 "wss:",
+                "ws://localhost:*",
+                "wss://localhost:*",
                 "https://fonts.googleapis.com",
                 "https://fonts.gstatic.com"
             ],

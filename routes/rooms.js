@@ -347,6 +347,17 @@ router.post('/:roomCode/join', authenticateToken, async (req, res) => {
             });
         }
 
+        // Check if user already has a pending admission request
+        const existingPendingRequest = room.pendingMembers.find(member => member.username === username);
+        if (existingPendingRequest) {
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Your admission request is already pending approval',
+                status: 'pending',
+                requestedAt: existingPendingRequest.requestedAt
+            });
+        }
+
         // Validate passwords
         console.log('Password validation:', {
             provided: primaryPassword,
@@ -370,15 +381,6 @@ router.post('/:roomCode/join', authenticateToken, async (req, res) => {
             });
         }
 
-        // Check if user is already pending admission
-        const pendingMember = room.pendingMembers.find(member => member.username === username);
-        if (pendingMember) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Your admission request is pending approval' 
-            });
-        }
-
         // If owner approval is required, add to pending members
         if (room.admissionType === 'owner_approval' && username !== room.owner) {
             room.pendingMembers.push({ username });
@@ -390,6 +392,9 @@ router.post('/:roomCode/join', authenticateToken, async (req, res) => {
                 requestedAt: new Date(),
                 admissionType: room.admissionType
             });
+
+            // Emit updated pending admissions list to room members
+            io.to(roomCode).emit('pendingAdmissions', room.pendingMembers);
 
             return res.json({
                 success: true,
@@ -409,6 +414,9 @@ router.post('/:roomCode/join', authenticateToken, async (req, res) => {
                 requestedAt: new Date(),
                 admissionType: room.admissionType
             });
+
+            // Emit updated pending admissions list to room members
+            io.to(roomCode).emit('pendingAdmissions', room.pendingMembers);
 
             return res.json({
                 success: true,
@@ -658,6 +666,9 @@ router.post('/:roomCode/admission/:username', authenticateToken, async (req, res
 
             await room.save();
 
+            // Emit updated pending admissions list to all room members
+            io.to(roomCode).emit('pendingAdmissions', room.pendingMembers);
+
             return res.json({
                 success: true,
                 message: `User ${decision === 'admit' ? 'admitted' : 'denied'}`
@@ -719,6 +730,9 @@ router.post('/:roomCode/admission/:username', authenticateToken, async (req, res
 
                 await room.save();
 
+                // Emit updated pending admissions list to all room members
+                io.to(roomCode).emit('pendingAdmissions', room.pendingMembers);
+
                 return res.json({
                     success: true,
                     message: `Voting complete. User ${finalDecision === 'admit' ? 'admitted' : 'denied'}`,
@@ -726,6 +740,9 @@ router.post('/:roomCode/admission/:username', authenticateToken, async (req, res
                     voteResult: { admit: admitVotes, deny: denyVotes, total: totalVotes }
                 });
             } else {
+                // Emit updated pending admissions list to all room members (shows vote progress)
+                io.to(roomCode).emit('pendingAdmissions', room.pendingMembers);
+                
                 // Update vote status for room members
                 io.to(roomCode).emit('voteUpdate', {
                     username: username,

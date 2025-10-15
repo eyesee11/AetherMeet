@@ -1,4 +1,3 @@
-
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -23,7 +22,12 @@ const memoryManager = require('./utils/memoryManager');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
 // Trust proxy - important for rate limiting to work correctly when behind reverse proxy or using ngrok
 app.set('trust proxy', 1);

@@ -297,6 +297,8 @@
         </div>
     </div>
 
+    <!-- Socket.IO for real-time admission notifications -->
+    <script src="/socket.io/socket.io.js"></script>
     <script src="/js/dashboard.js"></script>
     <script>
         // Auto-trigger room lookup if room code is pre-filled from share link
@@ -310,9 +312,6 @@
             }
         });
     </script>
-
-    <!-- Socket.IO for real-time admission notifications -->
-    <script src="/socket.io/socket.io.js"></script>
     <script>
         // Connect to socket for admission result notifications
         const token = localStorage.getItem('token');
