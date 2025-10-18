@@ -10,14 +10,14 @@ services:
     region: oregon # Choose: oregon, frankfurt, singapore, ohio
     buildCommand: npm install && npm run build
     startCommand: npm start
-
-    # Node version
-    nodeVersion: 20.18.0
-
     envVars:
       # Node Environment
       - key: NODE_ENV
         value: production
+
+      # Node.js version (Render uses this to determine which version to install)
+      - key: NODE_VERSION
+        value: 20.18.0
 
       # MongoDB Connection (use MongoDB Atlas free tier or Render's paid MongoDB)
       # Get free MongoDB Atlas: https://www.mongodb.com/cloud/atlas/register
