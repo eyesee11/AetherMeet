@@ -7,9 +7,9 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "build": "npm run build:prepare && npm run build:assets && npm run build:verify",
-    "build:prepare": "npm ci --production=false",
+    "build:prepare": "npm install --include=dev",
     "build:assets": "npm run build:css && npm run build:js",
-    "build:css": "npx tailwindcss -i ./client/src/styles/index.css -o ./public/css/compiled.css --minify",
+    "build:css": "node build-scripts/build-css.js",
     "build:js": "node build-scripts/compile-assets.js",
     "build:verify": "node build-scripts/verify-build.js",
     "prebuild": "npm run clean",
@@ -18,6 +18,7 @@
     "build:cleanup": "echo \"Build completed successfully\"",
     "build:prod": "NODE_ENV=production npm run build",
     "heroku-postbuild": "npm run build",
+    "render-postbuild": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -47,7 +48,7 @@
     "pdfkit": "^0.17.1",
     "socket.io": "^4.8.1",
     "word-exists": "^1.0.0",
-    "tailwindcss": "^4.1.13",
+    "tailwindcss": "^3.4.17",
     "postcss": "^8.4.47",
     "autoprefixer": "^10.4.20"
   },
@@ -55,7 +56,7 @@
     "nodemon": "^3.1.10"
   },
   "engines": {
-    "node": "20.18.x",
-    "npm": ">=10.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }
