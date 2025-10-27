@@ -404,7 +404,7 @@ function showNotification(message) {
 function sendMessage(content, type = 'text', mediaData = null) {
     const messageData = {
         content: content.trim(),
-        type,
+        messageType: type,
         timestamp: new Date()
     };
 
@@ -472,9 +472,9 @@ function uploadFile(file, messageType) {
     .then(data => {
         if (data.success) {
             const mediaData = {
-                url: data.mediaUrl,
-                name: data.mediaName,
-                size: data.mediaSize
+                url: data.media.url,
+                name: data.media.originalName,
+                size: data.media.size
             };
 
             // Send message with media
@@ -509,7 +509,9 @@ function uploadFile(file, messageType) {
 // Audio recording functions
 async function startAudioRecording() {
     try {
+        console.log('🎤 Starting audio recording...');
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log('✅ Microphone access granted');
         
         mediaRecorder = new MediaRecorder(stream);
         audioChunks = [];
@@ -517,11 +519,14 @@ async function startAudioRecording() {
         
         mediaRecorder.ondataavailable = (event) => {
             audioChunks.push(event.data);
+            console.log('📊 Audio data chunk received, size:', event.data.size);
         };
         
         mediaRecorder.onstop = () => {
+            console.log('⏹️ Recording stopped, processing audio...');
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
             const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
+            console.log('🎵 Audio blob created, size:', audioBlob.size, 'duration:', duration + 's');
             
             // Create audio file for upload
             const audioFile = new File([audioBlob], `audio-${Date.now()}.webm`, {
@@ -536,6 +541,7 @@ async function startAudioRecording() {
         };
         
         mediaRecorder.start();
+        console.log('🔴 Recording started');
         
         // Update UI
         audioRecordBtn.style.display = 'none';
@@ -546,7 +552,7 @@ async function startAudioRecording() {
         recordingInterval = setInterval(updateRecordingTime, 1000);
         
     } catch (error) {
-        console.error('Error starting recording:', error);
+        console.error('❌ Error starting recording:', error);
         showError('Failed to start recording. Please check microphone permissions.');
     }
 }
@@ -584,6 +590,8 @@ function updateRecordingTime() {
 }
 
 function uploadAudioFile(audioFile, duration) {
+    console.log('📤 Uploading audio file:', audioFile.name, 'size:', audioFile.size, 'duration:', duration + 's');
+    
     const formData = new FormData();
     formData.append('media', audioFile);
 
@@ -598,16 +606,21 @@ function uploadAudioFile(audioFile, duration) {
         },
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('📡 Upload response status:', response.status);
+        return response.json();
+    })
     .then(data => {
+        console.log('📥 Upload response data:', data);
         if (data.success) {
             const mediaData = {
-                url: data.mediaUrl,
-                name: data.mediaName,
-                size: data.mediaSize,
+                url: data.media.url,
+                name: data.media.originalName,
+                size: data.media.size,
                 duration: duration
             };
 
+            console.log('✅ Sending audio message with data:', mediaData);
             sendMessage('🎙️ Audio message', 'audio', mediaData);
             
             uploadStatus.textContent = 'Audio uploaded!';
@@ -621,7 +634,7 @@ function uploadAudioFile(audioFile, duration) {
         }
     })
     .catch(error => {
-        console.error('Audio upload error:', error);
+        console.error('❌ Audio upload error:', error);
         showError('Failed to upload audio: ' + error.message);
         uploadStatus.textContent = 'Upload failed';
         uploadBar.style.width = '0%';
