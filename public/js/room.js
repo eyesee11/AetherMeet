@@ -122,6 +122,12 @@ socket.on('roomJoined', (roomInfo) => {
     } else {
         leaveRoomBtn.textContent = 'Leave Room';
     }
+    
+    // Fetch and display pending admissions immediately on room join
+    if (isOwner || roomInfo.admissionType === 'democratic_voting') {
+        console.log('Fetching pending admissions on room join...');
+        fetchPendingAdmissions();
+    }
 });
 
 socket.on('messageHistory', (messages) => {
@@ -191,20 +197,37 @@ socket.on('userAdmitted', (data) => {
         currentRoom.members.push({ username: data.username, joinedAt: new Date() });
         updateMembersList(currentRoom.members);
     }
+    
+    // Immediately refresh pending admissions to remove the admitted user
+    setTimeout(() => {
+        fetchPendingAdmissions();
+    }, 100);
 });
 
 socket.on('admissionRequired', (data) => {
+    console.log('New admission request received:', data);
+    // Show notification and update pending list in real-time
     if (isOwner || currentRoom.admissionType === 'democratic_voting') {
-        showAdmissionRequest(data);
+        showAdmissionNotification(data);
+        // Immediately fetch the updated pending list to show the new request
+        setTimeout(() => {
+            fetchPendingAdmissions();
+        }, 100);
     }
 });
 
 socket.on('pendingAdmissions', (pending) => {
+    console.log('Pending admissions received:', pending);
     updatePendingAdmissions(pending);
 });
 
 socket.on('voteUpdate', (data) => {
+    console.log('Vote update:', data);
     displaySystemMessage(`Vote update for ${data.username}: ${data.voteResult.admit} admit, ${data.voteResult.deny} deny (${data.requiredVotes} required)`);
+    // Immediately refresh pending list to show updated vote counts
+    setTimeout(() => {
+        fetchPendingAdmissions();
+    }, 100);
 });
 
 socket.on('ownerTransfer', (data) => {
@@ -939,17 +962,57 @@ function updatePendingAdmissions(pending) {
         
         pendingList.appendChild(pendingDiv);
     });
+    
+    // Add event listeners to the buttons
+    attachAdmissionButtonListeners();
+}
+
+// Add event listeners to admission buttons
+function attachAdmissionButtonListeners() {
+    // Owner approval buttons
+    document.querySelectorAll('.admit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const username = this.getAttribute('data-username');
+            const action = this.getAttribute('data-action');
+            approveAdmission(username, action);
+        });
+    });
+    
+    document.querySelectorAll('.deny-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const username = this.getAttribute('data-username');
+            const action = this.getAttribute('data-action');
+            approveAdmission(username, action);
+        });
+    });
+    
+    // Democratic voting buttons
+    document.querySelectorAll('.vote-admit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const username = this.getAttribute('data-username');
+            const action = this.getAttribute('data-action');
+            castVote(username, action);
+        });
+    });
+    
+    document.querySelectorAll('.vote-deny-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const username = this.getAttribute('data-username');
+            const action = this.getAttribute('data-action');
+            castVote(username, action);
+        });
+    });
 }
 
 function getAdmissionActions(member) {
     if (currentRoom.admissionType === 'owner_approval' && isOwner) {
         return `
-            <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide mr-2" 
+            <button class="admit-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide mr-2" 
                     style="box-shadow: 1px 1px 0px 0px #000000;" 
-                    onclick="approveAdmission('${member.username}', 'admit')">Admit</button>
-            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide" 
+                    data-username="${member.username}" data-action="admit">Admit</button>
+            <button class="deny-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide" 
                     style="box-shadow: 1px 1px 0px 0px #000000;" 
-                    onclick="approveAdmission('${member.username}', 'deny')">Deny</button>
+                    data-username="${member.username}" data-action="deny">Deny</button>
         `;
     } else if (currentRoom.admissionType === 'democratic_voting') {
         const hasVoted = member.votes && member.votes.some(vote => vote.voter === user.username);
@@ -957,12 +1020,12 @@ function getAdmissionActions(member) {
             return '<div class="text-xs font-mono text-gray-600">You have voted</div>';
         }
         return `
-            <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide mr-2" 
+            <button class="vote-admit-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide mr-2" 
                     style="box-shadow: 1px 1px 0px 0px #000000;" 
-                    onclick="castVote('${member.username}', 'admit')">Vote Admit</button>
-            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide" 
+                    data-username="${member.username}" data-action="admit">Vote Admit</button>
+            <button class="vote-deny-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 border-2 border-black font-bold text-sm uppercase tracking-wide" 
                     style="box-shadow: 1px 1px 0px 0px #000000;" 
-                    onclick="castVote('${member.username}', 'deny')">Vote Deny</button>
+                    data-username="${member.username}" data-action="deny">Vote Deny</button>
         `;
     }
     return '';
@@ -982,33 +1045,57 @@ function showAdmissionRequest(data) {
     openModal(admissionModal);
 }
 
-// Global functions for admission actions
-window.approveAdmission = async function(username, decision) {
-    try {
-        const response = await fetch(`/api/rooms/${roomCode}/admission/${username}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ decision })
-        });
+// Show admission notification without opening modal
+function showAdmissionNotification(data) {
+    displaySystemMessage(`${data.username} is requesting to join the room`);
+    // Play notification sound if available
+    playNotificationSound();
+}
 
-        const data = await response.json();
-        
-        if (data.success) {
-            displaySystemMessage(data.message);
-            if (data.voteResult) {
-                displaySystemMessage(`Vote count: ${data.voteResult.admit} admit, ${data.voteResult.deny} deny`);
+// Fetch pending admissions from server to refresh the list
+async function fetchPendingAdmissions() {
+    if (!isDemoRoom && token && currentRoom) {
+        try {
+            console.log('Fetching pending admissions for room:', currentRoom.roomCode);
+            const response = await fetch(`/api/rooms/${currentRoom.roomCode}/pending`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            console.log('Pending admissions response:', data);
+            if (data.success && data.pending) {
+                updatePendingAdmissions(data.pending);
             }
-        } else {
-            displaySystemMessage(`Error: ${data.message}`);
+        } catch (error) {
+            console.error('Failed to fetch pending admissions:', error);
         }
-    } catch (error) {
-        console.error('Admission decision error:', error);
-        displaySystemMessage('Failed to process admission decision');
     }
+}
+
+// Play notification sound
+function playNotificationSound() {
+    try {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKzn7bReFQU7k9nywHYpBSl+zPLaizsIHGS57OihUBELTKXh8bRgHQU+mt7yvHEoCCN7yvHajTsJHmW87OWhTxELTaXi8bRgGwU+m9/zvHAoBCN7yvLajzwJH2W98OSgTxEKTaXi8rNgGgU9m97zu3AoBCR8yvHajjsJH2e98eWgUBELTqfj87NhGgU9nN/zvm8pBCR8y/HajDsJH2e98eWfUBELTqfj87RhGwU9nN/zvnApBSR8y/HajDwJH2i+8eWfTxELTqfj8rRiGwU+nd/zvm8pBSR9y/HajDwKIGi+8OWfTxEMT6fj8rRiGwU+nd/zv28qBSR9y/HajDwKIGm+8OWfTxEMT6fj8rRiGwU+nt/zv3AqBSR9y/HajDwKIGq+8OWfTxEMUKfj8rNiGwU+nt/zv3AqBSV9y/HajDwKIWq+8OWfTxEMUKfj8rNiGwU/nt/zwHAqBSV9y/HajDwKIWq+8OWfThEMUKfj8rNiGwU/nt/zwHAqBSV+y/HajDwKIWq+8OWfThEMUKfj8rNjGwVAnt/zwHAqBSV+y/HajDwKIWq+8OWfThEMUKjj8rNjGwVAn9/zwHEqBSV+y/HajDwKIWq+8OWfThEMUKjj8rNjGwVAn9/zwHEqBSV+y/HajDwKIWu+8OWfThEMUKjj8rNjGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ/y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8Q==');
+        audio.play().catch(e => console.log('Could not play notification sound'));
+    } catch (error) {
+        console.log('Notification sound not available');
+    }
+}
+
+// Global functions for admission actions
+// Global functions for admission actions
+window.approveAdmission = function(username, decision) {
+    console.log(`Approving admission for ${username}: ${decision}`);
+    // Use Socket.IO instead of HTTP API for real-time updates
+    socket.emit('approveAdmission', { username, decision });
     closeModal(admissionModal);
+    // Immediately refresh the pending list after making decision
+    setTimeout(() => {
+        fetchPendingAdmissions();
+    }, 200);
 };
 
 // Remove user from room (owner only)
@@ -1039,32 +1126,15 @@ window.removeUser = async function(username) {
     }
 };
 
-window.castVote = async function(username, decision) {
-    try {
-        const response = await fetch(`/api/rooms/${roomCode}/admission/${username}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ decision })
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-            displaySystemMessage(data.message);
-            if (data.voteResult) {
-                displaySystemMessage(`Vote count: ${data.voteResult.admit} admit, ${data.voteResult.deny} deny (${data.voteResult.required} required)`);
-            }
-        } else {
-            displaySystemMessage(`Error: ${data.message}`);
-        }
-    } catch (error) {
-        console.error('Vote error:', error);
-        displaySystemMessage('Failed to cast vote');
-    }
+window.castVote = function(username, decision) {
+    console.log(`Casting vote for ${username}: ${decision}`);
+    // Use Socket.IO instead of HTTP API for real-time updates
+    socket.emit('castVote', { username, decision });
     closeModal(admissionModal);
+    // Immediately refresh the pending list after voting
+    setTimeout(() => {
+        fetchPendingAdmissions();
+    }, 200);
 };
 
 function scrollToBottom() {
