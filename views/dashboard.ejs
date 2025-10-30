@@ -87,6 +87,15 @@
         .dark .card-brutal { box-shadow: 8px 8px 0px 0px #ffffff !important; }
         .dark .card-brutal:hover { box-shadow: 4px 4px 0px 0px #ffffff !important; }
         .dark .input-brutal { box-shadow: 2px 2px 0px 0px #ffffff !important; }
+        
+        /* Logo styles */
+        .logo img {
+            max-width: 100%;
+            height: auto;
+        }
+        .dark .logo {
+            background-color: #ffffff !important;
+        }
     </style>
 </head>
 <body class="bg-white text-black font-sans min-h-screen transition-colors duration-300">
@@ -102,7 +111,9 @@
     <header class="bg-white border-b-4 border-black px-6 py-4">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-4">
-                <div class="w-8 h-8 bg-black"></div>
+                <div class="logo bg-white p-1">
+                    <img src="/logo.jpg" alt="AetherMeet Logo" class="h-10 w-10 md:h-12 md:w-12 object-contain border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000; display: block;">
+                </div>
                 <div>
                     <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight">AetherMeet</h1>
                     <p class="text-sm text-gray-600 font-mono">Dashboard</p>
@@ -161,6 +172,27 @@
             </section>
         </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t-4 border-black px-6 py-8 mt-12">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-white p-1">
+                        <img src="/logo.jpg" alt="AetherMeet Logo" class="h-8 w-8 md:h-10 md:w-10 object-contain border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000; display: block;">
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black uppercase tracking-tight">AetherMeet</h3>
+                        <p class="text-xs text-gray-600 font-mono">Secure & Ephemeral Team Chat Rooms</p>
+                    </div>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-sm font-mono text-gray-600">&copy; 2025 AetherMeet. All rights reserved.</p>
+                    <p class="text-xs font-mono text-gray-500 mt-1">Built with security and privacy in mind</p>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- Create Instant Room Modal -->
     <div id="instantRoomModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
