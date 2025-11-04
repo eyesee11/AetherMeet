@@ -192,13 +192,8 @@ socket.on('userAdmitted', (data) => {
     displaySystemMessage(`${data.username} was admitted to the room`);
     memberCount.textContent = `Members: ${data.memberCount}`;
     
-    // Update members list
-    if (currentRoom) {
-        currentRoom.members.push({ username: data.username, joinedAt: new Date() });
-        updateMembersList(currentRoom.members);
-    }
-    
-    // Immediately refresh pending admissions to remove the admitted user
+    // Don't update members list locally - the server will send the updated list
+    // Just refresh to get the authoritative data from the server
     setTimeout(() => {
         fetchPendingAdmissions();
     }, 100);
@@ -1099,31 +1094,14 @@ window.approveAdmission = function(username, decision) {
 };
 
 // Remove user from room (owner only)
-window.removeUser = async function(username) {
+window.removeUser = function(username) {
     if (!confirm(`Are you sure you want to remove ${username} from the room?`)) {
         return;
     }
     
-    try {
-        const response = await fetch(`/api/rooms/${roomCode}/members/${username}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-            displaySystemMessage(data.message);
-        } else {
-            displaySystemMessage(`Error: ${data.message}`);
-        }
-    } catch (error) {
-        console.error('Remove user error:', error);
-        displaySystemMessage('Failed to remove user from room');
-    }
+    console.log(`Removing user ${username} from room`);
+    // Use Socket.IO to remove user (similar to deny functionality)
+    socket.emit('removeUser', { username });
 };
 
 window.castVote = function(username, decision) {
