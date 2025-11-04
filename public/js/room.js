@@ -125,7 +125,6 @@ socket.on('roomJoined', (roomInfo) => {
     
     // Fetch and display pending admissions immediately on room join
     if (isOwner || roomInfo.admissionType === 'democratic_voting') {
-        console.log('Fetching pending admissions on room join...');
         fetchPendingAdmissions();
     }
 });
@@ -139,7 +138,6 @@ socket.on('messageHistory', (messages) => {
 });
 
 socket.on('newMessage', (message) => {
-    console.log('Received newMessage event:', message);
     displayMessage(message);
     scrollToBottom();
 });
@@ -214,7 +212,6 @@ socket.on('userAdmitted', (data) => {
 });
 
 socket.on('admissionRequired', (data) => {
-    console.log('New admission request received:', data);
     // Show notification and update pending list in real-time
     if (isOwner || currentRoom.admissionType === 'democratic_voting') {
         showAdmissionNotification(data);
@@ -226,12 +223,10 @@ socket.on('admissionRequired', (data) => {
 });
 
 socket.on('pendingAdmissions', (pending) => {
-    console.log('Pending admissions received:', pending);
     updatePendingAdmissions(pending);
 });
 
 socket.on('voteUpdate', (data) => {
-    console.log('Vote update:', data);
     displaySystemMessage(`Vote update for ${data.username}: ${data.voteResult.admit} admit, ${data.voteResult.deny} deny (${data.requiredVotes} required)`);
     // Immediately refresh pending list to show updated vote counts
     setTimeout(() => {
@@ -414,11 +409,9 @@ function showNotification(message) {
 
 // Message handling
 function sendMessage(content, type = 'text', mediaData = null) {
-    console.log('sendMessage called:', { content, type, mediaData });
-    
     const messageData = {
         content: content.trim(),
-        messageType: type,  // Changed from 'type' to 'messageType' to match backend
+        messageType: type,
         timestamp: new Date()
     };
 
@@ -431,7 +424,6 @@ function sendMessage(content, type = 'text', mediaData = null) {
         }
     }
 
-    console.log('Emitting message:', messageData);
     socket.emit('sendMessage', messageData);
 }
 
@@ -485,17 +477,14 @@ function uploadFile(file, messageType) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('File upload response:', data);
         if (data.success) {
             const mediaData = {
-                url: data.media.url,  // Fixed: was data.mediaUrl, now data.media.url
-                name: data.media.originalName,  // Fixed: was data.mediaName
-                size: data.media.size  // Fixed: was data.mediaSize
+                url: data.media.url,
+                name: data.media.originalName,
+                size: data.media.size
             };
 
-            // Send message with media
             const messageContent = file.name;
-            console.log('Sending file message:', { messageContent, messageType, mediaData });
             sendMessage(messageContent, messageType, mediaData);
             
             uploadStatus.textContent = 'Upload complete!';
@@ -509,7 +498,6 @@ function uploadFile(file, messageType) {
         }
     })
     .catch(error => {
-        console.error('Upload error:', error);
         showError('Failed to upload file: ' + error.message);
         uploadStatus.textContent = 'Upload failed';
         uploadBar.style.width = '0%';
@@ -563,8 +551,7 @@ async function startAudioRecording() {
         recordingInterval = setInterval(updateRecordingTime, 1000);
         
     } catch (error) {
-        console.error('Error starting recording:', error);
-        showError('Failed to start recording. Please check microphone permissions.');
+        showError('Failed to start recording. Please check microphone permissions');
     }
 }
 
@@ -624,16 +611,14 @@ function uploadAudioFile(audioFile, duration) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Audio upload response:', data);
         if (data.success) {
             const mediaData = {
-                url: data.media.url,  // Fixed: was data.mediaUrl, now data.media.url
-                name: data.media.originalName,  // Fixed: was data.mediaName
-                size: data.media.size,  // Fixed: was data.mediaSize
+                url: data.media.url,
+                name: data.media.originalName,
+                size: data.media.size,
                 duration: duration
             };
 
-            console.log('Sending audio message with data:', mediaData);
             sendMessage('🎙️ Audio message', 'audio', mediaData);
             
             uploadStatus.textContent = 'Audio uploaded!';
@@ -647,7 +632,6 @@ function uploadAudioFile(audioFile, duration) {
         }
     })
     .catch(error => {
-        console.error('Audio upload error:', error);
         showError('Failed to upload audio: ' + error.message);
         uploadStatus.textContent = 'Upload failed';
         uploadBar.style.width = '0%';
@@ -720,8 +704,7 @@ async function downloadPdf() {
             showError(`Failed to export PDF: ${data.message}`);
         }
     } catch (error) {
-        console.error('PDF export error:', error);
-        showError('Failed to export PDF. Please try again.');
+        showError('Failed to export PDF. Please try again');
     }
 }
 
@@ -760,15 +743,12 @@ async function savePdfToNotes() {
             }
         } else {
             const data = await response.json();
-            showError(`Failed to export PDF: ${data.message}`);
+                showError(`Failed to export PDF: ${data.message}`);
         }
     } catch (error) {
-        console.error('PDF save to notes error:', error);
-        showError('Failed to prepare PDF for notes. Please try again.');
+        showError('Failed to prepare PDF for notes. Please try again');
     }
-}
-
-// Leave room
+}// Leave room
 leaveRoomBtn.addEventListener('click', () => {
     if (isDemoRoom) {
         // Demo rooms: simple confirmation
@@ -829,8 +809,6 @@ document.addEventListener('click', (e) => {
 
 // Helper functions
 function displayMessage(message) {
-    console.log('Displaying message:', message);
-    
     const messageDiv = document.createElement('div');
     
     // Get current user for comparison
@@ -846,11 +824,9 @@ function displayMessage(message) {
     
     // Use messageType field from the message object
     const messageType = message.messageType || message.type || 'text';
-    console.log('Message type determined:', messageType, 'Has mediaUrl:', !!message.mediaUrl);
     
     // If it's supposed to be a media message but has no mediaUrl, treat as text
     if ((messageType !== 'text') && !message.mediaUrl) {
-        console.warn('Media message missing mediaUrl, treating as text:', message);
         messageContent = `
             <div class="flex justify-between items-center mb-1">
                 <span class="font-bold text-sm uppercase tracking-wide">${message.username}</span>
@@ -1159,7 +1135,6 @@ function showAdmissionNotification(data) {
 async function fetchPendingAdmissions() {
     if (!isDemoRoom && token && currentRoom) {
         try {
-            console.log('Fetching pending admissions for room:', currentRoom.roomCode);
             const response = await fetch(`/api/rooms/${currentRoom.roomCode}/pending`, {
                 method: 'GET',
                 headers: {
@@ -1168,12 +1143,11 @@ async function fetchPendingAdmissions() {
                 }
             });
             const data = await response.json();
-            console.log('Pending admissions response:', data);
             if (data.success && data.pending) {
                 updatePendingAdmissions(data.pending);
             }
         } catch (error) {
-            console.error('Failed to fetch pending admissions:', error);
+            // Silent fail for pending admissions fetch
         }
     }
 }
@@ -1182,20 +1156,16 @@ async function fetchPendingAdmissions() {
 function playNotificationSound() {
     try {
         const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKzn7bReFQU7k9nywHYpBSl+zPLaizsIHGS57OihUBELTKXh8bRgHQU+mt7yvHEoCCN7yvHajTsJHmW87OWhTxELTaXi8bRgGwU+m9/zvHAoBCN7yvLajzwJH2W98OSgTxEKTaXi8rNgGgU9m97zu3AoBCR8yvHajjsJH2e98eWgUBELTqfj87NhGgU9nN/zvm8pBCR8y/HajDsJH2e98eWfUBELTqfj87RhGwU9nN/zvnApBSR8y/HajDwJH2i+8eWfTxELTqfj8rRiGwU+nd/zvm8pBSR9y/HajDwKIGi+8OWfTxEMT6fj8rRiGwU+nd/zv28qBSR9y/HajDwKIGm+8OWfTxEMT6fj8rRiGwU+nt/zv3AqBSR9y/HajDwKIGq+8OWfTxEMUKfj8rNiGwU+nt/zv3AqBSV9y/HajDwKIWq+8OWfTxEMUKfj8rNiGwU/nt/zwHAqBSV9y/HajDwKIWq+8OWfThEMUKfj8rNiGwU/nt/zwHAqBSV+y/HajDwKIWq+8OWfThEMUKfj8rNjGwVAnt/zwHAqBSV+y/HajDwKIWq+8OWfThEMUKjj8rNjGwVAn9/zwHEqBSV+y/HajDwKIWq+8OWfThEMUKjj8rNjGwVAn9/zwHEqBSV+y/HajDwKIWu+8OWfThEMUKjj8rNjGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ/y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8Q==');
-        audio.play().catch(e => console.log('Could not play notification sound'));
+        audio.play().catch(() => {});
     } catch (error) {
-        console.log('Notification sound not available');
+        // Silent fail
     }
 }
 
 // Global functions for admission actions
-// Global functions for admission actions
 window.approveAdmission = function(username, decision) {
-    console.log(`Approving admission for ${username}: ${decision}`);
-    // Use Socket.IO instead of HTTP API for real-time updates
     socket.emit('approveAdmission', { username, decision });
     closeModal(admissionModal);
-    // Immediately refresh the pending list after making decision
     setTimeout(() => {
         fetchPendingAdmissions();
     }, 200);
@@ -1203,27 +1173,17 @@ window.approveAdmission = function(username, decision) {
 
 // Remove user from room (owner only)
 function removeUser(username) {
-    console.log(`Remove button clicked for user: ${username}`);
-    
     if (!confirm(`Are you sure you want to remove ${username} from the room?`)) {
-        console.log('User removal cancelled');
         return;
     }
     
-    console.log(`Emitting removeUser event for: ${username}`);
-    // Use Socket.IO to remove user (similar to deny functionality)
     socket.emit('removeUser', { username });
-    
-    // Show feedback
     displaySystemMessage(`Removing ${username} from the room...`);
 }
 
 window.castVote = function(username, decision) {
-    console.log(`Casting vote for ${username}: ${decision}`);
-    // Use Socket.IO instead of HTTP API for real-time updates
     socket.emit('castVote', { username, decision });
     closeModal(admissionModal);
-    // Immediately refresh the pending list after voting
     setTimeout(() => {
         fetchPendingAdmissions();
     }, 200);

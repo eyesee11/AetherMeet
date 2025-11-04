@@ -44,6 +44,10 @@ logs
 tmp/
 temp/
 
+# Deployment artifacts
+ecosystem.config.js
+*.service
+
 # IDE files
 .vscode/
 .idea/
