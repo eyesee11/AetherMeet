@@ -149,8 +149,12 @@ socket.on('userJoined', (data) => {
     
     // Update members list if we have room info
     if (currentRoom) {
-        currentRoom.members.push({ username: data.username, joinedAt: new Date() });
-        updateMembersList(currentRoom.members);
+        // Check if user already exists to prevent duplicates
+        const existingMember = currentRoom.members.find(m => m.username === data.username);
+        if (!existingMember) {
+            currentRoom.members.push({ username: data.username, joinedAt: new Date() });
+            updateMembersList(currentRoom.members);
+        }
     }
 });
 
@@ -192,8 +196,17 @@ socket.on('userAdmitted', (data) => {
     displaySystemMessage(`${data.username} was admitted to the room`);
     memberCount.textContent = `Members: ${data.memberCount}`;
     
-    // Don't update members list locally - the server will send the updated list
-    // Just refresh to get the authoritative data from the server
+    // Add the admitted user to local members list
+    if (currentRoom) {
+        // Check if user already exists to prevent duplicates
+        const existingMember = currentRoom.members.find(m => m.username === data.username);
+        if (!existingMember) {
+            currentRoom.members.push({ username: data.username, joinedAt: new Date() });
+            updateMembersList(currentRoom.members);
+        }
+    }
+    
+    // Refresh pending admissions to remove the admitted user
     setTimeout(() => {
         fetchPendingAdmissions();
     }, 100);
@@ -915,9 +928,9 @@ function updateMembersList(members) {
                     ${isOwner ? '<span class="text-yellow-600 ml-2">👑</span>' : ''}
                 </div>
                 ${canRemove ? `
-                    <button onclick="removeUser('${member.username}')" 
-                            class="px-2 py-1 bg-red-500 text-white text-xs font-bold border border-black hover:bg-red-600"
+                    <button class="remove-user-btn px-2 py-1 bg-red-500 text-white text-xs font-bold border border-black hover:bg-red-600"
                             style="box-shadow: 1px 1px 0px 0px #000000;"
+                            data-username="${member.username}"
                             title="Remove user from room">
                         ✕
                     </button>
@@ -926,6 +939,16 @@ function updateMembersList(members) {
         `;
         
         membersList.appendChild(memberDiv);
+    });
+    
+    // Attach event listeners to remove buttons
+    document.querySelectorAll('.remove-user-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const username = this.getAttribute('data-username');
+            removeUser(username);
+        });
     });
 }
 
@@ -1094,15 +1117,21 @@ window.approveAdmission = function(username, decision) {
 };
 
 // Remove user from room (owner only)
-window.removeUser = function(username) {
+function removeUser(username) {
+    console.log(`Remove button clicked for user: ${username}`);
+    
     if (!confirm(`Are you sure you want to remove ${username} from the room?`)) {
+        console.log('User removal cancelled');
         return;
     }
     
-    console.log(`Removing user ${username} from room`);
+    console.log(`Emitting removeUser event for: ${username}`);
     // Use Socket.IO to remove user (similar to deny functionality)
     socket.emit('removeUser', { username });
-};
+    
+    // Show feedback
+    displaySystemMessage(`Removing ${username} from the room...`);
+}
 
 window.castVote = function(username, decision) {
     console.log(`Casting vote for ${username}: ${decision}`);
