@@ -329,6 +329,57 @@ module.exports = (io) => {
             }
         });
 
+        // Handle removing a user (owner only)
+        socket.on('removeUser', async (data) => {
+            try {
+                const { username } = data;
+                const roomCode = socket.currentRoom;
+
+                const room = await Room.findOne({ roomCode, isActive: true });
+                if (!room || room.owner !== socket.user.username) {
+                    socket.emit('error', { message: 'Only the owner can remove users' });
+                    return;
+                }
+
+                // Cannot remove the owner
+                if (username === room.owner) {
+                    socket.emit('error', { message: 'Cannot remove the owner' });
+                    return;
+                }
+
+                // Check if user is a member
+                const memberExists = isRoomMember(room, username);
+                if (!memberExists) {
+                    socket.emit('error', { message: 'User is not a member of this room' });
+                    return;
+                }
+
+                // Remove the user
+                room.removeMember(username);
+                await room.save();
+
+                console.log(`User ${username} removed from room ${roomCode} by ${socket.user.username}`);
+
+                // Notify all room members about the removal
+                io.to(roomCode).emit('userRemoved', {
+                    username: username,
+                    removedBy: socket.user.username,
+                    memberCount: room.members.length
+                });
+
+                // Notify the removed user specifically
+                io.emit('removedFromRoom', {
+                    roomCode: roomCode,
+                    username: username,
+                    removedBy: socket.user.username
+                });
+
+            } catch (error) {
+                console.error('Remove user error:', error);
+                socket.emit('error', { message: 'Failed to remove user' });
+            }
+        });
+
         // Handle democratic voting
         socket.on('castVote', async (data) => {
             try {
