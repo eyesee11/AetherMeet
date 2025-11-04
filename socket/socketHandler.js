@@ -114,10 +114,13 @@ module.exports = (io) => {
         // Send message
         socket.on('sendMessage', async (data) => {
             try {
+                console.log('Received sendMessage event:', data);
+                
                 const { content, messageType = 'text', mediaUrl, mediaName, mediaSize, audioDuration } = data;
                 const roomCode = socket.currentRoom;
 
                 if (!roomCode) {
+                    console.error('No room code found for socket');
                     return;
                 }
 
@@ -152,7 +155,10 @@ module.exports = (io) => {
                     message.content = sanitizedContent;
                 } else {
                     // Media message
-                    if (!mediaUrl) {
+                    console.log('Processing media message:', { messageType, mediaUrl, mediaName, mediaSize });
+                    
+                    if (!mediaUrl || mediaUrl === 'undefined') {
+                        console.error('Media URL is missing or invalid:', mediaUrl);
                         socket.emit('error', { message: 'Media URL required for media messages' });
                         return;
                     }
@@ -165,8 +171,10 @@ module.exports = (io) => {
                         message.audioDuration = audioDuration;
                     }
                     
-                    // Set content for display purposes
-                    if (messageType === 'audio') {
+                    // Set content for display purposes (use provided content or generate)
+                    if (content && content.trim()) {
+                        message.content = sanitizeInput(content.trim());
+                    } else if (messageType === 'audio') {
                         message.content = `🎵 Audio message (${audioDuration ? Math.round(audioDuration) + 's' : 'Unknown duration'})`;
                     } else if (messageType === 'image') {
                         message.content = `📷 Image: ${mediaName}`;
@@ -192,8 +200,22 @@ module.exports = (io) => {
 
                 await newMessage.save();
 
-                // Broadcast message to all room members
-                io.to(roomCode).emit('newMessage', newMessage);
+                console.log('Broadcasting message to room:', roomCode, 'Message:', newMessage);
+
+                // Broadcast message to all room members (convert to plain object)
+                const messageToSend = {
+                    _id: newMessage._id,
+                    username: newMessage.username,
+                    messageType: newMessage.messageType,
+                    content: newMessage.content,
+                    mediaUrl: newMessage.mediaUrl,
+                    mediaName: newMessage.mediaName,
+                    mediaSize: newMessage.mediaSize,
+                    audioDuration: newMessage.audioDuration,
+                    timestamp: newMessage.timestamp
+                };
+                
+                io.to(roomCode).emit('newMessage', messageToSend);
 
             } catch (error) {
                 console.error('Send message error:', error);
