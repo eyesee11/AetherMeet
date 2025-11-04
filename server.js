@@ -65,15 +65,11 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aethermeet'
     socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
     bufferCommands: false // Disable mongoose buffering
 }).then(() => {
-    console.log('Connected to MongoDB');
     // Start server only after DB is ready
     const PORT = process.env.PORT || 5000;
     server.listen(PORT, () => {
-        console.log(`AetherMeet server running on port ${PORT}`);
-        console.log(`🧹 Memory management active - cleanup every 30 minutes`);
     });
 }).catch(err => {
-    console.error('MongoDB connection error:', err);
     process.exit(1);
 });
 
@@ -159,7 +155,6 @@ app.get('/room/:roomCode', async (req, res) => {
             isDemo: isDemo
         });
     } catch (error) {
-        console.error('Room access error:', error);
         res.status(500).send('Server error');
     }
 });
@@ -193,7 +188,6 @@ memoryManager.startCleanup(30); // Cleanup every 30 minutes
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-    console.log('🛑 SIGTERM received, shutting down gracefully');
     memoryManager.stopCleanup();
     server.close(() => {
         mongoose.connection.close();
@@ -202,7 +196,6 @@ process.on('SIGTERM', () => {
 });
 
 process.on('SIGINT', () => {
-    console.log('🛑 SIGINT received, shutting down gracefully');
     memoryManager.stopCleanup();
     server.close(() => {
         mongoose.connection.close();
