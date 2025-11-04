@@ -139,6 +139,7 @@ socket.on('messageHistory', (messages) => {
 });
 
 socket.on('newMessage', (message) => {
+    console.log('Received newMessage event:', message);
     displayMessage(message);
     scrollToBottom();
 });
@@ -413,9 +414,11 @@ function showNotification(message) {
 
 // Message handling
 function sendMessage(content, type = 'text', mediaData = null) {
+    console.log('sendMessage called:', { content, type, mediaData });
+    
     const messageData = {
         content: content.trim(),
-        type,
+        messageType: type,  // Changed from 'type' to 'messageType' to match backend
         timestamp: new Date()
     };
 
@@ -428,6 +431,7 @@ function sendMessage(content, type = 'text', mediaData = null) {
         }
     }
 
+    console.log('Emitting message:', messageData);
     socket.emit('sendMessage', messageData);
 }
 
@@ -481,15 +485,17 @@ function uploadFile(file, messageType) {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('File upload response:', data);
         if (data.success) {
             const mediaData = {
-                url: data.mediaUrl,
-                name: data.mediaName,
-                size: data.mediaSize
+                url: data.media.url,  // Fixed: was data.mediaUrl, now data.media.url
+                name: data.media.originalName,  // Fixed: was data.mediaName
+                size: data.media.size  // Fixed: was data.mediaSize
             };
 
             // Send message with media
             const messageContent = file.name;
+            console.log('Sending file message:', { messageContent, messageType, mediaData });
             sendMessage(messageContent, messageType, mediaData);
             
             uploadStatus.textContent = 'Upload complete!';
@@ -602,23 +608,32 @@ function uploadAudioFile(audioFile, duration) {
     uploadStatus.textContent = 'Uploading audio...';
     uploadBar.style.width = '0%';
 
+    // Build headers - only include Authorization for non-demo users
+    const headers = {};
+    if (!isDemoRoom) {
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+    }
+
     fetch('/api/media/upload', {
         method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        headers: headers,
         body: formData
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Audio upload response:', data);
         if (data.success) {
             const mediaData = {
-                url: data.mediaUrl,
-                name: data.mediaName,
-                size: data.mediaSize,
+                url: data.media.url,  // Fixed: was data.mediaUrl, now data.media.url
+                name: data.media.originalName,  // Fixed: was data.mediaName
+                size: data.media.size,  // Fixed: was data.mediaSize
                 duration: duration
             };
 
+            console.log('Sending audio message with data:', mediaData);
             sendMessage('🎙️ Audio message', 'audio', mediaData);
             
             uploadStatus.textContent = 'Audio uploaded!';
@@ -653,8 +668,9 @@ function formatFileSize(bytes) {
 }
 
 function formatDuration(seconds) {
+    if (!seconds || isNaN(seconds)) return '0:00';
     const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
@@ -813,8 +829,15 @@ document.addEventListener('click', (e) => {
 
 // Helper functions
 function displayMessage(message) {
+    console.log('Displaying message:', message);
+    
     const messageDiv = document.createElement('div');
-    messageDiv.className = `p-3 mb-2 border-2 border-black ${message.username === user.username ? 'bg-gray-200 ml-8' : 'bg-white mr-8'}`;
+    
+    // Get current user for comparison
+    const currentUser = isDemoRoom ? JSON.parse(localStorage.getItem('demoUser') || '{}') : user;
+    const isOwnMessage = message.username === currentUser.username;
+    
+    messageDiv.className = `p-3 mb-2 border-2 border-black ${isOwnMessage ? 'bg-gray-200 ml-8' : 'bg-white mr-8'}`;
     messageDiv.style.boxShadow = '2px 2px 0px 0px #000000';
     
     const timestamp = new Date(message.timestamp).toLocaleTimeString();
@@ -823,8 +846,20 @@ function displayMessage(message) {
     
     // Use messageType field from the message object
     const messageType = message.messageType || message.type || 'text';
+    console.log('Message type determined:', messageType, 'Has mediaUrl:', !!message.mediaUrl);
     
-    if (messageType === 'text') {
+    // If it's supposed to be a media message but has no mediaUrl, treat as text
+    if ((messageType !== 'text') && !message.mediaUrl) {
+        console.warn('Media message missing mediaUrl, treating as text:', message);
+        messageContent = `
+            <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-sm uppercase tracking-wide">${message.username}</span>
+                <span class="text-xs font-mono text-gray-600">${timestamp}</span>
+            </div>
+            <div class="font-mono text-sm">${escapeHtml(message.content)}</div>
+            <div class="text-xs text-red-500 mt-1">⚠️ Media file not available</div>
+        `;
+    } else if (messageType === 'text') {
         messageContent = `
             <div class="flex justify-between items-center mb-1">
                 <span class="font-bold text-sm uppercase tracking-wide">${message.username}</span>
@@ -843,15 +878,28 @@ function displayMessage(message) {
                  class="max-w-full h-auto border-2 border-black cursor-pointer hover:border-gray-600"
                  onclick="window.open('${message.mediaUrl}', '_blank')"
                  style="box-shadow: 2px 2px 0px 0px #000000;">
-            <div class="font-mono text-xs text-gray-500 mt-1">${message.mediaName} (${formatFileSize(message.mediaSize)})</div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="font-mono text-xs text-gray-500">${message.mediaName} (${formatFileSize(message.mediaSize)})</div>
+                <button onclick="downloadFile('${message.mediaUrl}', '${message.mediaName}')" 
+                        class="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
+                        style="box-shadow: 1px 1px 0px 0px #000000;"
+                        title="Download image">
+                    💾 Download
+                </button>
+            </div>
         `;
     } else if (messageType === 'audio') {
+        const audioContent = message.content || '🎙️ Audio message';
+        const audioName = message.mediaName || 'audio.webm';
+        const audioSize = message.mediaSize || 0;
+        const audioDur = message.audioDuration || 0;
+        
         messageContent = `
             <div class="flex justify-between items-center mb-1">
                 <span class="font-bold text-sm uppercase tracking-wide">${message.username}</span>
                 <span class="text-xs font-mono text-gray-600">${timestamp}</span>
             </div>
-            <div class="font-mono text-sm mb-2">${escapeHtml(message.content)}</div>
+            <div class="font-mono text-sm mb-2">${escapeHtml(audioContent)}</div>
             <div class="bg-gray-100 border-2 border-black p-2" style="box-shadow: 1px 1px 0px 0px #000000;">
                 <audio controls class="w-full">
                     <source src="${message.mediaUrl}" type="audio/webm">
@@ -859,8 +907,16 @@ function displayMessage(message) {
                     <source src="${message.mediaUrl}" type="audio/wav">
                     Your browser does not support audio playback.
                 </audio>
-                <div class="font-mono text-xs text-gray-500 mt-1">
-                    ${message.mediaName} • Duration: ${formatDuration(message.audioDuration)} • ${formatFileSize(message.mediaSize)}
+                <div class="flex justify-between items-center mt-2">
+                    <div class="font-mono text-xs text-gray-500">
+                        ${audioName} • Duration: ${formatDuration(audioDur)} • ${formatFileSize(audioSize)}
+                    </div>
+                    <button onclick="downloadFile('${message.mediaUrl}', '${audioName}')" 
+                            class="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
+                            style="box-shadow: 1px 1px 0px 0px #000000;"
+                            title="Download audio file">
+                        💾 Download
+                    </button>
                 </div>
             </div>
         `;
@@ -876,20 +932,49 @@ function displayMessage(message) {
                 <source src="${message.mediaUrl}" type="video/webm">
                 Your browser does not support video playback.
             </video>
-            <div class="font-mono text-xs text-gray-500 mt-1">${message.mediaName} (${formatFileSize(message.mediaSize)})</div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="font-mono text-xs text-gray-500">${message.mediaName} (${formatFileSize(message.mediaSize)})</div>
+                <button onclick="downloadFile('${message.mediaUrl}', '${message.mediaName}')" 
+                        class="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
+                        style="box-shadow: 1px 1px 0px 0px #000000;"
+                        title="Download video">
+                    💾 Download
+                </button>
+            </div>
         `;
     } else if (messageType === 'file') {
+        const fileName = message.mediaName || 'file';
+        const fileSize = message.mediaSize || 0;
+        const fileContent = message.content || `📎 ${fileName}`;
+        
         messageContent = `
             <div class="flex justify-between items-center mb-1">
                 <span class="font-bold text-sm uppercase tracking-wide">${message.username}</span>
                 <span class="text-xs font-mono text-gray-600">${timestamp}</span>
             </div>
-            <div class="font-mono text-sm mb-2">${escapeHtml(message.content)}</div>
-            <div class="bg-gray-100 border-2 border-black p-2 hover:bg-gray-200 cursor-pointer"
-                 style="box-shadow: 1px 1px 0px 0px #000000;"
-                 onclick="window.open('${message.mediaUrl}', '_blank')">
-                <div class="font-bold">📎 ${message.mediaName}</div>
-                <div class="font-mono text-xs text-gray-500">${formatFileSize(message.mediaSize)}</div>
+            <div class="font-mono text-sm mb-2">${escapeHtml(fileContent)}</div>
+            <div class="bg-gray-100 border-2 border-black p-3 hover:bg-gray-200"
+                 style="box-shadow: 1px 1px 0px 0px #000000;">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <div class="font-bold text-sm">📎 ${fileName}</div>
+                        <div class="font-mono text-xs text-gray-500">${formatFileSize(fileSize)}</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="window.open('${message.mediaUrl}', '_blank')" 
+                                class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold border border-black"
+                                style="box-shadow: 1px 1px 0px 0px #000000;"
+                                title="Open file in new tab">
+                            👁️ View
+                        </button>
+                        <button onclick="downloadFile('${message.mediaUrl}', '${fileName}')" 
+                                class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
+                                style="box-shadow: 1px 1px 0px 0px #000000;"
+                                title="Download file">
+                            💾 Save
+                        </button>
+                    </div>
+                </div>
             </div>
         `;
     }
@@ -1153,6 +1238,25 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+// Download file function
+window.downloadFile = function(url, filename) {
+    // Create a temporary anchor element
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'download';
+    a.style.display = 'none';
+    
+    // Append to body, click, and remove
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    setTimeout(() => {
+        document.body.removeChild(a);
+        showNotification(`💾 Downloading ${filename}...`);
+    }, 100);
+};
 
 function showError(message) {
     // Create error notification
