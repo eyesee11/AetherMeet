@@ -65,11 +65,18 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aethermeet'
     socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
     bufferCommands: false // Disable mongoose buffering
 }).then(() => {
+    console.log('✅ MongoDB connected successfully');
+    
+    // Start memory management system AFTER DB is connected
+    memoryManager.startCleanup(30); // Cleanup every 30 minutes
+    
     // Start server only after DB is ready
     const PORT = process.env.PORT || 5000;
     server.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
     });
 }).catch(err => {
+    console.error('❌ MongoDB connection error:', err);
     process.exit(1);
 });
 
@@ -182,9 +189,6 @@ app.get('/join/:roomCode', (req, res) => {
 
 // Socket.IO handling
 socketHandler(io);
-
-// Start memory management system
-memoryManager.startCleanup(30); // Cleanup every 30 minutes
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

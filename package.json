@@ -33,7 +33,6 @@
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.1",
     "express-session": "^1.18.2",
-    "google-dictionary-api": "^1.0.8",
     "helmet": "^7.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.17.2",
