@@ -851,13 +851,14 @@ function displayMessage(message) {
             </div>
             <div class="font-mono text-sm mb-2">${escapeHtml(message.content)}</div>
             <img src="${message.mediaUrl}" alt="${message.mediaName}" 
-                 class="max-w-full h-auto border-2 border-black cursor-pointer hover:border-gray-600"
-                 onclick="window.open('${message.mediaUrl}', '_blank')"
+                 class="max-w-full h-auto border-2 border-black cursor-pointer hover:border-gray-600 media-view"
+                 data-url="${message.mediaUrl}"
                  style="box-shadow: 2px 2px 0px 0px #000000;">
             <div class="flex justify-between items-center mt-1">
                 <div class="font-mono text-xs text-gray-500">${message.mediaName} (${formatFileSize(message.mediaSize)})</div>
-                <button onclick="downloadFile('${message.mediaUrl}', '${message.mediaName}')" 
-                        class="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
+                <button class="download-btn px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
+                        data-url="${message.mediaUrl}"
+                        data-filename="${message.mediaName}"
                         style="box-shadow: 1px 1px 0px 0px #000000;"
                         title="Download image">
                     💾 Download
@@ -887,8 +888,9 @@ function displayMessage(message) {
                     <div class="font-mono text-xs text-gray-500">
                         ${audioName} • Duration: ${formatDuration(audioDur)} • ${formatFileSize(audioSize)}
                     </div>
-                    <button onclick="downloadFile('${message.mediaUrl}', '${audioName}')" 
-                            class="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
+                    <button class="download-btn px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
+                            data-url="${message.mediaUrl}"
+                            data-filename="${audioName}"
                             style="box-shadow: 1px 1px 0px 0px #000000;"
                             title="Download audio file">
                         💾 Download
@@ -910,8 +912,9 @@ function displayMessage(message) {
             </video>
             <div class="flex justify-between items-center mt-1">
                 <div class="font-mono text-xs text-gray-500">${message.mediaName} (${formatFileSize(message.mediaSize)})</div>
-                <button onclick="downloadFile('${message.mediaUrl}', '${message.mediaName}')" 
-                        class="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
+                <button class="download-btn px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
+                        data-url="${message.mediaUrl}"
+                        data-filename="${message.mediaName}"
                         style="box-shadow: 1px 1px 0px 0px #000000;"
                         title="Download video">
                     💾 Download
@@ -937,14 +940,15 @@ function displayMessage(message) {
                         <div class="font-mono text-xs text-gray-500">${formatFileSize(fileSize)}</div>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="window.open('${message.mediaUrl}', '_blank')" 
-                                class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold border border-black"
+                        <button class="view-btn px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold border border-black"
+                                data-url="${message.mediaUrl}"
                                 style="box-shadow: 1px 1px 0px 0px #000000;"
                                 title="Open file in new tab">
                             👁️ View
                         </button>
-                        <button onclick="downloadFile('${message.mediaUrl}', '${fileName}')" 
-                                class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
+                        <button class="download-btn px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
+                                data-url="${message.mediaUrl}"
+                                data-filename="${fileName}"
                                 style="box-shadow: 1px 1px 0px 0px #000000;"
                                 title="Download file">
                             💾 Save
@@ -1201,21 +1205,30 @@ function escapeHtml(text) {
 
 // Download file function
 window.downloadFile = function(url, filename) {
-    // Create a temporary anchor element
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename || 'download';
-    a.style.display = 'none';
-    
-    // Append to body, click, and remove
-    document.body.appendChild(a);
-    a.click();
-    
-    // Clean up
-    setTimeout(() => {
-        document.body.removeChild(a);
-        showNotification(`💾 Downloading ${filename}...`);
-    }, 100);
+    try {
+        // Convert view URL to download URL
+        const downloadUrl = url.replace('/api/media/file/', '/api/media/download/');
+        
+        // Create a temporary anchor element
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = filename || 'download';
+        a.target = '_blank';
+        a.style.display = 'none';
+        
+        // Append to body, click, and remove
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        setTimeout(() => {
+            document.body.removeChild(a);
+            showNotification(`💾 Downloading ${filename}...`);
+        }, 100);
+    } catch (error) {
+        console.error('Download error:', error);
+        showError('Failed to download file');
+    }
 };
 
 function showError(message) {
@@ -1239,3 +1252,39 @@ function showError(message) {
 window.addEventListener('beforeunload', () => {
     socket.disconnect();
 });
+
+// Event delegation for dynamically created buttons (CSP compliant)
+if (chatMessages) {
+    chatMessages.addEventListener('click', function(e) {
+        // Handle download buttons
+        const downloadBtn = e.target.closest('.download-btn');
+        if (downloadBtn) {
+            const url = downloadBtn.dataset.url;
+            const filename = downloadBtn.dataset.filename;
+            if (url && filename) {
+                downloadFile(url, filename);
+            }
+            return;
+        }
+        
+        // Handle view buttons
+        const viewBtn = e.target.closest('.view-btn');
+        if (viewBtn) {
+            const url = viewBtn.dataset.url;
+            if (url) {
+                window.open(url, '_blank');
+            }
+            return;
+        }
+        
+        // Handle media-view elements (images/videos/audio)
+        const mediaView = e.target.closest('.media-view');
+        if (mediaView) {
+            const url = mediaView.dataset.url;
+            if (url) {
+                window.open(url, '_blank');
+            }
+            return;
+        }
+    });
+}
