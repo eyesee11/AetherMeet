@@ -10,9 +10,11 @@ const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-require('dotenv').config();
 
-// Import security middleware and memory management
+if (process.env.NODE_ENV !== 'test') {
+  require('dotenv').config();
+}
+
 const { 
     generalLimiter, 
     authLimiter, 
@@ -25,10 +27,8 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// Trust proxy - important for rate limiting to work correctly when behind reverse proxy or using ngrok
 app.set('trust proxy', 1);
 
-// Import routes and models
 const authRoutes = require('./routes/auth');
 const roomRoutes = require('./routes/rooms');
 const notesRoutes = require('./routes/notes');
@@ -39,11 +39,9 @@ const i18nRoutes = require('./routes/i18n');
 const memoryRoutes = require('./routes/memory');
 const socketHandler = require('./socket/socketHandler');
 
-// Security middleware
 app.use(helmetConfig);
 app.use(generalLimiter);
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -58,29 +56,27 @@ app.use('/storage', express.static('storage'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// MongoDB connection with optimized settings
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aethermeet', {
-    maxPoolSize: 10, // Maintain up to 10 socket connections
-    serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-    bufferCommands: false // Disable mongoose buffering
-}).then(() => {
-    console.log('✅ MongoDB connected successfully');
-    
-    // Start memory management system AFTER DB is connected
-    memoryManager.startCleanup(30); // Cleanup every 30 minutes
-    
-    // Start server only after DB is ready
-    const PORT = process.env.PORT || 5000;
-    server.listen(PORT, () => {
-        console.log(`🚀 Server running on port ${PORT}`);
-    });
-}).catch(err => {
-    console.error('❌ MongoDB connection error:', err);
-    process.exit(1);
-});
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aethermeet', {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false
+  }).then(() => {
+      console.log('✅ MongoDB connected successfully');
+      
+      memoryManager.startCleanup(30);
+      
+      const PORT = process.env.PORT || 5000;
+      server.listen(PORT, () => {
+          console.log(`🚀 Server running at: http://localhost:${PORT}`);
+      });
+  }).catch(err => {
+      console.error('❌ MongoDB connection error:', err);
+      process.exit(1);
+  });
+}
 
-// Health check endpoint for production monitoring
 app.get('/api/health', (req, res) => {
     const healthCheck = {
         uptime: process.uptime(),
@@ -90,7 +86,6 @@ app.get('/api/health', (req, res) => {
         version: require('./package.json').version
     };
     
-    // Check database connection
     if (mongoose.connection.readyState === 1) {
         healthCheck.database = 'Connected';
     } else {
@@ -102,9 +97,8 @@ app.get('/api/health', (req, res) => {
     res.status(statusCode).json(healthCheck);
 });
 
-// Routes with rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/rooms', roomRoutes(io)); // Pass io instance to room routes
+app.use('/api/rooms', roomRoutes(io));
 app.use('/api/notes', notesRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/analytics', analyticsRoutes);
@@ -112,7 +106,6 @@ app.use('/api/moderation', moderationRoutes);
 app.use('/api/i18n', i18nRoutes);
 app.use('/api/memory', memoryRoutes);
 
-// Serve frontend pages
 app.get('/', (req, res) => {
     const pendingRoomCode = req.session.pendingRoomCode;
     res.render('index', { pendingRoomCode: pendingRoomCode || null });
@@ -120,7 +113,6 @@ app.get('/', (req, res) => {
 
 app.get('/dashboard', (req, res) => {
     const roomCode = req.query.roomCode || req.session.pendingRoomCode;
-    // Clear the pending room code from session once used
     if (req.session.pendingRoomCode) {
         delete req.session.pendingRoomCode;
     }
@@ -138,7 +130,6 @@ app.get('/room/:roomCode', async (req, res) => {
         
         const Room = require('./models/Room');
         
-        // Check if room exists
         const room = await Room.findOne({ 
             roomCode: roomCode.toUpperCase(),
             isActive: true 
@@ -148,10 +139,8 @@ app.get('/room/:roomCode', async (req, res) => {
             return res.status(404).send('Room not found or expired');
         }
         
-        // Auto-detect if this is a demo room (even if demo param is missing)
         if (room.isDemoRoom) {
             isDemo = true;
-            // Redirect to include demo parameter if missing
             if (req.query.demo !== 'true') {
                 return res.redirect(`/room/${roomCode}?demo=true`);
             }
@@ -166,11 +155,9 @@ app.get('/room/:roomCode', async (req, res) => {
     }
 });
 
-// Handle share links - redirect to dashboard with room code
 app.get('/join/:roomCode', (req, res) => {
     const { roomCode } = req.params;
     
-    // Check if user is authenticated
     const token = req.cookies.token;
     
     if (!token) {
@@ -187,10 +174,8 @@ app.get('/join/:roomCode', (req, res) => {
     }
 });
 
-// Socket.IO handling
 socketHandler(io);
 
-// Graceful shutdown
 process.on('SIGTERM', () => {
     memoryManager.stopCleanup();
     server.close(() => {

@@ -1,301 +1,229 @@
-![AetherMeet Application Banner](https://placehold.co/1200x400/1e293b/ffffff?text=AetherMeet&font=raleway)
+# AetherMeet - Secure & Ephemeral Team Chat Rooms
 
-## ✨ Key Features
+**A modern, secure chat application for temporary team collaboration with real-time messaging, media sharing, and advanced moderation features.**
 
-### 🚀 Instant Demo Rooms (NEW!)
-* **No Registration Required:** Create demo rooms instantly from the landing page
-* **Any Password Works:** Use any alphanumeric password (123, abc, demo, etc.)
-* **Quick Access:** Try demo rooms directly from header buttons
-* **24-Hour Auto-Expiry:** Demo rooms automatically expire after 24 hours
-* **Share Links:** Get instant shareable links with copy functionality
-* **Unlimited Access:** Create as many demo rooms as needed
+---
 
-### 🔐 Authenticated Rooms
-* **Secure User Authentication:** Standard user registration and login system using JSON Web Tokens (JWT)
-* **Ephemeral Chat Rooms:** Rooms are designed to be temporary and can be destroyed by any member
-* **Dual Room Creation Modes:**
-    * **Instant Room:** Create a room on-the-fly for immediate conversations
-    * **Scheduled Room:** Schedule a room to be created at a specific future date and time
-* **Flexible Password System:** Any alphanumeric password works - simple and flexible
-* **Advanced Admission Controls:**
-    * **Owner Approval:** The room owner can manually accept or reject new members
-    * **Democratic Voting:** Existing members can vote on admitting new users
-    * **Instant Entry:** Demo rooms allow immediate access
+## 📋 Overview
 
-### 💬 Chat & Media Features
-* **Real-time Messaging:** Instant message delivery with Socket.IO
-* **Media Sharing:** Upload and share images, videos, audio files, and documents
-* **Message History:** Complete chat history with timestamps
-* **PDF Export:** Export entire chat history to downloadable PDF files
-* **User Management:** See online members, join/leave notifications
+AetherMeet is a full-stack web application designed for secure, temporary team collaboration. Built with Node.js, Express, MongoDB, and Socket.IO, it offers real-time communication with end-to-end encryption capabilities.
 
-### 🎨 User Experience
-* **Neo-Brutalism Design:** Modern, bold design with clean typography
-* **Dark/Light Theme Toggle:** Switchable themes across all pages
-* **Responsive Layout:** Works seamlessly on desktop and mobile
-* **Accessible Interface:** Clean, emoji-free forms and intuitive navigation
+**Key Features:**
+- Instant demo rooms (no registration required)
+- Secure authenticated rooms with JWT
+- Real-time messaging with Socket.IO
+- Media file sharing
+- Advanced moderation and voting systems
+- PDF chat export
+- Dark/light theme support
 
-## 🛠️ Tech Stack & Core Concepts
+---
 
-This project leverages a modern backend stack to handle its complex real-time, security, and scheduling requirements.
+## 🛠️ Tech Stack
 
-| Technology / Concept | Implementation in AetherMeet |
-| :--- | :--- |
-| **Node.js & Express.js** | Backend server for the REST API and serving the frontend. |
-| **MongoDB & Mongoose** | Primary database with optimized schema and compound indexes for performance. |
-| **WebSockets (Socket.IO)** | Powers all real-time features: messaging, admission voting, and live user lists. |
-| **JWT & bcrypt.js** | Secures user authentication and hashes passwords for authenticated rooms. |
-| **Express Rate Limit** | Advanced rate limiting to prevent abuse and ensure fair usage. |
-| **Helmet.js** | Security middleware providing 11 layers of protection including CSP. |
-| **`node-schedule`** | A flexible library for scheduling future tasks, used to create scheduled rooms. |
-| **`multer`** | Handles secure file uploads with validation for media sharing. |
-| **`pdfkit`** | Server-side library for dynamically generating PDF documents from chat history. |
-| **EJS (Templating Engine)** | Renders the landing page, dashboard, and chat room UI with theme support. |
-| **Tailwind CSS** | Utility-first CSS framework with neo-brutalism design system. |
+**Backend:** Node.js, Express.js, MongoDB, Mongoose, Socket.IO, JWT, bcrypt  
+**Frontend:** EJS, Tailwind CSS, Vanilla JavaScript  
+**Security:** Helmet.js, Express Rate Limit, Input Sanitization  
+**Testing:** Jest, Supertest, MongoDB Memory Server
 
-## ⚙️ Installation & Setup
+---
 
-**Prerequisites:**
-- Node.js (v14 or higher)
-- MongoDB (local installation or cloud service like MongoDB Atlas)
+## 📦 Installation
 
-1.  **Clone or navigate to the repository:**
-    ```bash
-    cd SayWhatever
-    ```
+### Prerequisites
+- Node.js (v18.0.0 or higher)
+- npm (v9.0.0 or higher)
+- MongoDB (local or cloud)
 
-2.  **Install dependencies (already done):**
-    ```bash
-    npm install
-    ```
+### Setup
 
-3.  **Set up environment variables:**
-    The `.env` file has been created with default values. Update as needed:
-    ```env
-    PORT=5000
-    MONGO_URI=mongodb://localhost:27017/aethermeet
-    JWT_SECRET=your_super_secret_key_for_jwt_change_this_in_production
-    DICTIONARY_API_KEY=your_dictionary_api_key_optional
-    ```
+1. **Clone and install**
+   ```bash
+   git clone https://github.com/yourusername/aethermeet.git
+   cd aethermeet
+   npm install
+   ```
 
-4.  **Start MongoDB:**
-    - If using local MongoDB: `mongod`
-    - If using MongoDB Atlas: Update the `MONGO_URI` in `.env`
+2. **Configure environment**
+   
+   Create `.env` file:
+   ```env
+   PORT=5000
+   MONGO_URI=mongodb://localhost:27017/aethermeet
+   JWT_SECRET=your_secret_key_here
+   SESSION_SECRET=your_session_secret_here
+   ```
+
+3. **Run the application**
+   ```bash
+   npm start
+   ```
+   
+   Development mode:
+   ```bash
+   npm run dev
+   ```
+
+4. **Access at:** `http://localhost:5000`
+
+---
+
+## 🧪 Testing
+
+Complete Jest testing suite with 50+ tests covering unit tests, integration tests, and API tests.
+
+### Run Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm test -- --coverage
+
+# Run specific test suite
+npm run test:unit          # Unit tests only
+npm run test:integration   # Integration tests only
+npm run test:api          # API tests only
+
+# Watch mode
+npm run test:watch
+```
+
+### Test Structure
+
+```
+tests/
+├── setup.js                 # Test environment setup
+├── helpers.js               # Test utilities
+├── unitTests.test.js        # 20+ unit tests
+├── integrationTests.test.js # 15+ integration tests
+└── apiTests.test.js         # 15+ API tests
+```
+
+### Test Coverage
+
+- ✅ **Unit Tests** - Helper functions, validation, utilities
+- ✅ **Integration Tests** - User/Room models, database operations
+- ✅ **API Tests** - Authentication, room management, health checks
+
+**Expected Coverage:** 85%+ statements, 75%+ branches
+
+---
 
 ## 🚀 Usage
 
 ### Quick Demo (No Registration)
-1. **Navigate to** `http://localhost:5000`
-2. **Click "Try Demo"** in the header or hero section
-3. **Instant Room Creation** - Demo room is created automatically
-4. **Share the Link** - Copy the generated room link to invite others
-5. **Start Chatting** - Begin messaging immediately with media support
 
-### Full Platform Access
-1. **Start the server:**
-    ```bash
-    npm run dev
-    ```
+1. Go to `http://localhost:5000`
+2. Click **"Try Demo"**
+3. Share the room link
+4. Start chatting
 
-2. **Access the application:**
-    * Navigate to `http://localhost:5000`.
-    * Sign up for a new account or log in.
-    * From the dashboard, choose to "Create an Instant Room" or "Schedule a Room."
-    * Configure your room's security settings (passwords, admission control).
-    * Share the room code with others to invite them.
+### Full Platform
 
-## 📝 API Endpoints
+1. **Register** - Create account
+2. **Create Room** - Set name, password, admission type
+3. **Join Room** - Enter room code and password
+4. **Chat** - Send messages and share media
 
-| Method | Endpoint | Description | Protected |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Register a new user. | No |
-| `POST` | `/api/auth/login` | Log in and receive a JWT. | No |
-| `POST` | `/api/rooms/create-demo` | Create an instant demo room (no auth required). | No |
-| `POST` | `/api/rooms/instant` | Create an instant authenticated room. | Yes |
-| `POST` | `/api/rooms/schedule` | Schedule a room for the future. | Yes |
-| `POST` | `/api/rooms/:roomCode/join` | Attempt to join a room with a password. | Yes |
-| `GET` | `/api/rooms/:roomCode/export` | Triggers a PDF export of the chat history. | Yes |
-| `POST` | `/api/media/upload` | Upload media files (images, videos, audio, documents). | Yes |
-| `GET` | `/api/media/file/:filename` | Serve uploaded media files. | No |
+---
 
-## 🔌 WebSocket Events
+## 📚 API Documentation
 
-The real-time logic is complex and managed through a series of custom events.
+### Authentication
 
-| Event Name | Direction | Description |
-| :--- | :--- | :--- |
-| `joinRoom` | C → S | Join a specific room by room code. |
-| `sendMessage` | C → S | Send a chat message to the current room. |
-| `sendMediaMessage` | C → S | Send a media message (image, video, audio, file). |
-| `requestToJoin` | C → S | A user sends their password(s) to request entry into a room. |
-| `approveAdmission` | C → S | Owner approves or denies admission requests. |
-| `castVote` | C → S | A member casts their vote (`{ decision: 'admit' / 'deny' }`). |
-| `leaveRoom` | C → S | Leave the current room with options for owners. |
-| `dissolveRoom` | C → S | Any member can dissolve/destroy the room (demo rooms). |
-| `roomJoined` | S → C | Confirmation of successful room join with room info. |
-| `messageHistory` | S → C | Send chat history when user joins room. |
-| `newMessage` | S → C | Broadcast new messages (text and media) to all room members. |
-| `userJoined` | S → C | Broadcast to a room when a new user successfully joins. |
-| `userLeft` | S → C | Broadcast when a user leaves the room. |
-| `userAdmitted` | S → C | Broadcast when a pending user is admitted. |
-| `admissionRequired`| S → C | Sent to the owner (or members) when a new user needs approval to join. |
-| `pendingAdmissions` | S → C | Send list of pending admission requests. |
-| `voteUpdate` | S → C | Update vote status for democratic admission. |
-| `ownerTransfer` | S → C | Broadcast to a room to announce the new owner. |
-| `roomDestroyed` | S → C | Broadcast to all members just before the room is closed. |
-| `admissionResult` | S → C | Notify users of admission decision results. |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/auth/register` | Register user | No |
+| POST | `/api/auth/login` | Login user | No |
+| POST | `/api/auth/logout` | Logout | Yes |
+| POST | `/api/auth/refresh` | Refresh token | Yes |
+| GET | `/api/auth/sessions` | Get sessions | Yes |
+
+### Rooms
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/rooms/create-demo` | Create demo room | No |
+| POST | `/api/rooms/instant` | Create instant room | Yes |
+| POST | `/api/rooms/schedule` | Schedule room | Yes |
+| POST | `/api/rooms/:code/join` | Join room | Yes |
+| GET | `/api/rooms/:code/export` | Export PDF | Yes |
+
+### System
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/health` | Health check | No |
+
+---
 
 ## 📁 Project Structure
 
 ```
 aethermeet/
-├── server.js                 # Main server file
-├── package.json             # Dependencies and scripts
-├── .env                     # Environment variables
-├── .gitignore              # Git ignore rules
-├── README.md               # This file
-├── models/                 # Database models
-│   ├── User.js            # User model with authentication
-│   └── Room.js            # Room model with demo room support
-├── routes/                 # API routes
-│   ├── auth.js            # Authentication routes
-│   ├── rooms.js           # Room management routes (including demo rooms)
-│   └── media.js           # Media upload and serving routes
-├── socket/                 # Socket.IO handling
-│   └── socketHandler.js   # Real-time event handlers
-├── utils/                  # Utility functions
-│   └── helpers.js         # JWT auth, password validation, etc.
-├── views/                  # EJS templates
-│   ├── index.ejs          # Landing page with demo room feature
-│   ├── dashboard.ejs      # User dashboard with theme toggle
-│   ├── room.ejs           # Chat room interface with media support
-│   └── notes.ejs          # Notes management interface
-├── storage/                # File storage
-│   ├── media/             # Uploaded media files
-│   └── pdfs/              # Generated PDF exports
-└── public/                 # Static files
-    ├── css/
-    │   └── style.css      # Main stylesheet
-    └── js/
-        ├── auth.js        # Authentication frontend
-        ├── dashboard.js   # Dashboard functionality
-        └── room.js        # Real-time chat functionality
+├── tests/                   # Jest test suite
+│   ├── setup.js            # Test setup
+│   ├── helpers.js          # Test utilities
+│   ├── unitTests.test.js   # Unit tests
+│   ├── integrationTests.test.js  # Integration tests
+│   └── apiTests.test.js    # API tests
+├── models/                  # Database models
+│   ├── User.js
+│   ├── Room.js
+│   ├── Message.js
+│   └── ...
+├── routes/                  # API routes
+│   ├── auth.js
+│   ├── rooms.js
+│   └── ...
+├── utils/                   # Utilities
+│   └── helpers.js
+├── views/                   # EJS templates
+├── public/                  # Static files
+├── jest.config.js          # Jest configuration
+├── server.js               # Main server
+└── package.json            # Dependencies
 ```
 
-## 🎯 Features Implemented
+---
 
-### ✅ Core Features
-- [x] User registration and authentication with JWT
-- [x] Secure password hashing with bcrypt
-- [x] **Instant Demo Rooms** (no registration required)
-- [x] Room creation (instant and scheduled) for authenticated users
-- [x] Flexible password validation (any alphanumeric characters)
-- [x] Real-time chat with Socket.IO
-- [x] **Media file sharing** (images, videos, audio, documents)
-- [x] Owner approval and democratic voting for admissions
-- [x] Room ownership transfer
-- [x] **Room dissolution** (any member can destroy demo rooms)
-- [x] **PDF chat export** with proper content generation
-- [x] Responsive web interface with **dark/light theme toggle**
+## 🎯 Features
 
-### ✅ Security Features
-- [x] JWT-based authentication
-- [x] Flexible password validation system
-- [x] Input sanitization
-- [x] Protected API routes
-- [x] Socket authentication
-- [x] File upload security with type validation
+### Room Management
+- Instant demo rooms
+- Authenticated rooms
+- Scheduled rooms
+- Flexible passwords
+- Owner approval
+- Democratic voting
 
-### ✅ Real-time Features
-- [x] Live chat messaging with text and media
-- [x] Real-time member lists
-- [x] Admission request notifications
-- [x] Voting system for member admission
-- [x] Connection status indicators
-- [x] **Real-time admission notifications**
+### Communication
+- Real-time messaging
+- Media sharing
+- Message history
+- PDF export
 
-### ✅ User Experience Features
-- [x] **Neo-brutalism design** with Tailwind CSS
-- [x] **Emoji-free interface** for clean accessibility
-- [x] **Instant demo room creation** from landing page
-- [x] **Share link generation** with copy functionality
-- [x] **Theme toggle** across all pages
-- [x] **Mobile-responsive design**
+### Security
+- JWT authentication
+- Password hashing
+- Rate limiting
+- Input sanitization
+- Session management
 
-## 🔧 Configuration Notes
+---
 
-1. **MongoDB Connection**: Update `MONGO_URI` in `.env` to match your MongoDB setup
-2. **JWT Secret**: Change `JWT_SECRET` to a secure, random string for production
-3. **Port Configuration**: Default port is 5000, changeable via `PORT` environment variable
-4. **File Storage**: Media files are stored in `storage/media/` directory
-5. **Demo Room Expiry**: Demo rooms automatically expire after 24 hours
+## 📄 License
 
-## 🚀 Getting Started Quickly
+ISC License
 
-### Demo Mode (Fastest)
-1. **Start MongoDB** (if running locally)
-2. **Run the application**: `npm run dev`
-3. **Open browser**: Go to `http://localhost:5000`
-4. **Click "Try Demo"**: Creates instant demo room
-5. **Share Link**: Copy the generated link to invite others
+---
 
-### Full Platform
-1. **Follow demo steps 1-3 above**
-2. **Register**: Create a new account
-3. **Create Room**: Use "Create Instant Room" with any password
-4. **Configure**: Set admission type (owner approval/democratic voting)
-5. **Test Features**: Invite others using the room code
+## 👨‍💻 Author
 
-## � Security & Performance Improvements (Phase 1)
+**B.Tech Final Year Project**
 
-### 🛡️ Security Hardening
-* **Rate Limiting**: Advanced rate limiting prevents abuse across all endpoints
-  - General API: 100 requests per 15 minutes per IP
-  - Room Creation: 5 rooms per 15 minutes per IP  
-  - Authentication: 10 attempts per 15 minutes per IP
-  - Media Upload: 20 uploads per 15 minutes per IP
-* **Input Sanitization**: Comprehensive input sanitization prevents XSS attacks
-* **Security Headers**: Helmet.js implementation with CSP protection
-* **File Upload Security**: Strict file type validation and size limits (50MB max)
-* **Content Security Policy**: Prevents unauthorized script execution
+---
 
-### ⚡ Database Optimization
-* **Separate Message Collection**: Messages moved to dedicated collection to prevent 16MB limit
-* **Compound Indexes**: Strategic indexing for optimal query performance
-* **TTL Indexes**: Automatic cleanup of expired demo rooms and old messages
-* **Query Optimization**: Efficient pagination and message retrieval
-
-### 📊 Performance Enhancements
-* **Message Pagination**: Load messages efficiently with cursor-based pagination  
-* **Database Indexes**: Optimized queries with compound indexes on critical fields
-* **Memory Management**: Reduced memory usage with separated message storage
-* **Connection Pooling**: Optimized MongoDB connection management
-
-## �💡 Sample Usage
-
-### Demo Room
-1. **Landing Page**: Click "Try Demo" button
-2. **Instant Creation**: Room created automatically with random password
-3. **Share**: Copy the provided link
-4. **Join**: Others can join with the link and password
-5. **Chat**: Start messaging with media support immediately
-
-### Authenticated Room
-1. **Registration**: Use any username, email, and password (min 6 characters)
-2. **Room Creation**: 
-   - Name: "Project Meeting"
-   - Primary Password: "meeting123" (any alphanumeric)
-   - Admission Type: "Owner Approval"
-3. **Room Joining**: Share the 6-character room code with others
-4. **Chat**: Start messaging with full media support
-5. **PDF Export**: Click "Export PDF" to download chat history
-
-## 🎨 UI Features
-
-- **Neo-Brutalism Design**: Bold, modern aesthetic with sharp edges and strong contrast
-- **Dark/Light Theme Toggle**: Persistent theme switching across all pages
-- **Responsive Layout**: Optimized for desktop and mobile devices
-- **Real-time Updates**: Live member counts and message delivery indicators
-- **Clean Interface**: Emoji-free forms and accessible design
-- **Interactive Modals**: Smooth modal interactions for all actions
-- **Media Preview**: In-chat preview for images, videos, and audio files
+**Ready for Demonstration! 🚀**
