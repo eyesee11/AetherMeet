@@ -58,6 +58,73 @@
         .dark #themeToggle { background-color: #2a2a2a !important; color: #ffffff !important; border-color: #ffffff !important; }
         .dark .btn-brutal { box-shadow: 4px 4px 0px 0px #ffffff !important; }
         .dark .btn-brutal:hover { box-shadow: 2px 2px 0px 0px #ffffff !important; }
+        
+        /* Toast notification styles */
+        .toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            min-width: 300px;
+            max-width: 500px;
+            padding: 16px 20px;
+            border: 3px solid #000;
+            box-shadow: 6px 6px 0px 0px #000;
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+            font-weight: 600;
+        }
+        
+        .dark .toast {
+            border-color: #fff;
+            box-shadow: 6px 6px 0px 0px #fff;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+        
+        .toast.hiding {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+        
+        .toast-success {
+            background-color: #4ade80;
+            color: #000;
+        }
+        
+        .toast-error {
+            background-color: #f87171;
+            color: #000;
+        }
+        
+        .toast-info {
+            background-color: #60a5fa;
+            color: #000;
+        }
+        
+        .dark .toast-success,
+        .dark .toast-error,
+        .dark .toast-info {
+            color: #fff;
+        }
     </style>
 </head>
 <body class="bg-white text-black font-sans min-h-screen transition-colors duration-300">
@@ -110,10 +177,10 @@
                 <p class="text-sm text-gray-600">Enter note code and passwords</p>
             </button>
 
-            <div class="btn-brutal bg-gray-100 text-gray-500 border-2 border-gray-400 p-6 text-left cursor-not-allowed">
+            <button id="myNotesBtn" class="btn-brutal bg-purple-400 text-black border-2 border-black p-6 text-left">
                 <h3 class="font-bold uppercase tracking-wide mb-2">● My Notes List</h3>
-                <p class="text-sm">Coming Soon - Browse your notes</p>
-            </div>
+                <p class="text-sm">Browse all your saved notes</p>
+            </button>
         </div>
 
         <!-- Note Display Area -->
@@ -253,6 +320,23 @@
         </div>
     </div>
 
+    <!-- My Notes List Modal -->
+    <div id="myNotesModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-white border-4 border-black p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" style="box-shadow: 16px 16px 0px 0px #000000;">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-3xl font-black uppercase tracking-tight text-black">My Notes</h3>
+                <button class="close text-3xl font-black text-black hover:text-red-600 transition-colors duration-200 btn-brutal-small px-3 py-1 bg-red-100 border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000;">&times;</button>
+            </div>
+            <div id="notesListContainer" class="space-y-4">
+                <div class="text-center text-gray-500 py-8">Loading notes...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-20 right-4 z-[10000] space-y-3" style="pointer-events: none;">
+    </div>
+
     <script src="/js/notes.js"></script>
     <script>
         // Theme toggle functionality
@@ -266,8 +350,11 @@
         // Apply theme on page load
         if (currentTheme === 'dark') {
             document.documentElement.classList.add('dark');
-            themeIcon.textContent = 'LIGHT';
-            themeText.textContent = 'MODE';
+            themeIcon.textContent = '☀️ ';
+            themeText.textContent = 'LIGHT';
+        } else {
+            themeIcon.textContent = '🌙 ';
+            themeText.textContent = 'DARK';
         }
         
         // Theme toggle event listener
@@ -277,14 +364,14 @@
             if (isDark) {
                 // Switch to light theme
                 document.documentElement.classList.remove('dark');
-                themeIcon.textContent = 'DARK';
-                themeText.textContent = 'MODE';
+                themeIcon.textContent = '🌙 ';
+                themeText.textContent = 'DARK';
                 localStorage.setItem('theme', 'light');
             } else {
                 // Switch to dark theme
                 document.documentElement.classList.add('dark');
-                themeIcon.textContent = 'LIGHT';
-                themeText.textContent = 'MODE';
+                themeIcon.textContent = '☀️ ';
+                themeText.textContent = 'LIGHT';
                 localStorage.setItem('theme', 'dark');
             }
         });

@@ -1,4 +1,32 @@
 // Room JavaScript with Socket.IO
+// Toast Notification System
+function showToast(message, type = 'info') {
+    let toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toastContainer';
+        toastContainer.className = 'fixed top-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none';
+        document.body.appendChild(toastContainer);
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.style.pointerEvents = 'auto';
+    toast.innerHTML = `
+        <div class="flex items-center justify-between">
+            <span class="font-bold font-mono text-sm">${message}</span>
+            <button class="toast-close-btn ml-4 text-xl font-black hover:scale-110 transition-transform">×</button>
+        </div>
+    `;
+    toastContainer.appendChild(toast);
+    toast.querySelector('.toast-close-btn').addEventListener('click', function() {
+        toast.classList.add('hiding');
+        setTimeout(() => toast.remove(), 300);
+    });
+    setTimeout(() => {
+        toast.classList.add('hiding');
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
 
 // Check if this is a demo room
 const urlParams = new URLSearchParams(window.location.search);
@@ -182,12 +210,14 @@ socket.on('userRemoved', (data) => {
 socket.on('removedFromRoom', (data) => {
     const currentUser = isDemoRoom ? JSON.parse(localStorage.getItem('demoUser') || '{}') : user;
     if (data.username === currentUser.username) {
-        alert(`You have been removed from the room by ${data.removedBy}`);
-        if (isDemoRoom) {
-            window.location.href = '/';
-        } else {
-            window.location.href = '/dashboard';
-        }
+        showToast(`You have been removed from the room by ${data.removedBy}`, 'error');
+        setTimeout(() => {
+            if (isDemoRoom) {
+                window.location.href = '/';
+            } else {
+                window.location.href = '/dashboard';
+            }
+        }, 1200);
     }
 });
 
@@ -251,10 +281,10 @@ socket.on('ownerTransfer', (data) => {
 
 socket.on('roomDestroyed', (data) => {
     displaySystemMessage(`Room destroyed: ${data.reason}`);
+    showToast(`Room has been destroyed: ${data.reason}`, 'error');
     setTimeout(() => {
-        alert(`Room has been destroyed: ${data.reason}`);
         window.location.href = isDemoRoom ? '/' : '/dashboard';
-    }, 2000);
+    }, 1800);
 });
 
 socket.on('roomEmpty', (data) => {
@@ -264,24 +294,30 @@ socket.on('roomEmpty', (data) => {
 socket.on('admissionResult', (data) => {
     if (data.username === user.username) {
         if (data.result === 'admitted') {
-            alert('You have been admitted to the room!');
+            showToast('You have been admitted to the room!', 'success');
             // If we're already on the room page, just refresh to show the room content
-            if (window.location.pathname.includes('/room/')) {
-                window.location.reload();
-            } else {
-                window.location.href = `/room/${data.roomCode}`;
-            }
+            setTimeout(() => {
+                if (window.location.pathname.includes('/room/')) {
+                    window.location.reload();
+                } else {
+                    window.location.href = `/room/${data.roomCode}`;
+                }
+            }, 1200);
         } else {
-            alert('Your admission request was denied.');
-            window.location.href = '/dashboard';
+            showToast('Your admission request was denied.', 'error');
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1200);
         }
     }
 });
 
 socket.on('error', (data) => {
-    alert(`Error: ${data.message}`);
+    showToast(`Error: ${data.message}`, 'error');
     if (data.message.includes('Cannot join room')) {
-        window.location.href = '/dashboard';
+        setTimeout(() => {
+            window.location.href = '/dashboard';
+        }, 1200);
     }
 });
 
@@ -660,16 +696,31 @@ function formatDuration(seconds) {
 
 // Export PDF
 exportPdfBtn.addEventListener('click', async () => {
-    // Show options modal
-    const choice = confirm('Choose export option:\nOK = Download PDF immediately\nCancel = Save to Personal Notes');
-    
-    if (choice) {
-        // Download PDF immediately
-        await downloadPdf();
-    } else {
-        // Save to notes
-        await savePdfToNotes();
-    }
+    // Show custom export modal
+    const modal = document.getElementById('exportChatModal');
+    modal.classList.remove('hidden');
+    // Focus first button for accessibility
+    setTimeout(() => {
+        document.getElementById('exportDownloadBtn').focus();
+    }, 100);
+});
+
+// Export modal button handlers
+document.getElementById('exportDownloadBtn').addEventListener('click', async () => {
+    document.getElementById('exportChatModal').classList.add('hidden');
+    showToast('Preparing PDF for download...', 'info');
+    await downloadPdf();
+});
+
+document.getElementById('exportToNotesBtn').addEventListener('click', async () => {
+    document.getElementById('exportChatModal').classList.add('hidden');
+    showToast('Preparing PDF for notes app...', 'info');
+    await savePdfToNotes();
+});
+
+document.getElementById('cancelExportBtn').addEventListener('click', () => {
+    document.getElementById('exportChatModal').classList.add('hidden');
+    showToast('Export cancelled', 'info');
 });
 
 async function downloadPdf() {
@@ -698,7 +749,7 @@ async function downloadPdf() {
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-            showNotification('✅ PDF exported successfully!');
+            showToast('✅ PDF exported successfully!', 'success');
         } else {
             const data = await response.json();
             showError(`Failed to export PDF: ${data.message}`);
@@ -733,11 +784,35 @@ async function savePdfToNotes() {
                 
                 // Open notes page in new tab or redirect
                 const notesUrl = '/notes?action=save-pdf';
-                if (confirm('PDF ready to save to notes. Open notes page?\nOK = Open in new tab\nCancel = Redirect current page')) {
+                showToast('PDF ready to save to notes!', 'success');
+                // Ask user: open in new tab or redirect
+                const openModal = document.createElement('div');
+                openModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                openModal.innerHTML = `
+                    <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
+                        <h3 class="text-xl font-black uppercase tracking-tight mb-4">Open Notes App</h3>
+                        <p class="mb-6 text-gray-700 font-mono">PDF is ready. How would you like to open the notes app?</p>
+                        <div class="space-y-4">
+                            <button id="openNotesNewTab" class="btn-brutal w-full px-6 py-3 bg-blue-500 text-white border-2 border-blue-500 font-bold uppercase tracking-wide">Open in New Tab</button>
+                            <button id="openNotesRedirect" class="btn-brutal w-full px-6 py-3 bg-green-500 text-white border-2 border-green-500 font-bold uppercase tracking-wide">Redirect Current Page</button>
+                            <button id="cancelOpenNotes" class="btn-brutal w-full px-6 py-3 bg-gray-200 text-black border-2 border-black font-bold uppercase tracking-wide">Cancel</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(openModal);
+                document.getElementById('openNotesNewTab').addEventListener('click', () => {
                     window.open(notesUrl, '_blank');
-                } else {
+                    openModal.remove();
+                    showToast('Notes app opened in new tab', 'info');
+                });
+                document.getElementById('openNotesRedirect').addEventListener('click', () => {
                     window.location.href = notesUrl;
-                }
+                    openModal.remove();
+                });
+                document.getElementById('cancelOpenNotes').addEventListener('click', () => {
+                    openModal.remove();
+                    showToast('Open notes cancelled', 'info');
+                });
             } else {
                 showError(`Failed to prepare PDF for notes: ${data.message}`);
             }

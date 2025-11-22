@@ -100,6 +100,21 @@
     </style>
 </head>
 <body class="bg-white text-black font-sans h-screen flex flex-col transition-colors duration-300">
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- Export Chat Modal -->
+    <div id="exportChatModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
+            <h3 class="text-2xl font-black uppercase tracking-tight mb-6">Export Chat</h3>
+            <p class="mb-6 text-gray-700 font-mono">How would you like to export the chat?</p>
+            <div class="space-y-4">
+                <button id="exportDownloadBtn" class="btn-brutal w-full px-6 py-3 bg-blue-500 text-white border-2 border-blue-500 font-bold uppercase tracking-wide">Download PDF to Device</button>
+                <button id="exportToNotesBtn" class="btn-brutal w-full px-6 py-3 bg-green-500 text-white border-2 border-green-500 font-bold uppercase tracking-wide">Save PDF to Notes App</button>
+                <button id="cancelExportBtn" class="btn-brutal w-full px-6 py-3 bg-gray-200 text-black border-2 border-black font-bold uppercase tracking-wide">Cancel</button>
+            </div>
+        </div>
+    </div>
     <!-- Room Header -->
     <header class="bg-white border-b-4 border-black px-6 py-4 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div class="flex-1">
