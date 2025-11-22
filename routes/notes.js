@@ -12,21 +12,21 @@ const router = express.Router();
 router.get("/my-notes", authenticateToken, async (req, res) => {
   try {
     const username = req.user.username;
-    
+
     // Find all notes owned by the user
     const notes = await Note.find({ owner: username })
-      .select('noteCode title noteType createdAt updatedAt')
+      .select("noteCode title noteType createdAt updatedAt")
       .sort({ updatedAt: -1 });
-    
+
     res.json({
       success: true,
-      notes: notes.map(note => ({
+      notes: notes.map((note) => ({
         noteCode: note.noteCode,
         title: note.title,
         noteType: note.noteType,
         createdAt: note.createdAt,
-        updatedAt: note.updatedAt
-      }))
+        updatedAt: note.updatedAt,
+      })),
     });
   } catch (error) {
     console.error("List notes error:", error);

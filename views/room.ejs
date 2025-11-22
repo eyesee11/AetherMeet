@@ -1,415 +1,704 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Room <%= roomCode %> - AetherMeet</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconne    <script>
-        window.roomCode = '<%= roomCode %>';
-    </script>ref="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="preconne
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        'mono': ['JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', 'monospace'],
-                        'sans': ['Inter', 'system-ui', 'sans-serif']
-                    }
-                }
-            }
-        }
+      window.roomCode = "<%= roomCode %>";
+    </script>
+    ref="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: [
+                "JetBrains Mono",
+                "Consolas",
+                "Monaco",
+                "Courier New",
+                "monospace",
+              ],
+              sans: ["Inter", "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
     </script>
     <style>
-        /* Emoji font styling */
-        .emoji, #themeIcon, [data-emoji], 
-        .theme-toggle-btn span,
-        .pdf-export-btn span,
-        button span[role="img"],
-        [aria-label*="emoji"] {
-            font-family: 'Noto Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif !important;
-            font-variation-settings: 'wght' 400;
-        }
-        
-        .btn-brutal {
-            box-shadow: 4px 4px 0px 0px #000000;
-            transition: all 0.2s ease;
-        }
-        .btn-brutal:hover {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px 0px #000000;
-        }
-        .btn-brutal:active {
-            transform: translate(4px, 4px);
-            box-shadow: 0px 0px 0px 0px #000000;
-        }
-        .btn-brutal-danger {
-            box-shadow: 4px 4px 0px 0px #dc2626;
-        }
-        .btn-brutal-danger:hover {
-            box-shadow: 2px 2px 0px 0px #dc2626;
-        }
-        .message-brutal {
-            box-shadow: 4px 4px 0px 0px #000000;
-        }
-        .message-brutal.own {
-            box-shadow: 4px 4px 0px 0px #666666;
-        }
-        .member-item-brutal {
-            box-shadow: 2px 2px 0px 0px #000000;
-        }
-        .input-brutal {
-            box-shadow: 2px 2px 0px 0px #000000;
-        }
-        .scrollbar-brutal::-webkit-scrollbar {
-            width: 8px;
-        }
-        .scrollbar-brutal::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border: 1px solid #000;
-        }
-        .scrollbar-brutal::-webkit-scrollbar-thumb {
-            background: #000;
-            border: 1px solid #000;
-        }
-        
-        /* Dark theme styles */
-        .dark {
-            background-color: #1a1a1a;
-            color: #ffffff;
-        }
-        .dark .bg-white { background-color: #2a2a2a !important; }
-        .dark .bg-gray-100 { background-color: #3a3a3a !important; }
-        .dark .bg-gray-200 { background-color: #4a4a4a !important; }
-        .dark .bg-gray-50 { background-color: #2a2a2a !important; }
-        .dark .text-black { color: #ffffff !important; }
-        .dark .text-gray-600 { color: #cccccc !important; }
-        .dark .text-gray-500 { color: #aaaaaa !important; }
-        .dark .border-black { border-color: #ffffff !important; }
-        .dark .border-gray-400 { border-color: #666666 !important; }
-        .dark #themeToggle { background-color: #2a2a2a !important; color: #ffffff !important; border-color: #ffffff !important; }
-        .dark .btn-brutal { box-shadow: 4px 4px 0px 0px #ffffff !important; }
-        .dark .btn-brutal:hover { box-shadow: 2px 2px 0px 0px #ffffff !important; }
-        .dark .message-brutal { box-shadow: 4px 4px 0px 0px #ffffff !important; }
-        .dark .member-item-brutal { box-shadow: 2px 2px 0px 0px #ffffff !important; }
-        .dark .input-brutal { box-shadow: 2px 2px 0px 0px #ffffff !important; }
-        .dark .scrollbar-brutal::-webkit-scrollbar-thumb { background: #ffffff !important; border: 1px solid #ffffff !important; }
+      /* Emoji font styling */
+      .emoji,
+      #themeIcon,
+      [data-emoji],
+      .theme-toggle-btn span,
+      .pdf-export-btn span,
+      button span[role="img"],
+      [aria-label*="emoji"] {
+        font-family: "Noto Emoji", "Apple Color Emoji", "Segoe UI Emoji",
+          sans-serif !important;
+        font-variation-settings: "wght" 400;
+      }
+
+      .btn-brutal {
+        box-shadow: 4px 4px 0px 0px #000000;
+        transition: all 0.2s ease;
+      }
+      .btn-brutal:hover {
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0px 0px #000000;
+      }
+      .btn-brutal:active {
+        transform: translate(4px, 4px);
+        box-shadow: 0px 0px 0px 0px #000000;
+      }
+      .btn-brutal-danger {
+        box-shadow: 4px 4px 0px 0px #dc2626;
+      }
+      .btn-brutal-danger:hover {
+        box-shadow: 2px 2px 0px 0px #dc2626;
+      }
+      .message-brutal {
+        box-shadow: 4px 4px 0px 0px #000000;
+      }
+      .message-brutal.own {
+        box-shadow: 4px 4px 0px 0px #666666;
+      }
+      .member-item-brutal {
+        box-shadow: 2px 2px 0px 0px #000000;
+      }
+      .input-brutal {
+        box-shadow: 2px 2px 0px 0px #000000;
+      }
+      .scrollbar-brutal::-webkit-scrollbar {
+        width: 8px;
+      }
+      .scrollbar-brutal::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border: 1px solid #000;
+      }
+      .scrollbar-brutal::-webkit-scrollbar-thumb {
+        background: #000;
+        border: 1px solid #000;
+      }
+
+      /* Dark theme styles */
+      .dark {
+        background-color: #1a1a1a;
+        color: #ffffff;
+      }
+      .dark .bg-white {
+        background-color: #2a2a2a !important;
+      }
+      .dark .bg-gray-100 {
+        background-color: #3a3a3a !important;
+      }
+      .dark .bg-gray-200 {
+        background-color: #4a4a4a !important;
+      }
+      .dark .bg-gray-50 {
+        background-color: #2a2a2a !important;
+      }
+      .dark .text-black {
+        color: #ffffff !important;
+      }
+      .dark .text-gray-600 {
+        color: #cccccc !important;
+      }
+      .dark .text-gray-500 {
+        color: #aaaaaa !important;
+      }
+      .dark .border-black {
+        border-color: #ffffff !important;
+      }
+      .dark .border-gray-400 {
+        border-color: #666666 !important;
+      }
+      .dark #themeToggle {
+        background-color: #2a2a2a !important;
+        color: #ffffff !important;
+        border-color: #ffffff !important;
+      }
+      .dark .btn-brutal {
+        box-shadow: 4px 4px 0px 0px #ffffff !important;
+      }
+      .dark .btn-brutal:hover {
+        box-shadow: 2px 2px 0px 0px #ffffff !important;
+      }
+      .dark .message-brutal {
+        box-shadow: 4px 4px 0px 0px #ffffff !important;
+      }
+      .dark .member-item-brutal {
+        box-shadow: 2px 2px 0px 0px #ffffff !important;
+      }
+      .dark .input-brutal {
+        box-shadow: 2px 2px 0px 0px #ffffff !important;
+      }
+      .dark .scrollbar-brutal::-webkit-scrollbar-thumb {
+        background: #ffffff !important;
+        border: 1px solid #ffffff !important;
+      }
     </style>
-</head>
-<body class="bg-white text-black font-sans h-screen flex flex-col transition-colors duration-300">
+  </head>
+  <body
+    class="bg-white text-black font-sans h-screen flex flex-col transition-colors duration-300"
+  >
     <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed top-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+    <div
+      id="toastContainer"
+      class="fixed top-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"
+    ></div>
 
     <!-- Export Chat Modal -->
-    <div id="exportChatModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
-            <h3 class="text-2xl font-black uppercase tracking-tight mb-6">Export Chat</h3>
-            <p class="mb-6 text-gray-700 font-mono">How would you like to export the chat?</p>
-            <div class="space-y-4">
-                <button id="exportDownloadBtn" class="btn-brutal w-full px-6 py-3 bg-blue-500 text-white border-2 border-blue-500 font-bold uppercase tracking-wide">Download PDF to Device</button>
-                <button id="exportToNotesBtn" class="btn-brutal w-full px-6 py-3 bg-green-500 text-white border-2 border-green-500 font-bold uppercase tracking-wide">Save PDF to Notes App</button>
-                <button id="cancelExportBtn" class="btn-brutal w-full px-6 py-3 bg-gray-200 text-black border-2 border-black font-bold uppercase tracking-wide">Cancel</button>
-            </div>
+    <div
+      id="exportChatModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div
+        class="bg-white border-4 border-black p-8 max-w-md w-full mx-4"
+        style="box-shadow: 12px 12px 0px 0px #000000"
+      >
+        <h3 class="text-2xl font-black uppercase tracking-tight mb-6">
+          Export Chat
+        </h3>
+        <p class="mb-6 text-gray-700 font-mono">
+          How would you like to export the chat?
+        </p>
+        <div class="space-y-4">
+          <button
+            id="exportDownloadBtn"
+            class="btn-brutal w-full px-6 py-3 bg-blue-500 text-white border-2 border-blue-500 font-bold uppercase tracking-wide"
+          >
+            Download PDF to Device
+          </button>
+          <button
+            id="exportToNotesBtn"
+            class="btn-brutal w-full px-6 py-3 bg-green-500 text-white border-2 border-green-500 font-bold uppercase tracking-wide"
+          >
+            Save PDF to Notes App
+          </button>
+          <button
+            id="cancelExportBtn"
+            class="btn-brutal w-full px-6 py-3 bg-gray-200 text-black border-2 border-black font-bold uppercase tracking-wide"
+          >
+            Cancel
+          </button>
         </div>
+      </div>
     </div>
     <!-- Room Header -->
-    <header class="bg-white border-b-4 border-black px-6 py-4 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-        <div class="flex-1">
-            <h1 id="roomName" class="text-2xl md:text-3xl font-black uppercase tracking-tight">Room <%= roomCode %></h1>
-            <p id="roomDescription" class="text-sm text-gray-600 font-mono"></p>
-            <div class="flex flex-wrap gap-4 mt-2 text-xs font-mono text-gray-600">
-                <span id="roomCode" class="bg-black text-white px-2 py-1">Code: <%= roomCode %></span>
-                <span id="memberCount">Members: 0</span>
-                <span id="ownerInfo">Owner: -</span>
-            </div>
+    <header
+      class="bg-white border-b-4 border-black px-6 py-4 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0"
+    >
+      <div class="flex-1">
+        <h1
+          id="roomName"
+          class="text-2xl md:text-3xl font-black uppercase tracking-tight"
+        >
+          Room <%= roomCode %>
+        </h1>
+        <p id="roomDescription" class="text-sm text-gray-600 font-mono"></p>
+        <div class="flex flex-wrap gap-4 mt-2 text-xs font-mono text-gray-600">
+          <span id="roomCode" class="bg-black text-white px-2 py-1"
+            >Code: <%= roomCode %></span
+          >
+          <span id="memberCount">Members: 0</span>
+          <span id="ownerInfo">Owner: -</span>
         </div>
-        <div class="flex space-x-2">
-            <button id="shareLinkBtn" class="btn-brutal px-4 py-2 bg-blue-500 text-white border-2 border-blue-500 font-bold uppercase tracking-wide text-sm">
-                � Share Link
-            </button>
-            <button id="exportPdfBtn" class="btn-brutal px-4 py-2 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-sm">
-                📄 Export PDF
-            </button>
-            <button id="leaveRoomBtn" class="btn-brutal px-4 py-2 bg-red-500 text-white border-2 border-red-500 font-bold uppercase tracking-wide text-sm btn-brutal-danger">
-                Leave Room
-            </button>
-        </div>
+      </div>
+      <div class="flex space-x-2">
+        <button
+          id="shareLinkBtn"
+          class="btn-brutal px-4 py-2 bg-blue-500 text-white border-2 border-blue-500 font-bold uppercase tracking-wide text-sm"
+        >
+          � Share Link
+        </button>
+        <button
+          id="exportPdfBtn"
+          class="btn-brutal px-4 py-2 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-sm"
+        >
+          📄 Export PDF
+        </button>
+        <button
+          id="leaveRoomBtn"
+          class="btn-brutal px-4 py-2 bg-red-500 text-white border-2 border-red-500 font-bold uppercase tracking-wide text-sm btn-brutal-danger"
+        >
+          Leave Room
+        </button>
+      </div>
     </header>
 
     <!-- Room Content -->
     <div class="flex-1 flex overflow-hidden">
-        <!-- Member List Sidebar -->
-        <aside class="w-64 bg-gray-50 border-r-4 border-black p-4 overflow-y-auto scrollbar-brutal">
-            <h3 class="text-lg font-black uppercase tracking-tight mb-4">Members</h3>
-            <div id="membersList" class="space-y-2">
-                <!-- Members will be populated by JavaScript -->
+      <!-- Member List Sidebar -->
+      <aside
+        class="w-64 bg-gray-50 border-r-4 border-black p-4 overflow-y-auto scrollbar-brutal"
+      >
+        <h3 class="text-lg font-black uppercase tracking-tight mb-4">
+          Members
+        </h3>
+        <div id="membersList" class="space-y-2">
+          <!-- Members will be populated by JavaScript -->
+        </div>
+
+        <!-- Pending Admissions -->
+        <div
+          id="pendingAdmissions"
+          class="mt-8 pt-4 border-t-2 border-black hidden"
+        >
+          <h4 class="text-md font-bold uppercase tracking-wide mb-4">
+            Pending Admissions
+          </h4>
+          <div id="pendingList" class="space-y-2">
+            <!-- Pending admissions will be populated by JavaScript -->
+          </div>
+        </div>
+      </aside>
+
+      <!-- Chat Area -->
+      <main class="flex-1 flex flex-col">
+        <!-- Chat Messages -->
+        <div
+          id="chatMessages"
+          class="flex-1 p-6 overflow-y-auto scrollbar-brutal space-y-4"
+        >
+          <!-- Messages will be populated by JavaScript -->
+        </div>
+
+        <!-- Chat Input -->
+        <div class="bg-gray-50 border-t-4 border-black p-4">
+          <!-- Media Upload Progress -->
+          <div
+            id="uploadProgress"
+            class="hidden bg-blue-100 border-2 border-blue-500 p-3 mb-3 text-blue-800 font-mono text-sm"
+            style="box-shadow: 2px 2px 0px 0px #1e40af"
+          >
+            <div class="flex items-center justify-between">
+              <span id="uploadStatus">Uploading...</span>
+              <div class="w-32 bg-blue-200 border border-blue-400 h-2">
+                <div
+                  id="uploadBar"
+                  class="bg-blue-600 h-full w-0 transition-all duration-300"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Audio Recording Interface -->
+          <div
+            id="audioRecording"
+            class="hidden bg-red-100 border-2 border-red-500 p-4 mb-3"
+            style="box-shadow: 2px 2px 0px 0px #dc2626"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div
+                  class="w-3 h-3 bg-red-500 rounded-full animate-pulse"
+                ></div>
+                <span
+                  class="text-red-800 font-bold text-sm uppercase tracking-wide"
+                  >Recording</span
+                >
+                <span id="recordingTime" class="text-red-600 font-mono text-sm"
+                  >00:00</span
+                >
+              </div>
+              <div class="flex space-x-2">
+                <button
+                  id="stopRecording"
+                  class="btn-brutal px-4 py-2 bg-red-500 text-white border-2 border-black font-bold uppercase tracking-wide text-xs"
+                >
+                  Stop
+                </button>
+                <button
+                  id="cancelRecording"
+                  class="btn-brutal px-4 py-2 bg-gray-500 text-white border-2 border-black font-bold uppercase tracking-wide text-xs"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message Input -->
+          <div class="flex space-x-2">
+            <!-- Media Buttons -->
+            <div class="flex space-x-1">
+              <label
+                for="mediaUpload"
+                class="btn-brutal px-3 py-3 bg-yellow-400 text-black border-2 border-black font-bold text-sm cursor-pointer hover:bg-yellow-500"
+              >
+                �
+              </label>
+              <input
+                type="file"
+                id="mediaUpload"
+                class="hidden"
+                accept="image/*,video/*,.pdf,.txt,.doc,.docx"
+                multiple
+              />
+
+              <button
+                id="audioRecordBtn"
+                class="btn-brutal px-3 py-3 bg-red-400 text-black border-2 border-black font-bold text-sm"
+              >
+                🎤
+              </button>
             </div>
 
-            <!-- Pending Admissions -->
-            <div id="pendingAdmissions" class="mt-8 pt-4 border-t-2 border-black hidden">
-                <h4 class="text-md font-bold uppercase tracking-wide mb-4">Pending Admissions</h4>
-                <div id="pendingList" class="space-y-2">
-                    <!-- Pending admissions will be populated by JavaScript -->
-                </div>
-            </div>
-        </aside>
-
-        <!-- Chat Area -->
-        <main class="flex-1 flex flex-col">
-            <!-- Chat Messages -->
-            <div id="chatMessages" class="flex-1 p-6 overflow-y-auto scrollbar-brutal space-y-4">
-                <!-- Messages will be populated by JavaScript -->
-            </div>
-
-            <!-- Chat Input -->
-            <div class="bg-gray-50 border-t-4 border-black p-4">
-                <!-- Media Upload Progress -->
-                <div id="uploadProgress" class="hidden bg-blue-100 border-2 border-blue-500 p-3 mb-3 text-blue-800 font-mono text-sm" style="box-shadow: 2px 2px 0px 0px #1e40af;">
-                    <div class="flex items-center justify-between">
-                        <span id="uploadStatus">Uploading...</span>
-                        <div class="w-32 bg-blue-200 border border-blue-400 h-2">
-                            <div id="uploadBar" class="bg-blue-600 h-full w-0 transition-all duration-300"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Audio Recording Interface -->
-                <div id="audioRecording" class="hidden bg-red-100 border-2 border-red-500 p-4 mb-3" style="box-shadow: 2px 2px 0px 0px #dc2626;">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                            <span class="text-red-800 font-bold text-sm uppercase tracking-wide">Recording</span>
-                            <span id="recordingTime" class="text-red-600 font-mono text-sm">00:00</span>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button id="stopRecording" class="btn-brutal px-4 py-2 bg-red-500 text-white border-2 border-black font-bold uppercase tracking-wide text-xs">
-                                Stop
-                            </button>
-                            <button id="cancelRecording" class="btn-brutal px-4 py-2 bg-gray-500 text-white border-2 border-black font-bold uppercase tracking-wide text-xs">
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Message Input -->
-                <div class="flex space-x-2">
-                    <!-- Media Buttons -->
-                    <div class="flex space-x-1">
-                        <label for="mediaUpload" class="btn-brutal px-3 py-3 bg-yellow-400 text-black border-2 border-black font-bold text-sm cursor-pointer hover:bg-yellow-500">
-                            �
-                        </label>
-                        <input type="file" id="mediaUpload" class="hidden" accept="image/*,video/*,.pdf,.txt,.doc,.docx" multiple>
-                        
-                        <button id="audioRecordBtn" class="btn-brutal px-3 py-3 bg-red-400 text-black border-2 border-black font-bold text-sm">
-                            🎤
-                        </button>
-                    </div>
-
-                    <!-- Text Input Form -->
-                    <form id="messageForm" class="flex flex-1 space-x-2">
-                        <input type="text" id="messageInput" placeholder="Type your message..." maxlength="1000"
-                               class="input-brutal flex-1 px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50">
-                        <button type="submit" class="btn-brutal px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide text-sm">
-                            Send
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </main>
+            <!-- Text Input Form -->
+            <form id="messageForm" class="flex flex-1 space-x-2">
+              <input
+                type="text"
+                id="messageInput"
+                placeholder="Type your message..."
+                maxlength="1000"
+                class="input-brutal flex-1 px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
+              />
+              <button
+                type="submit"
+                class="btn-brutal px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide text-sm"
+              >
+                Send
+              </button>
+            </form>
+          </div>
+        </div>
+      </main>
     </div>
 
     <!-- Share Link Modal -->
-    <div id="shareLinkModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4 transform transition-all duration-300" style="box-shadow: 16px 16px 0px 0px #000000;">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-3xl font-black uppercase tracking-tight text-black">🔗 Share Room Link</h3>
-                <button class="close text-3xl font-black text-black hover:text-red-600 transition-colors duration-200 btn-brutal-small px-3 py-1 bg-red-100 border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000;">&times;</button>
-            </div>
-            <div class="space-y-6">
-                <p class="text-gray-700 font-black text-sm uppercase tracking-wider">📤 Share this link to invite others:</p>
-                <div class="bg-gray-100 border-4 border-black p-4 font-mono text-sm break-all" style="box-shadow: 4px 4px 0px 0px #000000;">
-                    <span id="shareLink" class="font-bold"></span>
-                </div>
-                <div class="flex space-x-3">
-                    <button id="copyLinkBtn" class="btn-brutal flex-1 px-4 py-3 bg-blue-500 text-white border-4 border-blue-500 font-black uppercase tracking-wider text-sm hover:bg-blue-600 transition-all duration-200">
-                        📋 Copy Link
-                    </button>
-                    <button id="copyCodeBtn" class="btn-brutal flex-1 px-4 py-3 bg-green-500 text-white border-4 border-green-500 font-black uppercase tracking-wider text-sm hover:bg-green-600 transition-all duration-200">
-                        📄 Copy Code
-                    </button>
-                </div>
-                <div class="bg-yellow-100 border-4 border-yellow-500 p-3" style="box-shadow: 4px 4px 0px 0px #f59e0b;">
-                    <p class="text-xs text-yellow-800 font-black uppercase tracking-wider">⚠️ Note: Users will still need to enter the primary or secondary password</p>
-                </div>
-            </div>
+    <div
+      id="shareLinkModal"
+      class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden"
+    >
+      <div
+        class="bg-white border-4 border-black p-8 max-w-md w-full mx-4 transform transition-all duration-300"
+        style="box-shadow: 16px 16px 0px 0px #000000"
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-3xl font-black uppercase tracking-tight text-black">
+            🔗 Share Room Link
+          </h3>
+          <button
+            class="close text-3xl font-black text-black hover:text-red-600 transition-colors duration-200 btn-brutal-small px-3 py-1 bg-red-100 border-2 border-black"
+            style="box-shadow: 2px 2px 0px 0px #000000"
+          >
+            &times;
+          </button>
         </div>
+        <div class="space-y-6">
+          <p class="text-gray-700 font-black text-sm uppercase tracking-wider">
+            📤 Share this link to invite others:
+          </p>
+          <div
+            class="bg-gray-100 border-4 border-black p-4 font-mono text-sm break-all"
+            style="box-shadow: 4px 4px 0px 0px #000000"
+          >
+            <span id="shareLink" class="font-bold"></span>
+          </div>
+          <div class="flex space-x-3">
+            <button
+              id="copyLinkBtn"
+              class="btn-brutal flex-1 px-4 py-3 bg-blue-500 text-white border-4 border-blue-500 font-black uppercase tracking-wider text-sm hover:bg-blue-600 transition-all duration-200"
+            >
+              📋 Copy Link
+            </button>
+            <button
+              id="copyCodeBtn"
+              class="btn-brutal flex-1 px-4 py-3 bg-green-500 text-white border-4 border-green-500 font-black uppercase tracking-wider text-sm hover:bg-green-600 transition-all duration-200"
+            >
+              📄 Copy Code
+            </button>
+          </div>
+          <div
+            class="bg-yellow-100 border-4 border-yellow-500 p-3"
+            style="box-shadow: 4px 4px 0px 0px #f59e0b"
+          >
+            <p
+              class="text-xs text-yellow-800 font-black uppercase tracking-wider"
+            >
+              ⚠️ Note: Users will still need to enter the primary or secondary
+              password
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Leave Room Options Modal (for owners) -->
-    <div id="leaveRoomModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-black uppercase tracking-tight">Leave Room Options</h3>
-                <button class="close text-2xl font-bold">&times;</button>
-            </div>
-            <p class="text-gray-600 mb-6">As the room owner, you can:</p>
-            <div class="space-y-4">
-                <button id="destroyRoomBtn" class="btn-brutal w-full px-6 py-3 bg-red-500 text-white border-2 border-red-500 font-bold uppercase tracking-wide btn-brutal-danger">
-                    End Room for Everyone
-                </button>
-                <button id="transferOwnershipBtn" class="btn-brutal w-full px-6 py-3 bg-white text-black border-2 border-black font-bold uppercase tracking-wide">
-                    Transfer Ownership & Leave
-                </button>
-                <button id="cancelLeaveBtn" class="btn-brutal w-full px-6 py-3 bg-gray-200 text-black border-2 border-black font-bold uppercase tracking-wide">
-                    Cancel
-                </button>
-            </div>
+    <div
+      id="leaveRoomModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div
+        class="bg-white border-4 border-black p-8 max-w-md w-full mx-4"
+        style="box-shadow: 12px 12px 0px 0px #000000"
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-black uppercase tracking-tight">
+            Leave Room Options
+          </h3>
+          <button class="close text-2xl font-bold">&times;</button>
         </div>
+        <p class="text-gray-600 mb-6">As the room owner, you can:</p>
+        <div class="space-y-4">
+          <button
+            id="destroyRoomBtn"
+            class="btn-brutal w-full px-6 py-3 bg-red-500 text-white border-2 border-red-500 font-bold uppercase tracking-wide btn-brutal-danger"
+          >
+            End Room for Everyone
+          </button>
+          <button
+            id="transferOwnershipBtn"
+            class="btn-brutal w-full px-6 py-3 bg-white text-black border-2 border-black font-bold uppercase tracking-wide"
+          >
+            Transfer Ownership & Leave
+          </button>
+          <button
+            id="cancelLeaveBtn"
+            class="btn-brutal w-full px-6 py-3 bg-gray-200 text-black border-2 border-black font-bold uppercase tracking-wide"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Admission Request Modal -->
-    <div id="admissionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
-            <h3 class="text-2xl font-black uppercase tracking-tight mb-6">New Admission Request</h3>
-            <div id="admissionDetails" class="mb-6"></div>
-            <div id="admissionActions" class="space-y-3">
-                <!-- Actions will be populated based on admission type -->
-            </div>
+    <div
+      id="admissionModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div
+        class="bg-white border-4 border-black p-8 max-w-md w-full mx-4"
+        style="box-shadow: 12px 12px 0px 0px #000000"
+      >
+        <h3 class="text-2xl font-black uppercase tracking-tight mb-6">
+          New Admission Request
+        </h3>
+        <div id="admissionDetails" class="mb-6"></div>
+        <div id="admissionActions" class="space-y-3">
+          <!-- Actions will be populated based on admission type -->
         </div>
+      </div>
     </div>
 
     <!-- Demo Room Share Modal -->
-    <div id="demoShareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
-            <h2 class="text-2xl font-bold uppercase tracking-wide mb-4">Demo Room Created! 🎉</h2>
-            <p class="text-gray-700 mb-6">Share this room with others using the link or room code below:</p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-bold mb-2">Room Code:</label>
-                    <div class="flex items-center">
-                        <input id="demoRoomCodeInput" type="text" readonly class="flex-1 p-3 border-2 border-black font-mono bg-gray-50" value="<%= roomCode %>">
-                        <button id="demoCopyCodeBtn" class="ml-2 px-4 py-3 bg-yellow-400 border-2 border-black font-bold text-sm">
-                            COPY
-                        </button>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold mb-2">Share Link:</label>
-                    <div class="flex items-center">
-                        <input id="demoShareLinkInput" type="text" readonly class="flex-1 p-3 border-2 border-black font-mono bg-gray-50 text-xs">
-                        <button id="demoCopyLinkBtn" class="ml-2 px-4 py-3 bg-blue-500 text-white border-2 border-black font-bold text-sm">
-                            COPY
-                        </button>
-                    </div>
-                </div>
+    <div
+      id="demoShareModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div
+        class="bg-white border-4 border-black p-8 max-w-md w-full mx-4"
+        style="box-shadow: 12px 12px 0px 0px #000000"
+      >
+        <h2 class="text-2xl font-bold uppercase tracking-wide mb-4">
+          Demo Room Created! 🎉
+        </h2>
+        <p class="text-gray-700 mb-6">
+          Share this room with others using the link or room code below:
+        </p>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-bold mb-2">Room Code:</label>
+            <div class="flex items-center">
+              <input
+                id="demoRoomCodeInput"
+                type="text"
+                readonly
+                class="flex-1 p-3 border-2 border-black font-mono bg-gray-50"
+                value="<%= roomCode %>"
+              />
+              <button
+                id="demoCopyCodeBtn"
+                class="ml-2 px-4 py-3 bg-yellow-400 border-2 border-black font-bold text-sm"
+              >
+                COPY
+              </button>
             </div>
-            
-            <div class="mt-6 flex justify-end space-x-4">
-                <button id="closeDemoModal" class="px-6 py-2 bg-gray-200 border-2 border-black font-bold text-sm">
-                    CLOSE
-                </button>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold mb-2">Share Link:</label>
+            <div class="flex items-center">
+              <input
+                id="demoShareLinkInput"
+                type="text"
+                readonly
+                class="flex-1 p-3 border-2 border-black font-mono bg-gray-50 text-xs"
+              />
+              <button
+                id="demoCopyLinkBtn"
+                class="ml-2 px-4 py-3 bg-blue-500 text-white border-2 border-black font-bold text-sm"
+              >
+                COPY
+              </button>
             </div>
+          </div>
         </div>
+
+        <div class="mt-6 flex justify-end space-x-4">
+          <button
+            id="closeDemoModal"
+            class="px-6 py-2 bg-gray-200 border-2 border-black font-bold text-sm"
+          >
+            CLOSE
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Connection Status -->
-    <div id="connectionStatus" class="fixed top-4 right-4 px-4 py-2 bg-white border-2 border-black font-mono text-sm z-40" style="box-shadow: 4px 4px 0px 0px #000000;">
-        <span id="statusText">Connecting...</span>
+    <div
+      id="connectionStatus"
+      class="fixed top-4 right-4 px-4 py-2 bg-white border-2 border-black font-mono text-sm z-40"
+      style="box-shadow: 4px 4px 0px 0px #000000"
+    >
+      <span id="statusText">Connecting...</span>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const roomCode = '<%= roomCode %>';
+      const roomCode = "<%= roomCode %>";
     </script>
     <script src="/js/room.js"></script>
     <script>
-        // Apply theme from landing page preference (no toggle in room)
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        
-        // Apply theme on page load
-        if (currentTheme === 'dark') {
-            document.documentElement.classList.add('dark');
-        }
+      // Apply theme from landing page preference (no toggle in room)
+      const currentTheme = localStorage.getItem("theme") || "light";
 
-        // Demo room functionality
-        const isDemo = new URLSearchParams(window.location.search).get('demo') === 'true';
-        
-        if (isDemo) {
-            // Show demo share modal
-            const modal = document.getElementById('demoShareModal');
-            const shareLink = window.location.origin + window.location.pathname + '?demo=true';
-            document.getElementById('demoShareLinkInput').value = shareLink;
-            modal.classList.remove('hidden');
-        }
+      // Apply theme on page load
+      if (currentTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      }
 
-        // Copy functionality
-        document.getElementById('demoCopyCodeBtn').addEventListener('click', () => {
-            const input = document.getElementById('demoRoomCodeInput');
-            const code = input.value;
-            
-            // Try modern clipboard API first
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(code).then(() => {
-                    updateButtonSuccess('demoCopyCodeBtn', 'bg-yellow-400', 'bg-green-500');
-                }).catch(() => {
-                    fallbackCopy(input, 'demoCopyCodeBtn', 'bg-yellow-400', 'bg-green-500');
-                });
-            } else {
-                fallbackCopy(input, 'demoCopyCodeBtn', 'bg-yellow-400', 'bg-green-500');
-            }
+      // Demo room functionality
+      const isDemo =
+        new URLSearchParams(window.location.search).get("demo") === "true";
+
+      if (isDemo) {
+        // Show demo share modal
+        const modal = document.getElementById("demoShareModal");
+        const shareLink =
+          window.location.origin + window.location.pathname + "?demo=true";
+        document.getElementById("demoShareLinkInput").value = shareLink;
+        modal.classList.remove("hidden");
+      }
+
+      // Copy functionality
+      document
+        .getElementById("demoCopyCodeBtn")
+        .addEventListener("click", () => {
+          const input = document.getElementById("demoRoomCodeInput");
+          const code = input.value;
+
+          // Try modern clipboard API first
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard
+              .writeText(code)
+              .then(() => {
+                updateButtonSuccess(
+                  "demoCopyCodeBtn",
+                  "bg-yellow-400",
+                  "bg-green-500"
+                );
+              })
+              .catch(() => {
+                fallbackCopy(
+                  input,
+                  "demoCopyCodeBtn",
+                  "bg-yellow-400",
+                  "bg-green-500"
+                );
+              });
+          } else {
+            fallbackCopy(
+              input,
+              "demoCopyCodeBtn",
+              "bg-yellow-400",
+              "bg-green-500"
+            );
+          }
         });
 
-        document.getElementById('demoCopyLinkBtn').addEventListener('click', () => {
-            const input = document.getElementById('demoShareLinkInput');
-            const link = input.value;
-            
-            // Try modern clipboard API first
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(link).then(() => {
-                    updateButtonSuccess('demoCopyLinkBtn', 'bg-blue-500', 'bg-green-500');
-                }).catch(() => {
-                    fallbackCopy(input, 'demoCopyLinkBtn', 'bg-blue-500', 'bg-green-500');
-                });
-            } else {
-                fallbackCopy(input, 'demoCopyLinkBtn', 'bg-blue-500', 'bg-green-500');
-            }
-        });
-        
-        function fallbackCopy(input, btnId, originalClass, successClass) {
-            input.select();
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    updateButtonSuccess(btnId, originalClass, successClass);
-                }
-            } catch (err) {
-                console.error('Fallback copy failed:', err);
-            }
-        }
-        
-        function updateButtonSuccess(btnId, originalClass, successClass) {
-            const btn = document.getElementById(btnId);
-            const originalText = btn.textContent;
-            btn.textContent = 'COPIED!';
-            btn.classList.add(successClass);
-            btn.classList.remove(originalClass);
-            
-            setTimeout(() => {
-                btn.textContent = originalText;
-                btn.classList.remove(successClass);
-                btn.classList.add(originalClass);
-            }, 2000);
-        }
+      document
+        .getElementById("demoCopyLinkBtn")
+        .addEventListener("click", () => {
+          const input = document.getElementById("demoShareLinkInput");
+          const link = input.value;
 
-        document.getElementById('closeDemoModal').addEventListener('click', () => {
-            document.getElementById('demoShareModal').classList.add('hidden');
+          // Try modern clipboard API first
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard
+              .writeText(link)
+              .then(() => {
+                updateButtonSuccess(
+                  "demoCopyLinkBtn",
+                  "bg-blue-500",
+                  "bg-green-500"
+                );
+              })
+              .catch(() => {
+                fallbackCopy(
+                  input,
+                  "demoCopyLinkBtn",
+                  "bg-blue-500",
+                  "bg-green-500"
+                );
+              });
+          } else {
+            fallbackCopy(
+              input,
+              "demoCopyLinkBtn",
+              "bg-blue-500",
+              "bg-green-500"
+            );
+          }
+        });
+
+      function fallbackCopy(input, btnId, originalClass, successClass) {
+        input.select();
+        try {
+          const successful = document.execCommand("copy");
+          if (successful) {
+            updateButtonSuccess(btnId, originalClass, successClass);
+          }
+        } catch (err) {
+          console.error("Fallback copy failed:", err);
+        }
+      }
+
+      function updateButtonSuccess(btnId, originalClass, successClass) {
+        const btn = document.getElementById(btnId);
+        const originalText = btn.textContent;
+        btn.textContent = "COPIED!";
+        btn.classList.add(successClass);
+        btn.classList.remove(originalClass);
+
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.classList.remove(successClass);
+          btn.classList.add(originalClass);
+        }, 2000);
+      }
+
+      document
+        .getElementById("closeDemoModal")
+        .addEventListener("click", () => {
+          document.getElementById("demoShareModal").classList.add("hidden");
         });
     </script>
-</body>
+  </body>
 </html>

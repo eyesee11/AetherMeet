@@ -1,380 +1,642 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Personal Notes - AetherMeet</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        'mono': ['JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', 'monospace'],
-                        'sans': ['Inter', 'system-ui', 'sans-serif']
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: [
+                "JetBrains Mono",
+                "Consolas",
+                "Monaco",
+                "Courier New",
+                "monospace",
+              ],
+              sans: ["Inter", "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
     </script>
     <style>
-        /* Emoji font styling */
-        .emoji, #themeIcon, [data-emoji], 
-        .theme-toggle-btn span,
-        .pdf-export-btn span,
-        button span[role="img"],
-        [aria-label*="emoji"] {
-            font-family: 'Noto Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif !important;
-            font-variation-settings: 'wght' 400;
+      /* Emoji font styling */
+      .emoji,
+      #themeIcon,
+      [data-emoji],
+      .theme-toggle-btn span,
+      .pdf-export-btn span,
+      button span[role="img"],
+      [aria-label*="emoji"] {
+        font-family: "Noto Emoji", "Apple Color Emoji", "Segoe UI Emoji",
+          sans-serif !important;
+        font-variation-settings: "wght" 400;
+      }
+
+      .btn-brutal {
+        box-shadow: 4px 4px 0px 0px #000000;
+        transition: all 0.2s ease;
+      }
+      .btn-brutal:hover {
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0px 0px #000000;
+      }
+      .btn-brutal:active {
+        transform: translate(4px, 4px);
+        box-shadow: 0px 0px 0px 0px #000000;
+      }
+
+      /* Dark theme styles */
+      .dark {
+        background-color: #1a1a1a;
+        color: #ffffff;
+      }
+      .dark .bg-white {
+        background-color: #2a2a2a !important;
+      }
+      .dark .bg-gray-100 {
+        background-color: #3a3a3a !important;
+      }
+      .dark .text-black {
+        color: #ffffff !important;
+      }
+      .dark .text-gray-600 {
+        color: #cccccc !important;
+      }
+      .dark .border-black {
+        border-color: #ffffff !important;
+      }
+      .dark #themeToggle {
+        background-color: #2a2a2a !important;
+        color: #ffffff !important;
+        border-color: #ffffff !important;
+      }
+      .dark .btn-brutal {
+        box-shadow: 4px 4px 0px 0px #ffffff !important;
+      }
+      .dark .btn-brutal:hover {
+        box-shadow: 2px 2px 0px 0px #ffffff !important;
+      }
+
+      /* Toast notification styles */
+      .toast {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        min-width: 300px;
+        max-width: 500px;
+        padding: 16px 20px;
+        border: 3px solid #000;
+        box-shadow: 6px 6px 0px 0px #000;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+        font-weight: 600;
+      }
+
+      .dark .toast {
+        border-color: #fff;
+        box-shadow: 6px 6px 0px 0px #fff;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
         }
-        
-        .btn-brutal {
-            box-shadow: 4px 4px 0px 0px #000000;
-            transition: all 0.2s ease;
+        to {
+          transform: translateX(0);
+          opacity: 1;
         }
-        .btn-brutal:hover {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px 0px #000000;
+      }
+
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
         }
-        .btn-brutal:active {
-            transform: translate(4px, 4px);
-            box-shadow: 0px 0px 0px 0px #000000;
+        to {
+          transform: translateX(400px);
+          opacity: 0;
         }
-        
-        /* Dark theme styles */
-        .dark {
-            background-color: #1a1a1a;
-            color: #ffffff;
-        }
-        .dark .bg-white { background-color: #2a2a2a !important; }
-        .dark .bg-gray-100 { background-color: #3a3a3a !important; }
-        .dark .text-black { color: #ffffff !important; }
-        .dark .text-gray-600 { color: #cccccc !important; }
-        .dark .border-black { border-color: #ffffff !important; }
-        .dark #themeToggle { background-color: #2a2a2a !important; color: #ffffff !important; border-color: #ffffff !important; }
-        .dark .btn-brutal { box-shadow: 4px 4px 0px 0px #ffffff !important; }
-        .dark .btn-brutal:hover { box-shadow: 2px 2px 0px 0px #ffffff !important; }
-        
-        /* Toast notification styles */
-        .toast {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            min-width: 300px;
-            max-width: 500px;
-            padding: 16px 20px;
-            border: 3px solid #000;
-            box-shadow: 6px 6px 0px 0px #000;
-            z-index: 9999;
-            animation: slideIn 0.3s ease-out;
-            font-weight: 600;
-        }
-        
-        .dark .toast {
-            border-color: #fff;
-            box-shadow: 6px 6px 0px 0px #fff;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-        }
-        
-        .toast.hiding {
-            animation: slideOut 0.3s ease-in forwards;
-        }
-        
-        .toast-success {
-            background-color: #4ade80;
-            color: #000;
-        }
-        
-        .toast-error {
-            background-color: #f87171;
-            color: #000;
-        }
-        
-        .toast-info {
-            background-color: #60a5fa;
-            color: #000;
-        }
-        
-        .dark .toast-success,
-        .dark .toast-error,
-        .dark .toast-info {
-            color: #fff;
-        }
+      }
+
+      .toast.hiding {
+        animation: slideOut 0.3s ease-in forwards;
+      }
+
+      .toast-success {
+        background-color: #4ade80;
+        color: #000;
+      }
+
+      .toast-error {
+        background-color: #f87171;
+        color: #000;
+      }
+
+      .toast-info {
+        background-color: #60a5fa;
+        color: #000;
+      }
+
+      .dark .toast-success,
+      .dark .toast-error,
+      .dark .toast-info {
+        color: #fff;
+      }
     </style>
-</head>
-<body class="bg-white text-black font-sans min-h-screen transition-colors duration-300">
+  </head>
+  <body
+    class="bg-white text-black font-sans min-h-screen transition-colors duration-300"
+  >
     <!-- Theme Toggle -->
     <div class="fixed top-4 right-4 z-50">
-        <button id="themeToggle" class="btn-brutal px-4 py-2 bg-white border-2 border-black font-bold uppercase tracking-wide text-sm hover:bg-gray-100">
-            <span id="themeIcon">DARK</span>
-            <span id="themeText">DARK</span>
-        </button>
+      <button
+        id="themeToggle"
+        class="btn-brutal px-4 py-2 bg-white border-2 border-black font-bold uppercase tracking-wide text-sm hover:bg-gray-100"
+      >
+        <span id="themeIcon">DARK</span>
+        <span id="themeText">DARK</span>
+      </button>
     </div>
 
     <!-- Header -->
     <header class="bg-white border-b-4 border-black px-6 py-4">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <div class="w-8 h-8 bg-black"></div>
-                <div>
-                    <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight">Personal Notes</h1>
-                    <p class="text-sm text-gray-600 font-mono">Secure password-protected notes</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-4">
-                <a href="/dashboard" class="btn-brutal px-6 py-2 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-sm">
-                    Dashboard
-                </a>
-                <button id="logoutBtn" class="btn-brutal px-6 py-2 bg-black text-white border-2 border-black font-bold uppercase tracking-wide text-sm">
-                    Logout
-                </button>
-            </div>
+      <div class="max-w-6xl mx-auto flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+          <div class="w-8 h-8 bg-black"></div>
+          <div>
+            <h1
+              class="text-2xl md:text-3xl font-black uppercase tracking-tight"
+            >
+              Personal Notes
+            </h1>
+            <p class="text-sm text-gray-600 font-mono">
+              Secure password-protected notes
+            </p>
+          </div>
         </div>
+        <div class="flex items-center space-x-4">
+          <a
+            href="/dashboard"
+            class="btn-brutal px-6 py-2 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-sm"
+          >
+            Dashboard
+          </a>
+          <button
+            id="logoutBtn"
+            class="btn-brutal px-6 py-2 bg-black text-white border-2 border-black font-bold uppercase tracking-wide text-sm"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
     </header>
 
     <!-- Main Content -->
     <main class="max-w-6xl mx-auto px-6 py-8">
-        <!-- Welcome Section -->
-        <div class="bg-gray-50 border-2 border-black p-6 mb-8" style="box-shadow: 4px 4px 0px 0px #000000;">
-            <h2 class="text-xl font-black uppercase tracking-tight mb-2">Welcome, <span id="welcomeUser">User</span>!</h2>
-            <p class="text-gray-600 text-sm">Create secure notes protected by dictionary passwords. Same security model as your chat rooms.</p>
-        </div>
+      <!-- Welcome Section -->
+      <div
+        class="bg-gray-50 border-2 border-black p-6 mb-8"
+        style="box-shadow: 4px 4px 0px 0px #000000"
+      >
+        <h2 class="text-xl font-black uppercase tracking-tight mb-2">
+          Welcome, <span id="welcomeUser">User</span>!
+        </h2>
+        <p class="text-gray-600 text-sm">
+          Create secure notes protected by dictionary passwords. Same security
+          model as your chat rooms.
+        </p>
+      </div>
 
-        <!-- Action Buttons -->
-        <div class="grid md:grid-cols-3 gap-6 mb-8">
-            <button id="createNoteBtn" class="btn-brutal bg-black text-white border-2 border-black p-6 text-left">
-                <h3 class="font-bold uppercase tracking-wide mb-2">◉ Create Note</h3>
-                <p class="text-sm text-gray-300">Write a new password-protected note</p>
+      <!-- Action Buttons -->
+      <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <button
+          id="createNoteBtn"
+          class="btn-brutal bg-black text-white border-2 border-black p-6 text-left"
+        >
+          <h3 class="font-bold uppercase tracking-wide mb-2">◉ Create Note</h3>
+          <p class="text-sm text-gray-300">
+            Write a new password-protected note
+          </p>
+        </button>
+
+        <button
+          id="accessNoteBtn"
+          class="btn-brutal bg-white text-black border-2 border-black p-6 text-left"
+        >
+          <h3 class="font-bold uppercase tracking-wide mb-2">▣ Access Note</h3>
+          <p class="text-sm text-gray-600">Enter note code and passwords</p>
+        </button>
+
+        <button
+          id="myNotesBtn"
+          class="btn-brutal bg-purple-400 text-black border-2 border-black p-6 text-left"
+        >
+          <h3 class="font-bold uppercase tracking-wide mb-2">
+            ● My Notes List
+          </h3>
+          <p class="text-sm">Browse all your saved notes</p>
+        </button>
+      </div>
+
+      <!-- Note Display Area -->
+      <div
+        id="noteDisplay"
+        class="hidden bg-white border-2 border-black p-6 mb-8"
+        style="box-shadow: 4px 4px 0px 0px #000000"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h3
+            id="noteTitle"
+            class="text-xl font-bold uppercase tracking-wide"
+          ></h3>
+          <div class="flex space-x-2">
+            <button
+              id="editNoteBtn"
+              class="btn-brutal px-4 py-2 bg-yellow-400 text-black border-2 border-black font-bold uppercase tracking-wide text-sm"
+            >
+              Edit
             </button>
-
-            <button id="accessNoteBtn" class="btn-brutal bg-white text-black border-2 border-black p-6 text-left">
-                <h3 class="font-bold uppercase tracking-wide mb-2">▣ Access Note</h3>
-                <p class="text-sm text-gray-600">Enter note code and passwords</p>
+            <button
+              id="deleteNoteBtn"
+              class="btn-brutal px-4 py-2 bg-red-500 text-white border-2 border-black font-bold uppercase tracking-wide text-sm"
+            >
+              Delete
             </button>
-
-            <button id="myNotesBtn" class="btn-brutal bg-purple-400 text-black border-2 border-black p-6 text-left">
-                <h3 class="font-bold uppercase tracking-wide mb-2">● My Notes List</h3>
-                <p class="text-sm">Browse all your saved notes</p>
-            </button>
+          </div>
         </div>
-
-        <!-- Note Display Area -->
-        <div id="noteDisplay" class="hidden bg-white border-2 border-black p-6 mb-8" style="box-shadow: 4px 4px 0px 0px #000000;">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="noteTitle" class="text-xl font-bold uppercase tracking-wide"></h3>
-                <div class="flex space-x-2">
-                    <button id="editNoteBtn" class="btn-brutal px-4 py-2 bg-yellow-400 text-black border-2 border-black font-bold uppercase tracking-wide text-sm">
-                        Edit
-                    </button>
-                    <button id="deleteNoteBtn" class="btn-brutal px-4 py-2 bg-red-500 text-white border-2 border-black font-bold uppercase tracking-wide text-sm">
-                        Delete
-                    </button>
-                </div>
-            </div>
-            <div id="noteContent" class="bg-gray-50 border-2 border-gray-300 p-4 font-mono text-sm whitespace-pre-wrap min-h-[200px]"></div>
-            <div class="mt-4 text-xs text-gray-500 font-mono">
-                <span id="noteInfo"></span>
-            </div>
+        <div
+          id="noteContent"
+          class="bg-gray-50 border-2 border-gray-300 p-4 font-mono text-sm whitespace-pre-wrap min-h-[200px]"
+        ></div>
+        <div class="mt-4 text-xs text-gray-500 font-mono">
+          <span id="noteInfo"></span>
         </div>
+      </div>
     </main>
 
     <!-- Create Note Modal -->
-    <div id="createNoteModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300" style="box-shadow: 16px 16px 0px 0px #000000;">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-3xl font-black uppercase tracking-tight text-black">Create New Note</h3>
-                <button class="close text-3xl font-black text-black hover:text-red-600 transition-colors duration-200 btn-brutal-small px-3 py-1 bg-red-100 border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000;">&times;</button>
-            </div>
-            <form id="createNoteForm" class="space-y-6">
-                <div>
-                    <label for="noteTitle" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">📋 Note Title:</label>
-                    <input type="text" id="noteTitle" name="title" required maxlength="100"
-                           class="w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-purple-50 transition-all duration-200 font-mono"
-                           style="box-shadow: 4px 4px 0px 0px #000000;" placeholder="Enter your note title">
-                </div>
-                <div>
-                    <label for="noteContent" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">Content:</label>
-                    <textarea id="noteContent" name="content" required maxlength="10000" rows="8"
-                              class="w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-purple-50 transition-all duration-200 font-mono"
-                              style="box-shadow: 4px 4px 0px 0px #000000;" placeholder="Write your note content here..."></textarea>
-                </div>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="notePrimaryPassword" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">🔑 Primary Password:</label>
-                        <input type="text" id="notePrimaryPassword" name="primaryPassword" required
-                               class="w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-purple-50 transition-all duration-200 font-mono"
-                               style="box-shadow: 2px 2px 0px 0px #000000;" placeholder="Dictionary word">
-                        <small class="text-gray-600 text-xs font-mono">Must be a valid dictionary word</small>
-                    </div>
-                    <div>
-                        <label for="noteSecondaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Secondary Password (Optional):</label>
-                        <input type="text" id="noteSecondaryPassword" name="secondaryPassword"
-                               class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
-                               style="box-shadow: 2px 2px 0px 0px #000000;" placeholder="Dictionary word">
-                        <small class="text-gray-600 text-xs font-mono">Optional extra security</small>
-                    </div>
-                </div>
-                <button type="submit" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
-                    Create Note
-                </button>
-            </form>
-            <div id="createNoteError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm" style="box-shadow: 4px 4px 0px 0px #dc2626;"></div>
+    <div
+      id="createNoteModal"
+      class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden"
+    >
+      <div
+        class="bg-white border-4 border-black p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300"
+        style="box-shadow: 16px 16px 0px 0px #000000"
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-3xl font-black uppercase tracking-tight text-black">
+            Create New Note
+          </h3>
+          <button
+            class="close text-3xl font-black text-black hover:text-red-600 transition-colors duration-200 btn-brutal-small px-3 py-1 bg-red-100 border-2 border-black"
+            style="box-shadow: 2px 2px 0px 0px #000000"
+          >
+            &times;
+          </button>
         </div>
+        <form id="createNoteForm" class="space-y-6">
+          <div>
+            <label
+              for="noteTitle"
+              class="block text-sm font-black uppercase tracking-wider mb-3 text-black"
+              >📋 Note Title:</label
+            >
+            <input
+              type="text"
+              id="noteTitle"
+              name="title"
+              required
+              maxlength="100"
+              class="w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-purple-50 transition-all duration-200 font-mono"
+              style="box-shadow: 4px 4px 0px 0px #000000"
+              placeholder="Enter your note title"
+            />
+          </div>
+          <div>
+            <label
+              for="noteContent"
+              class="block text-sm font-black uppercase tracking-wider mb-3 text-black"
+              >Content:</label
+            >
+            <textarea
+              id="noteContent"
+              name="content"
+              required
+              maxlength="10000"
+              rows="8"
+              class="w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-purple-50 transition-all duration-200 font-mono"
+              style="box-shadow: 4px 4px 0px 0px #000000"
+              placeholder="Write your note content here..."
+            ></textarea>
+          </div>
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <label
+                for="notePrimaryPassword"
+                class="block text-sm font-black uppercase tracking-wider mb-3 text-black"
+                >🔑 Primary Password:</label
+              >
+              <input
+                type="text"
+                id="notePrimaryPassword"
+                name="primaryPassword"
+                required
+                class="w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-purple-50 transition-all duration-200 font-mono"
+                style="box-shadow: 2px 2px 0px 0px #000000"
+                placeholder="Dictionary word"
+              />
+              <small class="text-gray-600 text-xs font-mono"
+                >Must be a valid dictionary word</small
+              >
+            </div>
+            <div>
+              <label
+                for="noteSecondaryPassword"
+                class="block text-sm font-bold uppercase tracking-wide mb-2"
+                >Secondary Password (Optional):</label
+              >
+              <input
+                type="text"
+                id="noteSecondaryPassword"
+                name="secondaryPassword"
+                class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
+                style="box-shadow: 2px 2px 0px 0px #000000"
+                placeholder="Dictionary word"
+              />
+              <small class="text-gray-600 text-xs font-mono"
+                >Optional extra security</small
+              >
+            </div>
+          </div>
+          <button
+            type="submit"
+            class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide"
+          >
+            Create Note
+          </button>
+        </form>
+        <div
+          id="createNoteError"
+          class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm"
+          style="box-shadow: 4px 4px 0px 0px #dc2626"
+        ></div>
+      </div>
     </div>
 
     <!-- Access Note Modal -->
-    <div id="accessNoteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-black uppercase tracking-tight">Access Note</h3>
-                <button class="close text-2xl font-bold">&times;</button>
-            </div>
-            <form id="accessNoteForm" class="space-y-4">
-                <div>
-                    <label for="accessNoteCode" class="block text-sm font-bold uppercase tracking-wide mb-2">Note Code:</label>
-                    <input type="text" id="accessNoteCode" name="noteCode" required maxlength="6"
-                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50 font-mono uppercase"
-                           style="box-shadow: 2px 2px 0px 0px #000000;" placeholder="ABC123">
-                </div>
-                <div>
-                    <label for="accessPrimaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Primary Password:</label>
-                    <input type="text" id="accessPrimaryPassword" name="primaryPassword" required
-                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
-                           style="box-shadow: 2px 2px 0px 0px #000000;" placeholder="Dictionary word">
-                </div>
-                <div>
-                    <label for="accessSecondaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Secondary Password (if set):</label>
-                    <input type="text" id="accessSecondaryPassword" name="secondaryPassword"
-                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
-                           style="box-shadow: 2px 2px 0px 0px #000000;" placeholder="Dictionary word">
-                </div>
-                <button type="submit" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
-                    Access Note
-                </button>
-            </form>
-            <div id="accessNoteError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm" style="box-shadow: 4px 4px 0px 0px #dc2626;"></div>
+    <div
+      id="accessNoteModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div
+        class="bg-white border-4 border-black p-8 max-w-md w-full mx-4"
+        style="box-shadow: 12px 12px 0px 0px #000000"
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-black uppercase tracking-tight">
+            Access Note
+          </h3>
+          <button class="close text-2xl font-bold">&times;</button>
         </div>
+        <form id="accessNoteForm" class="space-y-4">
+          <div>
+            <label
+              for="accessNoteCode"
+              class="block text-sm font-bold uppercase tracking-wide mb-2"
+              >Note Code:</label
+            >
+            <input
+              type="text"
+              id="accessNoteCode"
+              name="noteCode"
+              required
+              maxlength="6"
+              class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50 font-mono uppercase"
+              style="box-shadow: 2px 2px 0px 0px #000000"
+              placeholder="ABC123"
+            />
+          </div>
+          <div>
+            <label
+              for="accessPrimaryPassword"
+              class="block text-sm font-bold uppercase tracking-wide mb-2"
+              >Primary Password:</label
+            >
+            <input
+              type="text"
+              id="accessPrimaryPassword"
+              name="primaryPassword"
+              required
+              class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
+              style="box-shadow: 2px 2px 0px 0px #000000"
+              placeholder="Dictionary word"
+            />
+          </div>
+          <div>
+            <label
+              for="accessSecondaryPassword"
+              class="block text-sm font-bold uppercase tracking-wide mb-2"
+              >Secondary Password (if set):</label
+            >
+            <input
+              type="text"
+              id="accessSecondaryPassword"
+              name="secondaryPassword"
+              class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
+              style="box-shadow: 2px 2px 0px 0px #000000"
+              placeholder="Dictionary word"
+            />
+          </div>
+          <button
+            type="submit"
+            class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide"
+          >
+            Access Note
+          </button>
+        </form>
+        <div
+          id="accessNoteError"
+          class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm"
+          style="box-shadow: 4px 4px 0px 0px #dc2626"
+        ></div>
+      </div>
     </div>
 
     <!-- Save PDF Modal -->
-    <div id="savePdfModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-black uppercase tracking-tight">Save PDF to Notes</h3>
-                <button class="close text-2xl font-bold">&times;</button>
-            </div>
-            <form id="savePdfForm" class="space-y-4">
-                <div>
-                    <label for="pdfTitle" class="block text-sm font-bold uppercase tracking-wide mb-2">Note Title:</label>
-                    <input type="text" id="pdfTitle" name="title" required maxlength="100"
-                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
-                           style="box-shadow: 2px 2px 0px 0px #000000;" placeholder="Chat Export - Room ABC123">
-                </div>
-                <div>
-                    <label for="pdfPrimaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Primary Password:</label>
-                    <input type="text" id="pdfPrimaryPassword" name="primaryPassword" required
-                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
-                           style="box-shadow: 2px 2px 0px 0px #000000;" placeholder="Dictionary word">
-                </div>
-                <div>
-                    <label for="pdfSecondaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Secondary Password (Optional):</label>
-                    <input type="text" id="pdfSecondaryPassword" name="secondaryPassword"
-                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
-                           style="box-shadow: 2px 2px 0px 0px #000000;" placeholder="Dictionary word">
-                </div>
-                <div class="flex gap-3">
-                    <button type="button" id="cancelPdfSave" class="btn-brutal flex-1 px-4 py-3 bg-gray-200 text-black border-2 border-black font-bold uppercase tracking-wide">
-                        Cancel
-                    </button>
-                    <button type="submit" class="btn-brutal flex-1 px-4 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
-                        Save PDF
-                    </button>
-                </div>
-            </form>
-            <div id="savePdfError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm" style="box-shadow: 4px 4px 0px 0px #dc2626;"></div>
+    <div
+      id="savePdfModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div
+        class="bg-white border-4 border-black p-8 max-w-md w-full mx-4"
+        style="box-shadow: 12px 12px 0px 0px #000000"
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-black uppercase tracking-tight">
+            Save PDF to Notes
+          </h3>
+          <button class="close text-2xl font-bold">&times;</button>
         </div>
+        <form id="savePdfForm" class="space-y-4">
+          <div>
+            <label
+              for="pdfTitle"
+              class="block text-sm font-bold uppercase tracking-wide mb-2"
+              >Note Title:</label
+            >
+            <input
+              type="text"
+              id="pdfTitle"
+              name="title"
+              required
+              maxlength="100"
+              class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
+              style="box-shadow: 2px 2px 0px 0px #000000"
+              placeholder="Chat Export - Room ABC123"
+            />
+          </div>
+          <div>
+            <label
+              for="pdfPrimaryPassword"
+              class="block text-sm font-bold uppercase tracking-wide mb-2"
+              >Primary Password:</label
+            >
+            <input
+              type="text"
+              id="pdfPrimaryPassword"
+              name="primaryPassword"
+              required
+              class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
+              style="box-shadow: 2px 2px 0px 0px #000000"
+              placeholder="Dictionary word"
+            />
+          </div>
+          <div>
+            <label
+              for="pdfSecondaryPassword"
+              class="block text-sm font-bold uppercase tracking-wide mb-2"
+              >Secondary Password (Optional):</label
+            >
+            <input
+              type="text"
+              id="pdfSecondaryPassword"
+              name="secondaryPassword"
+              class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
+              style="box-shadow: 2px 2px 0px 0px #000000"
+              placeholder="Dictionary word"
+            />
+          </div>
+          <div class="flex gap-3">
+            <button
+              type="button"
+              id="cancelPdfSave"
+              class="btn-brutal flex-1 px-4 py-3 bg-gray-200 text-black border-2 border-black font-bold uppercase tracking-wide"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn-brutal flex-1 px-4 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide"
+            >
+              Save PDF
+            </button>
+          </div>
+        </form>
+        <div
+          id="savePdfError"
+          class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm"
+          style="box-shadow: 4px 4px 0px 0px #dc2626"
+        ></div>
+      </div>
     </div>
 
     <!-- My Notes List Modal -->
-    <div id="myNotesModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" style="box-shadow: 16px 16px 0px 0px #000000;">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-3xl font-black uppercase tracking-tight text-black">My Notes</h3>
-                <button class="close text-3xl font-black text-black hover:text-red-600 transition-colors duration-200 btn-brutal-small px-3 py-1 bg-red-100 border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000;">&times;</button>
-            </div>
-            <div id="notesListContainer" class="space-y-4">
-                <div class="text-center text-gray-500 py-8">Loading notes...</div>
-            </div>
+    <div
+      id="myNotesModal"
+      class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden"
+    >
+      <div
+        class="bg-white border-4 border-black p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+        style="box-shadow: 16px 16px 0px 0px #000000"
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-3xl font-black uppercase tracking-tight text-black">
+            My Notes
+          </h3>
+          <button
+            class="close text-3xl font-black text-black hover:text-red-600 transition-colors duration-200 btn-brutal-small px-3 py-1 bg-red-100 border-2 border-black"
+            style="box-shadow: 2px 2px 0px 0px #000000"
+          >
+            &times;
+          </button>
         </div>
+        <div id="notesListContainer" class="space-y-4">
+          <div class="text-center text-gray-500 py-8">Loading notes...</div>
+        </div>
+      </div>
     </div>
 
     <!-- Toast Container -->
-    <div id="toastContainer" class="fixed top-20 right-4 z-[10000] space-y-3" style="pointer-events: none;">
-    </div>
+    <div
+      id="toastContainer"
+      class="fixed top-20 right-4 z-[10000] space-y-3"
+      style="pointer-events: none"
+    ></div>
 
     <script src="/js/notes.js"></script>
     <script>
-        // Theme toggle functionality
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const themeText = document.getElementById('themeText');
-        
-        // Check for saved theme preference or default to light
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        
-        // Apply theme on page load
-        if (currentTheme === 'dark') {
-            document.documentElement.classList.add('dark');
-            themeIcon.textContent = '☀️ ';
-            themeText.textContent = 'LIGHT';
+      // Theme toggle functionality
+      const themeToggle = document.getElementById("themeToggle");
+      const themeIcon = document.getElementById("themeIcon");
+      const themeText = document.getElementById("themeText");
+
+      // Check for saved theme preference or default to light
+      const currentTheme = localStorage.getItem("theme") || "light";
+
+      // Apply theme on page load
+      if (currentTheme === "dark") {
+        document.documentElement.classList.add("dark");
+        themeIcon.textContent = "☀️ ";
+        themeText.textContent = "LIGHT";
+      } else {
+        themeIcon.textContent = "🌙 ";
+        themeText.textContent = "DARK";
+      }
+
+      // Theme toggle event listener
+      themeToggle.addEventListener("click", () => {
+        const isDark = document.documentElement.classList.contains("dark");
+
+        if (isDark) {
+          // Switch to light theme
+          document.documentElement.classList.remove("dark");
+          themeIcon.textContent = "🌙 ";
+          themeText.textContent = "DARK";
+          localStorage.setItem("theme", "light");
         } else {
-            themeIcon.textContent = '🌙 ';
-            themeText.textContent = 'DARK';
+          // Switch to dark theme
+          document.documentElement.classList.add("dark");
+          themeIcon.textContent = "☀️ ";
+          themeText.textContent = "LIGHT";
+          localStorage.setItem("theme", "dark");
         }
-        
-        // Theme toggle event listener
-        themeToggle.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.contains('dark');
-            
-            if (isDark) {
-                // Switch to light theme
-                document.documentElement.classList.remove('dark');
-                themeIcon.textContent = '🌙 ';
-                themeText.textContent = 'DARK';
-                localStorage.setItem('theme', 'light');
-            } else {
-                // Switch to dark theme
-                document.documentElement.classList.add('dark');
-                themeIcon.textContent = '☀️ ';
-                themeText.textContent = 'LIGHT';
-                localStorage.setItem('theme', 'dark');
-            }
-        });
+      });
     </script>
-</body>
+  </body>
 </html>
