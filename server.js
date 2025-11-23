@@ -1,43 +1,43 @@
+const https = require("https");
+const fs = require("fs");
+const express = require("express");
+const http = require("http");
+const socketIo = require("socket.io");
+const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+const schedule = require("node-schedule");
+const PDFDocument = require("pdfkit");
+const path = require("path");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
 
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-const schedule = require('node-schedule');
-const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
-const session = require('express-session');
-const cookieParser = require('cookie-parser');
-
-if (process.env.NODE_ENV !== 'test') {
-  require('dotenv').config();
+if (process.env.NODE_ENV !== "test") {
+  require("dotenv").config();
 }
 
-const { 
-    generalLimiter, 
-    authLimiter, 
-    helmetConfig,
-    sanitizeInput 
-} = require('./middleware/security');
-const memoryManager = require('./utils/memoryManager');
+const {
+  generalLimiter,
+  authLimiter,
+  helmetConfig,
+  sanitizeInput,
+} = require("./middleware/security");
+const memoryManager = require("./utils/memoryManager");
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
-const authRoutes = require('./routes/auth');
-const roomRoutes = require('./routes/rooms');
-const notesRoutes = require('./routes/notes');
-const mediaRoutes = require('./routes/media');
-const analyticsRoutes = require('./routes/analytics');
-const moderationRoutes = require('./routes/moderation');
-const i18nRoutes = require('./routes/i18n');
-const memoryRoutes = require('./routes/memory');
-const socketHandler = require('./socket/socketHandler');
+const authRoutes = require("./routes/auth");
+const roomRoutes = require("./routes/rooms");
+const notesRoutes = require("./routes/notes");
+const mediaRoutes = require("./routes/media");
+const analyticsRoutes = require("./routes/analytics");
+const moderationRoutes = require("./routes/moderation");
+const i18nRoutes = require("./routes/i18n");
+const memoryRoutes = require("./routes/memory");
+const socketHandler = require("./socket/socketHandler");
 
 app.use(helmetConfig);
 app.use(generalLimiter);
@@ -45,153 +45,167 @@ app.use(generalLimiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your-secret-key",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
-}));
-app.use(express.static('public'));
-app.use('/storage', express.static('storage'));
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }, // 24 hours
+  })
+);
+app.use(express.static("public"));
+app.use("/storage", express.static("storage"));
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
-if (process.env.NODE_ENV !== 'test') {
-  mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aethermeet', {
+if (process.env.NODE_ENV !== "test") {
+  mongoose
+    .connect(process.env.MONGO_URI || "mongodb://localhost:27017/aethermeet", {
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
-      bufferCommands: false
-  }).then(() => {
-      console.log('✅ MongoDB connected successfully');
-      
+      bufferCommands: false,
+    })
+    .then(() => {
+      console.log("✅ MongoDB connected successfully");
+
       memoryManager.startCleanup(30);
-      
+
       const PORT = process.env.PORT || 5000;
       server.listen(PORT, () => {
-          console.log(`🚀 Server running at: http://localhost:${PORT}`);
+        console.log(`🚀 Server running at: http://localhost:${PORT}`);
       });
-  }).catch(err => {
-      console.error('❌ MongoDB connection error:', err);
+    })
+    .catch((err) => {
+      console.error("❌ MongoDB connection error:", err);
       process.exit(1);
-  });
+    });
 }
 
-app.get('/api/health', (req, res) => {
-    const healthCheck = {
-        uptime: process.uptime(),
-        timestamp: new Date().toISOString(),
-        status: 'OK',
-        memory: process.memoryUsage(),
-        version: require('./package.json').version
-    };
-    
-    if (mongoose.connection.readyState === 1) {
-        healthCheck.database = 'Connected';
-    } else {
-        healthCheck.database = 'Disconnected';
-        healthCheck.status = 'ERROR';
-    }
-    
-    const statusCode = healthCheck.status === 'OK' ? 200 : 503;
-    res.status(statusCode).json(healthCheck);
+app.get("/api/health", (req, res) => {
+  const healthCheck = {
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    status: "OK",
+    memory: process.memoryUsage(),
+    version: require("./package.json").version,
+  };
+
+  if (mongoose.connection.readyState === 1) {
+    healthCheck.database = "Connected";
+  } else {
+    healthCheck.database = "Disconnected";
+    healthCheck.status = "ERROR";
+  }
+
+  const statusCode = healthCheck.status === "OK" ? 200 : 503;
+  res.status(statusCode).json(healthCheck);
 });
 
-app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/rooms', roomRoutes(io));
-app.use('/api/notes', notesRoutes);
-app.use('/api/media', mediaRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/moderation', moderationRoutes);
-app.use('/api/i18n', i18nRoutes);
-app.use('/api/memory', memoryRoutes);
+app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api/rooms", roomRoutes(io));
+app.use("/api/notes", notesRoutes);
+app.use("/api/media", mediaRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/moderation", moderationRoutes);
+app.use("/api/i18n", i18nRoutes);
+app.use("/api/memory", memoryRoutes);
 
-app.get('/', (req, res) => {
-    const pendingRoomCode = req.session.pendingRoomCode;
-    res.render('index', { pendingRoomCode: pendingRoomCode || null });
+app.get("/", (req, res) => {
+  const pendingRoomCode = req.session.pendingRoomCode;
+  res.render("index", { pendingRoomCode: pendingRoomCode || null });
 });
 
-app.get('/dashboard', (req, res) => {
-    const roomCode = req.query.roomCode || req.session.pendingRoomCode;
-    if (req.session.pendingRoomCode) {
-        delete req.session.pendingRoomCode;
-    }
-    res.render('dashboard', { roomCode: roomCode || null });
+app.get("/dashboard", (req, res) => {
+  const roomCode = req.query.roomCode || req.session.pendingRoomCode;
+  if (req.session.pendingRoomCode) {
+    delete req.session.pendingRoomCode;
+  }
+  res.render("dashboard", { roomCode: roomCode || null });
 });
 
-app.get('/notes', (req, res) => {
-    res.render('notes');
+app.get("/notes", (req, res) => {
+  res.render("notes");
 });
 
-app.get('/room/:roomCode', async (req, res) => {
-    try {
-        const { roomCode } = req.params;
-        let isDemo = req.query.demo === 'true';
-        
-        const Room = require('./models/Room');
-        
-        const room = await Room.findOne({ 
-            roomCode: roomCode.toUpperCase(),
-            isActive: true 
-        });
-        
-        if (!room) {
-            return res.status(404).send('Room not found or expired');
-        }
-        
-        if (room.isDemoRoom) {
-            isDemo = true;
-            if (req.query.demo !== 'true') {
-                return res.redirect(`/room/${roomCode}?demo=true`);
-            }
-        }
-        
-        res.render('room', { 
-            roomCode: req.params.roomCode,
-            isDemo: isDemo
-        });
-    } catch (error) {
-        res.status(500).send('Server error');
-    }
-});
-
-app.get('/join/:roomCode', (req, res) => {
+app.get("/room/:roomCode", async (req, res) => {
+  try {
     const { roomCode } = req.params;
-    
-    const token = req.cookies.token;
-    
-    if (!token) {
-        req.session.pendingRoomCode = roomCode.toUpperCase();
-        return res.redirect('/');
+    let isDemo = req.query.demo === "true";
+
+    const Room = require("./models/Room");
+
+    const room = await Room.findOne({
+      roomCode: roomCode.toUpperCase(),
+      isActive: true,
+    });
+
+    if (!room) {
+      return res.status(404).send("Room not found or expired");
     }
-    
-    try {
-        jwt.verify(token, process.env.JWT_SECRET);
-        res.redirect(`/dashboard?roomCode=${roomCode.toUpperCase()}`);
-    } catch (error) {
-        req.session.pendingRoomCode = roomCode.toUpperCase();
-        res.redirect('/');
+
+    if (room.isDemoRoom) {
+      isDemo = true;
+      if (req.query.demo !== "true") {
+        return res.redirect(`/room/${roomCode}?demo=true`);
+      }
     }
+
+    res.render("room", {
+      roomCode: req.params.roomCode,
+      isDemo: isDemo,
+    });
+  } catch (error) {
+    res.status(500).send("Server error");
+  }
+});
+
+app.get("/join/:roomCode", (req, res) => {
+  const { roomCode } = req.params;
+
+  const token = req.cookies.token;
+
+  if (!token) {
+    req.session.pendingRoomCode = roomCode.toUpperCase();
+    return res.redirect("/");
+  }
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+    res.redirect(`/dashboard?roomCode=${roomCode.toUpperCase()}`);
+  } catch (error) {
+    req.session.pendingRoomCode = roomCode.toUpperCase();
+    res.redirect("/");
+  }
 });
 
 socketHandler(io);
 
-process.on('SIGTERM', () => {
-    memoryManager.stopCleanup();
-    server.close(() => {
-        mongoose.connection.close();
-        process.exit(0);
-    });
+process.on("SIGTERM", () => {
+  memoryManager.stopCleanup();
+  server.close(() => {
+    mongoose.connection.close();
+    process.exit(0);
+  });
 });
 
-process.on('SIGINT', () => {
-    memoryManager.stopCleanup();
-    server.close(() => {
-        mongoose.connection.close();
-        process.exit(0);
-    });
+process.on("SIGINT", () => {
+  memoryManager.stopCleanup();
+  server.close(() => {
+    mongoose.connection.close();
+    process.exit(0);
+  });
 });
 
+//configs change for SSL certificates
 
+const options = {
+  key: fs.readFileSync("cert/server.key"),
+  cert: fs.readFileSync("cert/server.cert"),
+};
+
+https.createServer(options, app).listen(443, () => {
+  console.log("HTTPS server running on port 443");
+});
 
 module.exports = app;
