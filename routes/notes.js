@@ -29,7 +29,6 @@ router.get("/my-notes", authenticateToken, async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error("List notes error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -114,7 +113,6 @@ router.post("/create", authenticateToken, async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Note creation error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -212,7 +210,6 @@ router.post("/save-pdf", authenticateToken, async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("PDF save error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -234,7 +231,6 @@ router.post("/:noteCode/access", authenticateToken, async (req, res) => {
     if (cachedNote) {
       const parsedNote = JSON.parse(cachedNote);
       const endTime = Date.now();
-      console.log(`⚡ Served from cache in ${endTime - startTime}ms`);
 
       return res.json({
         success: true,
@@ -301,7 +297,6 @@ router.post("/:noteCode/access", authenticateToken, async (req, res) => {
     );
 
     const endTime = Date.now();
-    console.log(`🐢 Served from database in ${endTime - startTime}ms`);
 
     res.json({
       success: true,
@@ -310,7 +305,6 @@ router.post("/:noteCode/access", authenticateToken, async (req, res) => {
       responseTime: `${endTime - startTime}ms`,
     });
   } catch (error) {
-    console.error("Note access error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -380,7 +374,6 @@ router.put("/:noteCode/update", authenticateToken, async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Note update error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -447,7 +440,6 @@ router.delete("/:noteCode/delete", authenticateToken, async (req, res) => {
       message: "Note deleted successfully",
     });
   } catch (error) {
-    console.error("Note deletion error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -517,7 +509,6 @@ router.get("/:noteCode/download", authenticateToken, async (req, res) => {
     const filename = `${note.title.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
     res.download(note.pdfPath, filename);
   } catch (error) {
-    console.error("PDF download error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",

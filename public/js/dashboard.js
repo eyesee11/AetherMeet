@@ -34,25 +34,16 @@ const joinRoomError = document.getElementById('joinRoomError');
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Dashboard DOMContentLoaded fired');
-    console.log('User:', user);
-    console.log('Token exists:', !!token);
-    
     if (welcomeUser) {
         welcomeUser.textContent = `Welcome, ${user.username}!`;
     }
     loadMyRooms();
     
-    // Check if there's a room code in the URL parameters (from shared link)
     const urlParams = new URLSearchParams(window.location.search);
     const roomCode = urlParams.get('roomCode');
     
     if (roomCode) {
-        console.log('Room code from URL:', roomCode);
-        // Pre-fill the room code input and automatically trigger join process
         document.getElementById('roomCode').value = roomCode.toUpperCase();
-        
-        // Automatically check if room exists and show password modal
         checkAndJoinRoom(roomCode.toUpperCase());
     }
 });
@@ -73,6 +64,19 @@ async function checkAndJoinRoom(roomCode) {
         if (data.success) {
             // Room exists, show password modal automatically
             joinRoomPasswordForm.dataset.roomCode = roomCode;
+            
+            // Show/hide secondary password field based on room configuration
+            const secondaryPasswordGroup = document.getElementById('secondaryPasswordGroup');
+            const secondaryPasswordInput = document.getElementById('joinSecondaryPassword');
+            
+            if (data.room.hasSecondaryPassword) {
+                secondaryPasswordGroup.classList.remove('hidden');
+                secondaryPasswordInput.required = true;
+            } else {
+                secondaryPasswordGroup.classList.add('hidden');
+                secondaryPasswordInput.required = false;
+            }
+            
             openModal(joinRoomModal);
         } else {
             alert(data.message || 'Room not found or not active');
@@ -85,7 +89,6 @@ async function checkAndJoinRoom(roomCode) {
 
 // Logout functionality
 logoutBtn.addEventListener('click', async () => {
-    console.log('Logout button clicked');
     try {
         // Call server logout endpoint
         await fetch('/api/auth/logout', {
@@ -146,12 +149,10 @@ document.addEventListener('click', (e) => {
 
 // Create room buttons
 createInstantBtn.addEventListener('click', () => {
-    console.log('Create Instant Room button clicked');
     openModal(instantRoomModal);
 });
 
 createScheduledBtn.addEventListener('click', () => {
-    console.log('Create Scheduled Room button clicked');
     openModal(scheduledRoomModal);
     // Set minimum datetime to current time
     const now = new Date();

@@ -59,7 +59,6 @@ module.exports = (io) => {
       });
 
       await demoRoom.save();
-      console.log("Demo room created successfully:", roomCode);
 
       res.json({
         success: true,
@@ -70,11 +69,6 @@ module.exports = (io) => {
         message: "Demo room created successfully",
       });
     } catch (error) {
-      console.error("Demo room creation error:", error);
-      console.error("Error details:", error.message);
-      if (error.name === "ValidationError") {
-        console.error("Validation errors:", error.errors);
-      }
       res.status(500).json({
         success: false,
         message: "Failed to create demo room: " + error.message,
@@ -109,10 +103,10 @@ module.exports = (io) => {
           admissionType: room.admissionType,
           createdBy: room.owner,
           participantCount: room.members.length,
+          hasSecondaryPassword: !!room.secondaryPassword,
         },
       });
     } catch (error) {
-      console.error("Room info error:", error);
       res.status(500).json({
         success: false,
         message: "Failed to get room info",
@@ -332,32 +326,14 @@ module.exports = (io) => {
       const { primaryPassword, secondaryPassword } = req.body;
       const username = req.user.username;
 
-      console.log("Join room request:", {
-        roomCode,
-        username,
-        primaryPassword: primaryPassword ? "[PROVIDED]" : "[MISSING]",
-        secondaryPassword: secondaryPassword ? "[PROVIDED]" : "[MISSING]",
-      });
-
-      // Find room
       const room = await Room.findOne({ roomCode, isActive: true });
       if (!room) {
-        console.log("Room not found:", roomCode);
         return res.status(404).json({
           success: false,
           message: "Room not found or not active",
         });
       }
 
-      console.log("Room found:", {
-        roomCode: room.roomCode,
-        name: room.name,
-        owner: room.owner,
-        primaryPassword: room.primaryPassword ? "[SET]" : "[MISSING]",
-        secondaryPassword: room.secondaryPassword ? "[SET]" : "[MISSING]",
-      });
-
-      // Check if user is already a member
       if (room.members.find((member) => member.username === username)) {
         return res.status(400).json({
           success: false,
@@ -365,15 +341,7 @@ module.exports = (io) => {
         });
       }
 
-      // Validate passwords
-      console.log("Password validation:", {
-        provided: primaryPassword,
-        expected: room.primaryPassword,
-        match: primaryPassword === room.primaryPassword,
-      });
-
       if (primaryPassword !== room.primaryPassword) {
-        console.log("Primary password mismatch");
         return res.status(401).json({
           success: false,
           message: "Invalid primary password",
@@ -384,7 +352,6 @@ module.exports = (io) => {
         room.secondaryPassword &&
         secondaryPassword !== room.secondaryPassword
       ) {
-        console.log("Secondary password mismatch");
         return res.status(401).json({
           success: false,
           message: "Invalid secondary password",
@@ -447,8 +414,6 @@ module.exports = (io) => {
       room.addMember(username);
       await room.save();
 
-      console.log("User successfully joined room:", username);
-
       res.json({
         success: true,
         message: "Successfully joined the room",
@@ -462,7 +427,6 @@ module.exports = (io) => {
         },
       });
     } catch (error) {
-      console.error("Room join error:", error);
       res.status(500).json({
         success: false,
         message: "Internal server error",

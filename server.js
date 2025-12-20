@@ -197,8 +197,6 @@ process.on("SIGINT", () => {
   });
 });
 
-//configs change for SSL certificates
-
 const options = {
   key: fs.readFileSync("cert/server.key"),
   cert: fs.readFileSync("cert/server.cert"),

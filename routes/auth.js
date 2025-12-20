@@ -69,7 +69,6 @@ router.post('/register', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Registration error:', error);
         res.status(500).json({ 
             success: false, 
             message: 'Internal server error' 
@@ -140,7 +139,6 @@ router.post('/login', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Login error:', error);
         res.status(500).json({ 
             success: false, 
             message: 'Internal server error' 
@@ -168,7 +166,6 @@ router.post('/logout', authenticateToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Logout error:', error);
         res.status(500).json({
             success: false,
             message: 'Internal server error'
@@ -196,7 +193,6 @@ router.post('/logout-all', authenticateToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Logout all error:', error);
         res.status(500).json({
             success: false,
             message: 'Internal server error'
