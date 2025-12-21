@@ -10,7 +10,7 @@
     "test:watch": "jest --watch",
     "test:unit": "jest tests/unitTests.test.js --verbose",
     "test:integration": "jest tests/integrationTests.test.js --verbose",
-    "test:api": "jest tests/apiTests.test.js --verbose",
+    "test:functional": "jest tests/functionalTests.test.js --verbose",
     "build": "npm run build:prepare && npm run build:assets && npm run build:verify",
     "build:prepare": "npm install --include=dev",
     "build:assets": "npm run build:css && npm run build:js",

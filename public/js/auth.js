@@ -98,7 +98,6 @@ loginForm.addEventListener('submit', async (e) => {
             showError(loginError, data.message);
         }
     } catch (error) {
-        console.error('Login error:', error);
         showError(loginError, 'An error occurred during login. Please try again.');
     }
 });
@@ -149,7 +148,6 @@ registerForm.addEventListener('submit', async (e) => {
             showError(registerError, data.message);
         }
     } catch (error) {
-        console.error('Registration error:', error);
         showError(registerError, 'An error occurred during registration. Please try again.');
     }
 });

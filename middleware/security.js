@@ -225,11 +225,6 @@ const logSecurityEvent = (eventType, details, req) => {
         userAgent: req.get('User-Agent'),
         userId: req.user?.username || 'anonymous'
     };
-    
-    console.log('SECURITY EVENT:', JSON.stringify(securityLog));
-    
-    // In production, you would save this to a dedicated security log collection
-    // or send to a security monitoring service
 };
 
 // Enhanced input sanitization for Phase 3

@@ -98,7 +98,6 @@ router.get('/stats', authenticateToken, adminLimiter, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Rate limit stats error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to retrieve rate limit statistics'
@@ -143,7 +142,6 @@ router.get('/connections', authenticateToken, adminLimiter, async (req, res) => 
         });
 
     } catch (error) {
-        console.error('Connection history error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to retrieve connection history'
@@ -219,7 +217,6 @@ router.get('/top-ips', authenticateToken, adminLimiter, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Top IPs error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to retrieve top IP statistics'
@@ -258,7 +255,6 @@ router.post('/reset-stats', authenticateToken, adminLimiter, async (req, res) =>
         });
 
     } catch (error) {
-        console.error('Reset stats error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to reset statistics'
@@ -299,8 +295,6 @@ router.post('/configure', authenticateToken, adminLimiter, async (req, res) => {
         };
 
         // Here you would typically save to database and update the actual rate limiters
-        console.log('Rate limit configuration updated:', config);
-
         res.json({
             success: true,
             message: 'Rate limit configuration updated successfully',
@@ -308,7 +302,6 @@ router.post('/configure', authenticateToken, adminLimiter, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Configure rate limits error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to update rate limit configuration'
