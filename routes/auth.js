@@ -4,12 +4,10 @@ const User = require('../models/User');
 const { authenticateToken } = require('../utils/helpers');
 const router = express.Router();
 
-// Register new user
 router.post('/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
-        // Validation
         if (!username || !email || !password) {
             return res.status(400).json({ 
                 success: false, 
@@ -24,7 +22,6 @@ router.post('/register', async (req, res) => {
             });
         }
 
-        // Check if user already exists
         const existingUser = await User.findOne({ 
             $or: [{ email }, { username }] 
         });
@@ -36,24 +33,18 @@ router.post('/register', async (req, res) => {
             });
         }
 
-        // Create new user
         const user = new User({ username, email, password });
         await user.save();
 
-        // Generate JWT token with shorter expiry
         const token = jwt.sign(
             { userId: user._id, username: user.username }, 
             process.env.JWT_SECRET,
-            { expiresIn: '2h' } // Reduced from 24h to 2h for better security
+            { expiresIn: '2h' }
         );
 
-        // Calculate expiration date
-        const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours from now
-
-        // Get device info from User-Agent
+        const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000);
         const deviceInfo = req.get('User-Agent') || 'Unknown Device';
 
-        // Add session to user's active sessions
         await user.addSession(token, expiresAt, deviceInfo);
 
         res.status(201).json({
@@ -76,12 +67,10 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// Login user
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Validation
         if (!username || !password) {
             return res.status(400).json({ 
                 success: false, 
@@ -89,7 +78,6 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        // Find user by username or email
         const user = await User.findOne({
             $or: [{ username }, { email: username }]
         });
@@ -101,7 +89,6 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        // Check password
         const isPasswordValid = await user.comparePassword(password);
         if (!isPasswordValid) {
             return res.status(401).json({ 

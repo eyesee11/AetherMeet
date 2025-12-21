@@ -40,7 +40,6 @@ const userSchema = new mongoose.Schema({
             default: 'Unknown Device'
         }
     }],
-    // Phase 3: Advanced Features
     isAdmin: {
         type: Boolean,
         default: false

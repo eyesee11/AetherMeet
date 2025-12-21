@@ -7,30 +7,30 @@ const authenticateToken = async (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
-        return res.status(401).json({ 
-            success: false, 
-            message: 'Access token required' 
+        return res.status(401).json({
+            success: false,
+            message: 'Access token required'
         });
     }
 
     try {
         // Verify JWT token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
+
         // Find user and check if session is active
         const user = await User.findById(decoded.userId);
         if (!user) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'User not found' 
+            return res.status(401).json({
+                success: false,
+                message: 'User not found'
             });
         }
 
         // Check if token is in active sessions
         if (!user.isTokenValid(token)) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'Session expired or invalid' 
+            return res.status(401).json({
+                success: false,
+                message: 'Session expired or invalid'
             });
         }
 
@@ -41,9 +41,9 @@ const authenticateToken = async (req, res, next) => {
         req.token = token;
         next();
     } catch (err) {
-        return res.status(403).json({ 
-            success: false, 
-            message: 'Invalid or expired token' 
+        return res.status(403).json({
+            success: false,
+            message: 'Invalid or expired token'
         });
     }
 };
@@ -53,7 +53,7 @@ const validatePassword = async (password) => {
     try {
         // Clean the password (remove extra spaces)
         const cleanPassword = password.trim();
-        
+
         // Check minimum length (allow any alphanumeric characters)
         if (cleanPassword.length < 1) {
             return false;
@@ -62,7 +62,7 @@ const validatePassword = async (password) => {
         // Allow any alphanumeric characters and some special characters
         const passwordPattern = /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/;
         return passwordPattern.test(cleanPassword);
-        
+
     } catch (error) {
         console.error('Password validation error:', error);
         // In case of error, allow the password
@@ -101,7 +101,7 @@ const calculateVoteResult = (votes) => {
     const admitVotes = votes.filter(vote => vote.decision === 'admit').length;
     const denyVotes = votes.filter(vote => vote.decision === 'deny').length;
     const totalVotes = votes.length;
-    
+
     // Simple majority rule
     return {
         admit: admitVotes,

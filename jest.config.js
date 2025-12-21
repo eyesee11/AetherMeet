@@ -1,18 +1,19 @@
+// Simple Jest configuration for testing
 module.exports = {
-  // Test environment
+  // Run tests in Node.js environment (not browser)
   testEnvironment: 'node',
 
-  // Set NODE_ENV to test
+  // Set NODE_ENV to test mode
   testEnvironmentOptions: {
     NODE_ENV: 'test'
   },
 
-  // Coverage settings
+  // Generate coverage report when running tests
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  
-  // Files to collect coverage from
+
+  // Which files to check for coverage
   collectCoverageFrom: [
     'routes/**/*.js',
     'models/**/*.js',
@@ -23,28 +24,23 @@ module.exports = {
     '!tests/**'
   ],
 
-  // Test match patterns
+  // Where to find test files
   testMatch: [
     '**/tests/**/*.test.js'
   ],
 
-  // Setup files
+  // Run setup file before tests
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
 
-  // Test timeout
+  // How long to wait before timing out (30 seconds)
   testTimeout: 30000,
 
-  // Verbose output
+  // Show detailed test results
   verbose: true,
 
-  // Clear mocks between tests
+  // Clean up mocks between each test
   clearMocks: true,
   resetMocks: true,
-  restoreMocks: true,
-
-  // Force exit after tests complete
-  forceExit: true,
-
-  // Detect open handles
-  detectOpenHandles: false
+  restoreMocks: true
 };
+

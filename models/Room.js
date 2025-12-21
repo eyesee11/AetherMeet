@@ -77,7 +77,6 @@ const roomSchema = new mongoose.Schema({
             default: Date.now
         }
     }],
-    // Phase 3: Advanced moderation features
     moderators: [String], // Array of moderator usernames
     mutedUsers: [{
         username: String,
@@ -134,7 +133,6 @@ const roomSchema = new mongoose.Schema({
         },
         expiresAt: Date
     }],
-    // Phase 3: End-to-end encryption
     encryption: {
         isEnabled: {
             type: Boolean,
@@ -150,7 +148,6 @@ const roomSchema = new mongoose.Schema({
             default: Date.now
         }
     },
-    // Phase 3: Analytics and insights
     analytics: {
         totalMessages: {
             type: Number,
@@ -177,7 +174,6 @@ const roomSchema = new mongoose.Schema({
             default: 0
         }
     },
-    // Phase 3: Room settings and preferences
     settings: {
         maxMembers: {
             type: Number,
@@ -252,19 +248,16 @@ roomSchema.statics.generateRoomCode = function() {
     return result;
 };
 
-// Add member to room
 roomSchema.methods.addMember = function(username) {
     if (!this.members.find(member => member.username === username)) {
         this.members.push({ username });
     }
 };
 
-// Remove member from room
 roomSchema.methods.removeMember = function(username) {
     this.members = this.members.filter(member => member.username !== username);
 };
 
-// Transfer ownership
 roomSchema.methods.transferOwnership = function() {
     if (this.members.length > 0) {
         // Transfer to the next member who joined

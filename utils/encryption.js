@@ -39,7 +39,7 @@ class EncryptionManager {
         try {
             const key = Buffer.from(roomKey, 'base64');
             const iv = this.generateIV();
-            const cipher = crypto.createCipher(this.algorithm, key);
+            const cipher = crypto.createCipheriv(this.algorithm, key, iv);
             cipher.setAAD(Buffer.from('aethermeet-message'));
 
             let encrypted = cipher.update(message, 'utf8', 'hex');
@@ -53,7 +53,6 @@ class EncryptionManager {
                 algorithm: this.algorithm
             };
         } catch (error) {
-            console.error('Encryption error:', error);
             throw new Error('Failed to encrypt message');
         }
     }
@@ -70,7 +69,7 @@ class EncryptionManager {
             const iv = Buffer.from(encryptedData.iv, 'base64');
             const authTag = Buffer.from(encryptedData.authTag, 'base64');
             
-            const decipher = crypto.createDecipher(this.algorithm, key);
+            const decipher = crypto.createDecipheriv(this.algorithm, key, iv);
             decipher.setAAD(Buffer.from('aethermeet-message'));
             decipher.setAuthTag(authTag);
 
@@ -79,7 +78,6 @@ class EncryptionManager {
 
             return decrypted;
         } catch (error) {
-            console.error('Decryption error:', error);
             throw new Error('Failed to decrypt message');
         }
     }
@@ -104,7 +102,6 @@ class EncryptionManager {
 
             return { publicKey, privateKey };
         } catch (error) {
-            console.error('Key pair generation error:', error);
             throw new Error('Failed to generate key pair');
         }
     }
@@ -121,7 +118,6 @@ class EncryptionManager {
             const encrypted = crypto.publicEncrypt(publicKey, buffer);
             return encrypted.toString('base64');
         } catch (error) {
-            console.error('Room key encryption error:', error);
             throw new Error('Failed to encrypt room key');
         }
     }
@@ -138,7 +134,6 @@ class EncryptionManager {
             const decrypted = crypto.privateDecrypt(privateKey, buffer);
             return decrypted.toString('base64');
         } catch (error) {
-            console.error('Room key decryption error:', error);
             throw new Error('Failed to decrypt room key');
         }
     }
@@ -150,7 +145,6 @@ class EncryptionManager {
      */
     rotateRoomKey(roomCode) {
         const newKey = this.generateRoomKey();
-        console.log(`Room key rotated for room: ${roomCode}`);
         return newKey;
     }
 
