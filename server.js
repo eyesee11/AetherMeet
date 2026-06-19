@@ -59,27 +59,47 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 if (process.env.NODE_ENV !== "test") {
-  mongoose
-    .connect(process.env.MONGO_URI || "mongodb://localhost:27017/aethermeet", {
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      bufferCommands: false,
-    })
-    .then(() => {
-      console.log("✅ MongoDB connected successfully");
+  const startServer = async () => {
+    let mongoUri = process.env.MONGO_URI;
+    let usingMemoryServer = false;
+    
+    if (!mongoUri) {
+      console.log("⚠️ No MONGO_URI provided, falling back to in-memory MongoDB...");
+      try {
+        const { MongoMemoryServer } = require("mongodb-memory-server");
+        const mongoServer = await MongoMemoryServer.create();
+        mongoUri = mongoServer.getUri();
+        usingMemoryServer = true;
+      } catch (err) {
+        console.log("⚠️ Could not start memory server, using default localhost URI");
+        mongoUri = "mongodb://localhost:27017/aethermeet";
+      }
+    }
 
-      memoryManager.startCleanup(30);
+    mongoose
+      .connect(mongoUri, {
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+        bufferCommands: false,
+      })
+      .then(() => {
+        console.log(`✅ MongoDB connected successfully ${usingMemoryServer ? '(In-Memory)' : ''}`);
 
-      const PORT = process.env.PORT || 5000;
-      server.listen(PORT, () => {
-        console.log(`🚀 Server running at: http://localhost:${PORT}`);
+        memoryManager.startCleanup(30);
+
+        const PORT = process.env.PORT || 5000;
+        server.listen(PORT, () => {
+          console.log(`🚀 Server running at: http://localhost:${PORT}`);
+        });
+      })
+      .catch((err) => {
+        console.error("❌ MongoDB connection error:", err);
+        process.exit(1);
       });
-    })
-    .catch((err) => {
-      console.error("❌ MongoDB connection error:", err);
-      process.exit(1);
-    });
+  };
+  
+  startServer();
 }
 
 app.get("/api/health", (req, res) => {
