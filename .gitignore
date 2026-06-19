@@ -75,3 +75,15 @@ storage/media/*
 storage/pdfs/*
 !storage/media/.gitkeep
 !storage/pdfs/.gitkeep
+
+# Code review and Claude AI directories
+.code-review-graph/
+.claude/
+
+!CLAUDE.MD
+!AGENTS.MD
+!GEMINI.MD
+!.windsurfrules
+!.cursorrules
+!.mcp.json
+!.opencode.json

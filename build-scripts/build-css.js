@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 
 /**
- * Build script for Tailwind CSS
- * This script handles CSS compilation for both development and production
+ * Build script for CSS
+ * Since we're using plain CSS with CSS variables,
+ * we can simply copy and minify the CSS file
  */
 
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
 
 const inputFile = "./public/css/style.css";
 const outputFile = "./public/css/compiled.css";
 
-console.log("📦 Building CSS with Tailwind...");
+console.log("📦 Building CSS...");
 
 try {
   // Ensure output directory exists
@@ -21,43 +21,22 @@ try {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  // Try to use the installed tailwindcss
-  const tailwindPath = path.join(
-    __dirname,
-    "..",
-    "node_modules",
-    ".bin",
-    "tailwindcss"
-  );
-  const isWindows = process.platform === "win32";
-  const tailwindCmd = isWindows ? `"${tailwindPath}.cmd"` : tailwindPath;
+  // Read CSS
+  let css = fs.readFileSync(inputFile, "utf-8");
+  
+  // Simple minification: remove comments and extra whitespace
+  css = css
+    .replace(/\/\*[\s\S]*?\*\//g, "") // Remove all comments
+    .replace(/\s+/g, " ") // Collapse multiple spaces
+    .replace(/\s?([{}:;,])\s?/g, "$1") // Remove spaces around special chars
+    .trim();
 
-  // Check if tailwindcss exists
-  const tailwindExists = fs.existsSync(
-    isWindows ? `${tailwindPath}.cmd` : tailwindPath
-  );
-
-  if (tailwindExists) {
-    const command = `${tailwindCmd} -i ${inputFile} -o ${outputFile} --minify`;
-    console.log(`Running: ${command}`);
-    execSync(command, { stdio: "inherit" });
-  } else {
-    // Fallback: create a basic CSS file if Tailwind is not available
-    console.warn("⚠️  Tailwind CSS not found, creating basic CSS file...");
-
-    const basicCSS = `
-/* Basic compiled CSS - Tailwind not available */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: system-ui, -apple-system, sans-serif; }
-    `.trim();
-
-    fs.writeFileSync(outputFile, basicCSS);
-    console.log(
-      "⚠️  Created basic CSS file. Install Tailwind CSS for full styling."
-    );
-  }
-
-  console.log("✅ CSS build completed successfully");
+  // Write compiled CSS
+  fs.writeFileSync(outputFile, css, "utf-8");
+  
+  const fileSize = (fs.statSync(outputFile).size / 1024).toFixed(2);
+  console.log(`✓ CSS build completed successfully`);
+  console.log(`✓ Output: ${outputFile} (${fileSize} KB)`);
 } catch (error) {
   console.error("❌ Error building CSS:", error.message);
   process.exit(1);

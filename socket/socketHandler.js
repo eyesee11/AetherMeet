@@ -13,10 +13,13 @@ module.exports = (io) => {
         
         // Skip authentication for demo rooms
         if (isDemoRoom) {
+            const clientUsername = socket.handshake.auth.username || socket.handshake.query.username;
+            const clientUserId = socket.handshake.auth.userId || socket.handshake.query.userId;
+            
             // Create a demo user for this socket
             socket.user = {
-                userId: 'demo-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
-                username: 'Guest' + Math.floor(Math.random() * 10000)
+                userId: clientUserId || ('demo-' + Date.now() + '-' + Math.floor(Math.random() * 1000)),
+                username: clientUsername || ('Guest' + Math.floor(Math.random() * 10000))
             };
             socket.isDemoUser = true;
             return next();

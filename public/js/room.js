@@ -44,16 +44,20 @@ if (!isDemoRoom && !token) {
   window.location.href = "/";
 }
 
-// Demo room user setup
+let savedDemoUser = null;
 if (isDemoRoom) {
-  // Generate a guest username for demo users
-  const guestUser = {
-    username: "Guest" + Math.floor(Math.random() * 10000),
-    id: "demo-" + Date.now(),
-  };
-
-  // Store demo user temporarily
-  localStorage.setItem("demoUser", JSON.stringify(guestUser));
+  try {
+    savedDemoUser = JSON.parse(localStorage.getItem("demoUser"));
+  } catch (e) {}
+  if (!savedDemoUser || !savedDemoUser.username || !savedDemoUser.id) {
+    // Generate a guest username for demo users
+    savedDemoUser = {
+      username: "Guest" + Math.floor(Math.random() * 10000),
+      id: "demo-" + Date.now(),
+    };
+    // Store demo user temporarily
+    localStorage.setItem("demoUser", JSON.stringify(savedDemoUser));
+  }
 }
 
 // Socket.IO connection
@@ -61,12 +65,19 @@ const socket = isDemoRoom
   ? io({
       query: {
         demo: "true",
+        username: savedDemoUser.username,
+        userId: savedDemoUser.id,
       },
+      auth: {
+        username: savedDemoUser.username,
+        userId: savedDemoUser.id,
+      }
     })
   : io({
       auth: {
         token: token,
       },
+      autoConnect: false, // Don't connect automatically for authenticated rooms
     });
 
 // DOM Elements
@@ -85,7 +96,6 @@ const exportPdfBtn = document.getElementById("exportPdfBtn");
 const leaveRoomBtn = document.getElementById("leaveRoomBtn");
 const shareLinkBtn = document.getElementById("shareLinkBtn");
 const connectionStatus = document.getElementById("connectionStatus");
-const statusText = document.getElementById("statusText");
 
 // Media elements
 const mediaUpload = document.getElementById("mediaUpload");
@@ -113,21 +123,160 @@ let audioChunks = [];
 let recordingStartTime = null;
 let recordingInterval = null;
 
+function initSocket() {
+  if (!isDemoRoom) {
+    socket.connect();
+  }
+  socket.emit("joinRoom", roomCode);
+}
+
+function startActivityTracking() {
+  const roomCode = window.roomCode;
+
+  // Clear any existing left timestamp
+  localStorage.removeItem('roomLastLeft_' + roomCode);
+
+  // Handle visibility changes
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      localStorage.setItem('roomLastLeft_' + roomCode, Date.now());
+    } else if (document.visibilityState === 'visible') {
+      // User came back!
+      const lastLeft = localStorage.getItem('roomLastLeft_' + roomCode);
+      if (lastLeft) {
+        const timeAway = (Date.now() - parseInt(lastLeft)) / 1000;
+        if (timeAway > 10) {
+          // Locked!
+          localStorage.removeItem('roomVerified_' + roomCode);
+          window.location.reload(); // Reload to trigger lock overlay cleanly and tear down socket
+        } else {
+          // Re-entered within 10s cooldown
+          localStorage.removeItem('roomLastLeft_' + roomCode);
+        }
+      }
+    }
+  });
+
+  // Handle page unload/hide
+  window.addEventListener('pagehide', () => {
+    localStorage.setItem('roomLastLeft_' + roomCode, Date.now());
+  });
+  window.addEventListener('beforeunload', () => {
+    localStorage.setItem('roomLastLeft_' + roomCode, Date.now());
+  });
+}
+
+async function checkRoomPasswordRequirement() {
+  if (isDemoRoom) {
+    initSocket();
+    return;
+  }
+
+  const roomCode = window.roomCode;
+  const lastLeft = localStorage.getItem('roomLastLeft_' + roomCode);
+  const roomVerified = localStorage.getItem('roomVerified_' + roomCode);
+  const now = Date.now();
+
+  let needsPassword = false;
+
+  if (!roomVerified) {
+    needsPassword = true;
+  } else if (lastLeft) {
+    const timeAway = (now - parseInt(lastLeft)) / 1000;
+    if (timeAway > 10) {
+      needsPassword = true;
+    }
+  }
+
+  if (needsPassword) {
+    // Show password overlay
+    const lockModal = document.getElementById("roomPasswordLockModal");
+    lockModal.classList.remove("hidden");
+
+    // Fetch room info to see if secondary password is required
+    try {
+      const response = await fetch(`/api/rooms/${roomCode}/info`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.success && data.room.hasSecondaryPassword) {
+        document.getElementById("lockSecondaryPasswordGroup").classList.remove("hidden");
+        document.getElementById("lockSecondaryPassword").required = true;
+      }
+    } catch (e) {
+      console.error("Failed to fetch room info", e);
+    }
+  } else {
+    // No password needed, initialize socket
+    initSocket();
+    startActivityTracking();
+  }
+}
+
 // Initialize room
 document.addEventListener("DOMContentLoaded", () => {
-  // Join the room
-  socket.emit("joinRoom", roomCode);
+  checkRoomPasswordRequirement();
+
+  // Setup form submission for password verification
+  const lockForm = document.getElementById("roomPasswordLockForm");
+  if (lockForm) {
+    lockForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const roomCode = window.roomCode;
+      const primaryPassword = document.getElementById("lockPrimaryPassword").value;
+      const lockSecondaryPassword = document.getElementById("lockSecondaryPassword");
+      const secondaryPassword = lockSecondaryPassword ? lockSecondaryPassword.value : "";
+      const lockError = document.getElementById("lockError");
+
+      try {
+        const response = await fetch(`/api/rooms/${roomCode}/join`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ primaryPassword, secondaryPassword })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          // Success! Unlock screen, save verification, initialize socket and tracking
+          localStorage.setItem('roomVerified_' + roomCode, Date.now());
+          localStorage.removeItem('roomLastLeft_' + roomCode);
+          document.getElementById("roomPasswordLockModal").classList.add("hidden");
+          lockForm.reset();
+          if (lockError) lockError.classList.add("hidden");
+          
+          initSocket();
+          startActivityTracking();
+        } else {
+          if (lockError) {
+            lockError.textContent = data.message || "Invalid password";
+            lockError.classList.remove("hidden");
+          }
+        }
+      } catch (error) {
+        console.error("Password verification error:", error);
+        if (lockError) {
+          lockError.textContent = "Failed to verify password. Please try again.";
+          lockError.classList.remove("hidden");
+        }
+      }
+    });
+  }
 });
 
 // Socket event handlers
 socket.on("connect", () => {
-  statusText.textContent = "Connected";
-  connectionStatus.className = "connection-status connected";
+  connectionStatus.classList.add("connected");
 });
 
 socket.on("disconnect", () => {
-  statusText.textContent = "Disconnected";
-  connectionStatus.className = "connection-status disconnected";
+  connectionStatus.classList.remove("connected");
 });
 
 socket.on("roomJoined", (roomInfo) => {

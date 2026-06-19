@@ -334,13 +334,6 @@ module.exports = (io) => {
         });
       }
 
-      if (room.members.find((member) => member.username === username)) {
-        return res.status(400).json({
-          success: false,
-          message: "You are already a member of this room",
-        });
-      }
-
       if (primaryPassword !== room.primaryPassword) {
         return res.status(401).json({
           success: false,
@@ -355,6 +348,14 @@ module.exports = (io) => {
         return res.status(401).json({
           success: false,
           message: "Invalid secondary password",
+        });
+      }
+
+      if (room.members.find((member) => member.username === username)) {
+        return res.json({
+          success: true,
+          message: "Joined successfully",
+          status: "joined",
         });
       }
 

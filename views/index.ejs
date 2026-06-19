@@ -7,131 +7,76 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/compiled.css">
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
                         'mono': ['JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', 'monospace'],
-                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                        'sans': ['Outfit', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
+                        'display': ['Space Grotesk', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif']
                     },
-                    boxShadow: {
-                        'brutal': '4px 4px 0px 0px #000000',
-                        'brutal-lg': '8px 8px 0px 0px #000000',
-                        'brutal-xl': '12px 12px 0px 0px #000000'
+                    spacing: {
+                        '4.5': '1.125rem',
+                        '5.5': '1.375rem',
+                        '6.5': '1.625rem'
                     }
                 }
             }
         }
     </script>
     <style>
-        .btn-brutal {
-            box-shadow: 4px 4px 0px 0px #000000;
-            transition: all 0.2s ease;
+        /* Base typography overrides */
+        h1, h2, h3, h4 {
+            font-family: 'Space Grotesk', sans-serif !important;
         }
-        .btn-brutal:hover {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px 0px #000000;
-        }
-        .btn-brutal:active {
-            transform: translate(4px, 4px);
-            box-shadow: 0px 0px 0px 0px #000000;
-        }
-        .card-brutal {
-            box-shadow: 8px 8px 0px 0px #000000;
-            transition: all 0.2s ease;
-        }
-        .card-brutal:hover {
-            transform: translate(2px, 2px);
-            box-shadow: 4px 4px 0px 0px #000000;
-        }
-        
-        /* Dark theme styles */
-        .dark {
-            background-color: #1a1a1a;
-            color: #ffffff;
-        }
-        .dark .bg-white { background-color: #2a2a2a !important; }
-        .dark .bg-gray-100 { background-color: #3a3a3a !important; }
-        .dark .bg-gray-200 { background-color: #4a4a4a !important; }
-        .dark .bg-gray-50 { background-color: #2a2a2a !important; }
-        .dark .bg-yellow-50 { background-color: #4a4a2a !important; }
-        .dark .bg-blue-50 { background-color: #2a2a4a !important; }
-        .dark .bg-yellow-100 { background-color: #4a4a2a !important; }
-        .dark .bg-red-100 { background-color: #4a2a2a !important; }
-        .dark .bg-green-100 { background-color: #2a4a2a !important; }
-        .dark .bg-red-50 { background-color: #4a2a2a !important; }
-        .dark .text-black { color: #ffffff !important; }
-        .dark .text-gray-600 { color: #cccccc !important; }
-        .dark .text-gray-500 { color: #aaaaaa !important; }
-        .dark .text-gray-700 { color: #dddddd !important; }
-        .dark .text-gray-800 { color: #ffffff !important; }
-        .dark .text-red-700 { color: #ff9999 !important; }
-        .dark .text-red-800 { color: #ffaaaa !important; }
-        .dark .border-black { border-color: #ffffff !important; }
-        .dark .border-gray-400 { border-color: #666666 !important; }
-        .dark .border-red-500 { border-color: #ff6666 !important; }
-        .dark #themeToggle { background-color: #2a2a2a !important; color: #ffffff !important; border-color: #ffffff !important; }
-        .dark #languageToggle { background-color: #2a2a2a !important; color: #ffffff !important; border-color: #ffffff !important; }
-        .dark #languageDropdown { background-color: #2a2a2a !important; color: #ffffff !important; border-color: #ffffff !important; box-shadow: 4px 4px 0px 0px #ffffff !important; }
-        .dark .language-option:hover { background-color: #3a3a3a !important; }
-        .dark .btn-brutal { box-shadow: 4px 4px 0px 0px #ffffff !important; }
-        .dark .btn-brutal:hover { box-shadow: 2px 2px 0px 0px #ffffff !important; }
-        .dark .card-brutal { box-shadow: 8px 8px 0px 0px #ffffff !important; }
-        .dark .card-brutal:hover { box-shadow: 4px 4px 0px 0px #ffffff !important; }
-        /* Header Sign In button dark mode fix */
-        .dark #headerLoginBtn {
-            background-color: #2a2a2a !important;
-            color: #ffffff !important;
-            border-color: #ffffff !important;
-        }
-        
-        /* Logo styles */
+        /* Logo border style */
         header img {
-            max-width: 100%;
-            height: auto;
+            border: 3px solid #000000 !important;
         }
-        .dark header .bg-white {
-            background-color: #ffffff !important;
+        html.dark header img {
+            border: 3px solid #FFFFFF !important;
         }
     </style>
 </head>
-<body class="bg-white text-black font-sans min-h-screen transition-colors duration-300">
+<body class="bg-white text-black font-sans min-h-screen transition-colors duration-300 dark:bg-zinc-950 dark:text-white">
     <!-- Theme Toggle & Language Selector -->
-    <div class="fixed top-2 right-2 md:top-4 md:right-4 z-50 flex gap-2">
-        <button id="themeToggle" class="btn-brutal px-2 py-1.5 md:px-4 md:py-2 bg-white border-2 border-black font-bold uppercase tracking-wide text-xs md:text-sm hover:bg-gray-100">
+    <div class="fixed top-4 right-4 md:top-6 md:right-6 z-50 flex gap-2">
+        <button id="themeToggle" class="btn-brutal btn-brutal-white px-3 py-2 md:px-4 md:py-2.5 text-xs md:text-sm">
             <span id="themeText">DARK</span>
         </button>
     </div>
     <!-- Header -->
-    <header class="bg-white border-b-4 border-black px-4 md:px-6 py-4">
-        <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-4">
-            <div class="flex items-center space-x-2 md:space-x-4">
-                <div class="bg-white p-1">
-                    <img src="/logo.jpg" alt="AetherMeet Logo" class="h-6 w-6 md:h-8 md:w-8 object-contain border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000; display: block;">
+    <header class="px-4 md:px-8 py-6 md:py-8">
+        <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-6">
+            <div class="flex items-center space-x-3 md:space-x-4">
+                <div class="bg-white">
+                    <img src="/logo.jpg" alt="AetherMeet Logo" class="h-8 w-8 md:h-10 md:w-10 object-contain">
                 </div>
                 <div>
-                    <h1 class="text-xl md:text-2xl lg:text-3xl font-black uppercase tracking-tight">AetherMeet</h1>
-                    <p class="text-xs md:text-sm text-gray-600 font-mono hidden sm:block" data-i18n="common.tagline">Secure & Ephemeral Team Chat Rooms</p>
+                    <h1 class="text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-normal font-display">AetherMeet</h1>
+                    <p class="text-xs md:text-sm text-gray-600 dark:text-gray-400 font-mono font-medium hidden sm:block" data-i18n="common.tagline">Secure & Ephemeral Team Chat Rooms</p>
                 </div>
             </div>
-            <div class="flex md:hidden items-center space-x-2">
-                <button id="tryDemoBtnMobile" class="btn-brutal px-3 py-1.5 bg-yellow-400 text-black border-2 border-black font-bold uppercase tracking-wide text-xs">
+            <div class="flex md:hidden items-center space-x-3">
+                <button id="tryDemoBtnMobile" class="btn-brutal btn-brutal-primary px-4 py-2 text-xs flex-1">
                     Demo
                 </button>
-                <button id="headerGetStartedBtnMobile" class="btn-brutal px-3 py-1.5 bg-black text-white border-2 border-black font-bold uppercase tracking-wide text-xs">
+                <button id="headerGetStartedBtnMobile" class="btn-brutal btn-brutal-black px-4 py-2 text-xs flex-1">
                     Sign Up
                 </button>
             </div>
             <div class="hidden md:flex items-center space-x-4">
-                <button id="tryDemoBtn" class="btn-brutal px-6 py-2 bg-yellow-400 text-black border-2 border-black font-bold uppercase tracking-wide text-sm" data-i18n="nav.tryDemo">
+                <button id="tryDemoBtn" class="btn-brutal btn-brutal-primary px-6 py-2.5 text-sm" data-i18n="nav.tryDemo">
                     Try Demo
                 </button>
-                <button id="headerGetStartedBtn" class="btn-brutal px-6 py-2 bg-black text-white border-2 border-black font-bold uppercase tracking-wide" data-i18n="nav.getStarted">
+                <button id="headerGetStartedBtn" class="btn-brutal btn-brutal-black px-6 py-2.5" data-i18n="nav.getStarted">
                     Get Started
                 </button>
-                <button id="headerLoginBtn" class="btn-brutal px-6 py-2 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-sm" data-i18n="auth.signIn">
+                <button id="headerLoginBtn" class="btn-brutal btn-brutal-white px-6 py-2.5 text-sm" data-i18n="auth.signIn">
                     Sign In
                 </button>
             </div>
@@ -141,25 +86,27 @@
     <!-- Hero Section -->
     <main class="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-16">
         <div class="text-center mb-12 md:mb-20">
-            <h2 class="text-3xl md:text-5xl lg:text-7xl font-black uppercase tracking-tight mb-6 md:mb-8 leading-tight md:leading-none">
+            <h2 class="text-3xl md:text-5xl lg:text-6xl xl:text-7xl 
+           font-black tracking-tight mb-6 md:mb-8 font-display
+           leading-none uppercase">
                 "You already have zero privacy–get over it"<br>
-                <span class="text-gray-600">(Scott McNealy)</span>
+                <span class="text-gray-600 dark:text-gray-400 font-medium font-sans text-xl md:text-3xl lg:text-4xl block mt-2">(Scott McNealy)</span>
             </h2>
-            <p class="text-base md:text-lg lg:text-xl text-gray-600 mb-8 md:mb-12 max-w-3xl mx-auto px-4">
+            <p class="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-8 md:mb-12 max-w-3xl mx-auto px-4">
                 AetherMeet lets you create temporary, secure chat rooms with sensible passwords and democratic admission controls. <strong>Try it instantly - no signup required!</strong>
             </p>
             
-            <div class="flex flex-col md:flex-row gap-4 md:gap-6 justify-center items-center mb-12 md:mb-16 px-4">
+            <div class="flex flex-col md:flex-row gap-6 md:gap-8 justify-center items-center mb-16 md:mb-24 px-4">
                 <!-- Primary CTA: Demo Room -->
-                <button id="demoBtn" class="btn-brutal px-8 md:px-12 py-2.5 md:py-3 bg-yellow-400 text-black border-2 border-black font-black uppercase tracking-wide text-base md:text-lg w-full md:w-auto" data-i18n="nav.startDemoRoom">
-                     Start Demo Room
+                <button id="demoBtn" class="btn-brutal btn-brutal-primary px-8 md:px-12 py-4 font-black tracking-normal text-base md:text-lg w-full md:w-auto" data-i18n="nav.startDemoRoom">
+                    Start Demo Room
                 </button>
                 <!-- Secondary CTAs -->
-                <div class="flex gap-3 md:gap-4 w-full md:w-auto">
-                    <button id="registerBtn" class="btn-brutal px-4 md:px-6 py-2.5 md:py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide text-sm md:text-base flex-1 md:flex-none" data-i18n="auth.signUp">
+                <div class="flex gap-4 md:gap-6 w-full md:w-auto">
+                    <button id="registerBtn" class="btn-brutal btn-brutal-black px-4 md:px-6 py-4 text-sm md:text-base flex-1 md:flex-none" data-i18n="auth.signUp">
                         Sign Up
                     </button>
-                    <button id="loginBtn2" class="btn-brutal px-4 md:px-6 py-2.5 md:py-3 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-sm md:text-base flex-1 md:flex-none" data-i18n="auth.signIn">
+                    <button id="loginBtn2" class="btn-brutal btn-brutal-white px-4 md:px-6 py-4 text-sm md:text-base flex-1 md:flex-none" data-i18n="auth.signIn">
                         Sign In
                     </button>
                 </div>
@@ -167,32 +114,32 @@
         </div>
 
         <!-- Demo Section -->
-        <div class="grid md:grid-cols-2 gap-6 md:gap-8 mb-12 md:mb-20">
+        <div class="grid md:grid-cols-2 gap-8 md:gap-12 mb-16 md:mb-24 px-4">
             <!-- Request Card -->
-            <div class="card-brutal bg-white border-2 border-black p-8">
-                <div class="mb-6">
-                    <h3 class="text-xl font-bold uppercase tracking-wide mb-4">1. What do you wish to create?</h3>
-                    <div class="bg-gray-50 border-2 border-black p-4">
+            <div class="card-brutal p-8 md:p-12">
+                <div class="mb-8">
+                    <h3 class="text-xl md:text-2xl font-bold mb-6 font-display">1. What do you wish to create?</h3>
+                    <div class="bg-gray-50 dark:bg-zinc-800 border-2 border-black dark:border-white p-6">
                         <div class="mb-4">
                             <span class="font-mono text-sm font-bold">ROOM NAME:</span>
-                            <p class="font-mono text-sm mt-1">BreakUp Party @9</p>
+                            <p class="font-mono text-sm mt-2">BreakUp Party @9</p>
                         </div>
                         <div>
                             <span class="font-mono text-sm font-bold">NEED:</span>
-                            <p class="font-mono text-sm mt-1">#Want a temporary room with high security just to mock the friend</p>
+                            <p class="font-mono text-sm mt-2">#Want a temporary room with high security just to mock the friend</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Response Card -->
-            <div class="card-brutal bg-white border-2 border-black p-8">
-                <div class="mb-6">
-                    <h3 class="text-xl font-bold uppercase tracking-wide mb-4">2. Your Instant Room & Data</h3>
-                    <div class="bg-gray-50 border-2 border-black p-4">
+            <div class="card-brutal p-8 md:p-12">
+                <div class="mb-8">
+                    <h3 class="text-xl md:text-2xl font-bold mb-6 font-display">2. Your Instant Room & Data</h3>
+                    <div class="bg-gray-50 dark:bg-zinc-800 border-2 border-black dark:border-white p-6">
                         <div class="mb-4">
                             <span class="font-mono text-sm font-bold">ROOM CODE:</span>
-                            <p class="font-mono text-sm mt-1 bg-black text-white px-2 py-1 inline-block">ABC123</p>
+                            <p class="font-mono text-sm mt-2 bg-black text-white px-3 py-1 inline-block font-bold">ABC123</p>
                         </div>
                         <div>
                             <span class="font-mono text-sm font-bold">STATUS:</span>
@@ -209,73 +156,71 @@
         </div>
 
         <!-- Feature Comparison Section -->
-        <section class="mb-12 md:mb-20">
-            <h3 class="text-2xl md:text-3xl lg:text-4xl font-black uppercase tracking-tight text-center mb-8 md:mb-12 px-4">Choose Your Experience</h3>
-            <div class="grid md:grid-cols-2 gap-6 md:gap-8">
+        <section class="mb-16 md:mb-24 px-4">
+            <h3 class="text-3xl md:text-5xl font-extrabold text-center mb-12 md:mb-16 font-display uppercase tracking-tight">Choose Your Experience</h3>
+            <div class="grid md:grid-cols-2 gap-8 md:gap-12">
                 <!-- Demo Rooms -->
-                <div class="card-brutal bg-yellow-50 border-2 border-black p-8">
-                    <div class="text-center mb-6">
-                        <!-- <div class="text-4xl mb-4">🚀</div> -->
-                        <h4 class="text-2xl font-black uppercase tracking-wide mb-2">Demo Rooms</h4>
-                        <p class="text-gray-600 font-medium">Try instantly, no signup required</p>
+                <div class="card-brutal card-brutal-yellow p-8 md:p-12 text-black">
+                    <div class="text-center mb-8">
+                        <h4 class="text-2xl md:text-3xl font-extrabold mb-3 font-display">Demo Rooms</h4>
+                        <p class="text-gray-700 font-medium">Try instantly, no signup required</p>
                     </div>
-                    <div class="space-y-3 mb-6">
+                    <div class="space-y-3 mb-8">
                         <div class="flex items-center gap-3">
-                            <span class="text-green-600 font-bold">✓</span>
-                            <span class="font-mono text-sm">Real-time Chat</span>
+                            <span class="text-green-700 font-extrabold text-lg">✓</span>
+                            <span class="font-mono text-sm font-bold">Real-time Chat</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-green-600 font-bold">✓</span>
-                            <span class="font-mono text-sm">Media Sharing</span>
+                            <span class="text-green-700 font-extrabold text-lg">✓</span>
+                            <span class="font-mono text-sm font-bold">Media Sharing</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-green-600 font-bold">✓</span>
-                            <span class="font-mono text-sm">Instant Access</span>
+                            <span class="text-green-700 font-extrabold text-lg">✓</span>
+                            <span class="font-mono text-sm font-bold">Instant Access</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-orange-600 font-bold">✓</span>
-                            <span class="font-mono text-sm">Auto-destroy when empty</span>
+                            <span class="text-orange-700 font-extrabold text-lg">✓</span>
+                            <span class="font-mono text-sm font-bold">Auto-destroy when empty</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-orange-600 font-bold">✓</span>
-                            <span class="font-mono text-sm">24-hour expiry</span>
+                            <span class="text-orange-700 font-extrabold text-lg">✓</span>
+                            <span class="font-mono text-sm font-bold">24-hour expiry</span>
                         </div>
                     </div>
-                    <button id="startDemoNowBtn" class="btn-brutal w-full px-6 py-3 bg-yellow-400 text-black border-2 border-black font-bold uppercase tracking-wide">
+                    <button id="startDemoNowBtn" class="btn-brutal btn-brutal-primary w-full py-3.5 font-bold">
                         Start Demo Now
                     </button>
                 </div>
 
                 <!-- Authenticated Rooms -->
-                <div class="card-brutal bg-blue-50 border-2 border-black p-8">
-                    <div class="text-center mb-6">
-                        <!-- <div class="text-4xl mb-4">🔐</div> -->
-                        <h4 class="text-2xl font-black uppercase tracking-wide mb-2">Full Access</h4>
-                        <p class="text-gray-600 font-medium">Complete features with your account</p>
+                <div class="card-brutal card-brutal-blue p-8 md:p-12 text-black">
+                    <div class="text-center mb-8">
+                        <h4 class="text-2xl md:text-3xl font-extrabold mb-3 font-display">Full Access</h4>
+                        <p class="text-gray-700 font-medium">Complete features with your account</p>
                     </div>
-                    <div class="space-y-3 mb-6">
+                    <div class="space-y-3 mb-8">
                         <div class="flex items-center gap-3">
-                            <span class="text-green-600 font-bold">✓</span>
-                            <span class="font-mono text-sm">All Demo Features</span>
+                            <span class="text-green-700 font-extrabold text-lg">✓</span>
+                            <span class="font-mono text-sm font-bold">All Demo Features</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-blue-600 font-bold">★</span>
-                            <span class="font-mono text-sm">Persistent Rooms</span>
+                            <span class="text-blue-700 font-extrabold text-lg">★</span>
+                            <span class="font-mono text-sm font-bold">Persistent Rooms</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-blue-600 font-bold">★</span>
-                            <span class="font-mono text-sm">Room Scheduling</span>
+                            <span class="text-blue-700 font-extrabold text-lg">★</span>
+                            <span class="font-mono text-sm font-bold">Room Scheduling</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-blue-600 font-bold">★</span>
-                            <span class="font-mono text-sm">Advanced Moderation</span>
+                            <span class="text-blue-700 font-extrabold text-lg">★</span>
+                            <span class="font-mono text-sm font-bold">Advanced Moderation</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-blue-600 font-bold">★</span>
-                            <span class="font-mono text-sm">Owner Controls</span>
+                            <span class="text-blue-700 font-extrabold text-lg">★</span>
+                            <span class="font-mono text-sm font-bold">Owner Controls</span>
                         </div>
                     </div>
-                    <button id="signUpFreeBtn" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
+                    <button id="signUpFreeBtn" class="btn-brutal btn-brutal-black w-full py-3.5 font-bold">
                         Sign Up Free
                     </button>
                 </div>
@@ -283,86 +228,86 @@
         </section>
 
         <!-- Features Grid -->
-        <section class="mb-12 md:mb-20">
-            <h3 class="text-2xl md:text-3xl lg:text-4xl font-black uppercase tracking-tight text-center mb-8 md:mb-12 px-4">Key Features</h3>
+        <section class="mb-16 md:mb-24 px-4">
+            <h3 class="text-3xl md:text-5xl font-extrabold text-center mb-12 md:mb-16 font-display uppercase tracking-tight">Key Features</h3>
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                <div class="card-brutal bg-white border-2 border-black p-6">
-                    <div class="text-2xl mb-4 font-black">◉</div>
-                    <h4 class="text-lg font-bold uppercase tracking-wide mb-3">Secure Authentication</h4>
-                    <p class="text-gray-600">JWT-based authentication system for secure access</p>
+                <div class="card-brutal p-6 md:p-8">
+                    <div class="text-3xl mb-4 font-bold">◉</div>
+                    <h4 class="text-lg md:text-xl font-bold mb-4 font-display">Secure Authentication</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base">JWT-based authentication system for secure access</p>
                 </div>
                 
-                <div class="card-brutal bg-white border-2 border-black p-6">
-                    <div class="text-2xl mb-4 font-black">◐</div>
-                    <h4 class="text-lg font-bold uppercase tracking-wide mb-3">Ephemeral Rooms</h4>
-                    <p class="text-gray-600">Temporary rooms that auto-destroy based on user-defined rules</p>
+                <div class="card-brutal p-6 md:p-8">
+                    <div class="text-3xl mb-4 font-bold">◐</div>
+                    <h4 class="text-lg md:text-xl font-bold mb-4 font-display">Ephemeral Rooms</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base">Temporary rooms that auto-destroy based on user-defined rules</p>
                 </div>
                 
-                <div class="card-brutal bg-white border-2 border-black p-6">
-                    <div class="text-2xl mb-4 font-black">▣</div>
-                    <h4 class="text-lg font-bold uppercase tracking-wide mb-3">Dictionary Passwords</h4>
-                    <p class="text-gray-600">Password validation using real dictionary words</p>
+                <div class="card-brutal p-6 md:p-8">
+                    <div class="text-3xl mb-4 font-bold">▣</div>
+                    <h4 class="text-lg md:text-xl font-bold mb-4 font-display">Dictionary Passwords</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base">Password validation using real dictionary words</p>
                 </div>
                 
-                <div class="card-brutal bg-white border-2 border-black p-6">
-                    <div class="text-2xl mb-4 font-black">▢</div>
-                    <h4 class="text-lg font-bold uppercase tracking-wide mb-3">Democratic Voting</h4>
-                    <p class="text-gray-600">Member voting system for admission control</p>
+                <div class="card-brutal p-6 md:p-8">
+                    <div class="text-3xl mb-4 font-bold">▢</div>
+                    <h4 class="text-lg md:text-xl font-bold mb-4 font-display">Democratic Voting</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base">Member voting system for admission control</p>
                 </div>
                 
-                <div class="card-brutal bg-white border-2 border-black p-6">
-                    <div class="text-2xl mb-4 font-black">▦</div>
-                    <h4 class="text-lg font-bold uppercase tracking-wide mb-3">PDF Export</h4>
-                    <p class="text-gray-600">Export complete chat history to PDF</p>
+                <div class="card-brutal p-6 md:p-8">
+                    <div class="text-3xl mb-4 font-bold">▦</div>
+                    <h4 class="text-lg md:text-xl font-bold mb-4 font-display">PDF Export</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base">Export complete chat history to PDF</p>
                 </div>
                 
-                <div class="card-brutal bg-white border-2 border-black p-6">
-                    <div class="text-2xl mb-4 font-black">▤</div>
-                    <h4 class="text-lg font-bold uppercase tracking-wide mb-3">Scheduled Rooms</h4>
-                    <p class="text-gray-600">Create rooms for future activation</p>
+                <div class="card-brutal p-6 md:p-8">
+                    <div class="text-3xl mb-4 font-bold">▤</div>
+                    <h4 class="text-lg md:text-xl font-bold mb-4 font-display">Scheduled Rooms</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base">Create rooms for future activation</p>
                 </div>
             </div>
         </section>
 
         <!-- Policy Section -->
-        <section class="mb-12 md:mb-20">
-            <div class="card-brutal bg-gray-50 border-2 border-black p-6 md:p-8">
-                <h3 class="text-xl md:text-2xl lg:text-3xl font-black uppercase tracking-tight mb-6 md:mb-8 text-center px-4">Our No BS Policy</h3>
+        <section class="mb-16 md:mb-24 px-4">
+            <div class="card-brutal p-8 md:p-12">
+                <h3 class="text-2xl md:text-4xl font-extrabold mb-8 md:mb-12 text-center font-display uppercase tracking-tight">Our Philosophy</h3>
                 
-                <div class="space-y-4 md:space-y-6 text-sm md:text-base">
-                    <div class="bg-white border-2 border-black p-4 md:p-6" style="box-shadow: 4px 4px 0px 0px #000000;">
-                        <p class="font-bold text-base md:text-lg mb-2 md:mb-3">▲ Free to use, periodt.</p>
-                        <p class="text-gray-700">We're not here to milk your wallet. AetherMeet is free and will stay free because we're not monsters.</p>
+                <div class="space-y-6 md:space-y-8 text-sm md:text-base">
+                    <div class="card-brutal p-4 md:p-6 bg-white dark:bg-zinc-900 text-black dark:text-white">
+                        <p class="font-extrabold text-base md:text-lg mb-2 font-display">▲ Free to use, periodt.</p>
+                        <p class="text-gray-700 dark:text-gray-300">We're not here to milk your wallet. AetherMeet is free and will stay free because we're not monsters.</p>
                     </div>
 
-                    <div class="bg-white border-2 border-black p-4 md:p-6" style="box-shadow: 4px 4px 0px 0px #000000;">
-                        <p class="font-bold text-base md:text-lg mb-2 md:mb-3">■ We don't store your room passwords and honestly don't want to.</p>
-                        <p class="text-gray-700">Your passwords = your business. We're just here to vibe check that they're real dictionary words. That's it, that's the tweet.</p>
+                    <div class="card-brutal p-4 md:p-6 bg-white dark:bg-zinc-900 text-black dark:text-white">
+                        <p class="font-extrabold text-base md:text-lg mb-2 font-display">■ We don't store your room passwords and honestly don't want to.</p>
+                        <p class="text-gray-700 dark:text-gray-300">Your passwords = your business. We're just here to vibe check that they're real dictionary words. That's it, that's the tweet.</p>
                     </div>
 
-                    <div class="bg-white border-2 border-black p-4 md:p-6" style="box-shadow: 4px 4px 0px 0px #000000;">
-                        <p class="font-bold text-base md:text-lg mb-2 md:mb-3">◆ If hackers somehow breach our entire server...</p>
-                        <p class="text-gray-700">Your rooms are still unreadable because only you hold the passwords to find and decrypt them (assuming you didn't use "password123" like a boomer).</p>
+                    <div class="card-brutal p-4 md:p-6 bg-white dark:bg-zinc-900 text-black dark:text-white">
+                        <p class="font-extrabold text-base md:text-lg mb-2 font-display">◆ If hackers somehow breach our entire server...</p>
+                        <p class="text-gray-700 dark:text-gray-300">Your rooms are still unreadable because only you hold the passwords to find and decrypt them (assuming you didn't use "password123" like a boomer).</p>
                     </div>
 
-                    <div class="bg-white border-2 border-black p-4 md:p-6" style="box-shadow: 4px 4px 0px 0px #000000;">
-                        <p class="font-bold text-base md:text-lg mb-2 md:mb-3">▼ If the government wants to read our database...</p>
-                        <p class="text-gray-700">Your rooms are still unreadable because we literally can't decrypt them without your passwords. We're not snitches AND we're technically unable to snitch. Win-win fr.</p>
+                    <div class="card-brutal p-4 md:p-6 bg-white dark:bg-zinc-900 text-black dark:text-white">
+                        <p class="font-extrabold text-base md:text-lg mb-2 font-display">▼ If the government wants to read our database...</p>
+                        <p class="text-gray-700 dark:text-gray-300">Your rooms are still unreadable because we literally can't decrypt them without your passwords. We're not snitches AND we're technically unable to snitch. Win-win fr.</p>
                     </div>
 
-                    <div class="bg-white border-2 border-black p-4 md:p-6" style="box-shadow: 4px 4px 0px 0px #000000;">
-                        <p class="font-bold text-base md:text-lg mb-2 md:mb-3">● We don't care what you chat about...</p>
-                        <p class="text-gray-700">Because we literally don't know and can't check. Only you hold the room codes and passwords. Keep it legal though, broos.</p>
+                    <div class="card-brutal p-4 md:p-6 bg-white dark:bg-zinc-900 text-black dark:text-white">
+                        <p class="font-extrabold text-base md:text-lg mb-2 font-display">● We don't care what you chat about...</p>
+                        <p class="text-gray-700 dark:text-gray-300">Because we literally don't know and can't check. Only you hold the room codes and passwords. Keep it legal though, broos.</p>
                     </div>
 
-                    <div class="bg-white border-2 border-black p-4 md:p-6" style="box-shadow: 4px 4px 0px 0px #000000;">
-                        <p class="font-bold text-base md:text-lg mb-2 md:mb-3">◯ If you find a room with your content...</p>
-                        <p class="text-gray-700">Just delete it yourself broo. If you can find it, you can edit it. Democracy in action</p>
+                    <div class="card-brutal p-4 md:p-6 bg-white dark:bg-zinc-900 text-black dark:text-white">
+                        <p class="font-extrabold text-base md:text-lg mb-2 font-display">◯ If you find a room with your content...</p>
+                        <p class="text-gray-700 dark:text-gray-300">Just delete it yourself broo. If you can find it, you can edit it. Democracy in action</p>
                     </div>
 
-                    <div class="bg-red-50 border-2 border-red-500 p-4 md:p-6" style="box-shadow: 4px 4px 0px 0px #dc2626;">
-                        <p class="font-bold text-base md:text-lg mb-2 md:mb-3 text-red-800">▲ We are NOT responsible for:</p>
-                        <ul class="text-red-700 space-y-2 list-disc list-inside">
+                    <div class="card-brutal p-4 md:p-6 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300" style="border-color: #EF4444; box-shadow: var(--shadow-offset) var(--shadow-offset) 0px #EF4444;">
+                        <p class="font-extrabold text-base md:text-lg mb-2 font-display text-red-800 dark:text-red-400">▲ We are NOT responsible for:</p>
+                        <ul class="space-y-2 list-disc list-inside">
                             <li>If you use a room password like "1234" and someone else accesses it (that's on you broo)</li>
                             <li>If someone randomly guesses your "totally unique" password and finds your room (probability is not our problem)</li>
                             <li>If a meteor hits our servers or aliens steal our hard drives (we backup everything but acts of God/aliens are beyond our pay grade)</li>
@@ -371,7 +316,7 @@
                     </div>
 
                     <div class="text-center mt-8">
-                        <p class="text-gray-600 font-mono text-sm">
+                        <p class="text-gray-600 dark:text-gray-400 font-mono text-sm">
                             TLDR: We built this for you, not against you. Don't be dumb with passwords and we'll all be fine. 
                             <br>
                             No cap. ▣
@@ -383,105 +328,95 @@
     </main>
 
     <!-- Login Modal -->
-    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="modal-content-swiss max-w-md w-full mx-4">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-black uppercase tracking-tight">Login</h3>
-                <button class="close text-2xl font-bold">&times;</button>
+                <h3 class="text-2xl font-bold tracking-tight uppercase font-display text-black dark:text-white">Login</h3>
+                <button class="close text-2xl font-black text-black dark:text-white">&times;</button>
             </div>
             <form id="loginForm" class="space-y-4">
                 <div>
-                    <label for="loginUsername" class="block text-sm font-bold uppercase tracking-wide mb-2">Username or Email:</label>
-                    <input type="text" id="loginUsername" name="username" required 
-                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
-                           style="box-shadow: 2px 2px 0px 0px #000000;">
+                    <label for="loginUsername" class="block text-sm font-bold mb-2 uppercase text-black dark:text-white">Username or Email:</label>
+                    <input type="text" id="loginUsername" name="username" required class="input-swiss w-full px-4 py-3 text-black dark:text-white">
                 </div>
                 <div>
-                    <label for="loginPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Password:</label>
-                    <input type="password" id="loginPassword" name="password" required 
-                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
-                           style="box-shadow: 2px 2px 0px 0px #000000;">
+                    <label for="loginPassword" class="block text-sm font-bold mb-2 uppercase text-black dark:text-white">Password:</label>
+                    <input type="password" id="loginPassword" name="password" required class="input-swiss w-full px-4 py-3 text-black dark:text-white">
                 </div>
-                <button type="submit" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
+                <button type="submit" class="btn-brutal btn-brutal-primary w-full py-3.5 mt-2">
                     Login
                 </button>
             </form>
-            <div id="loginError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm" style="box-shadow: 4px 4px 0px 0px #dc2626;"></div>
+            <div id="loginError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm"></div>
         </div>
     </div>
 
     <!-- Register Modal -->
-    <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
+    <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="modal-content-swiss max-w-md w-full mx-4">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-black uppercase tracking-tight">Register</h3>
-                <button class="close text-2xl font-bold">&times;</button>
+                <h3 class="text-2xl font-bold tracking-tight uppercase font-display text-black dark:text-white">Register</h3>
+                <button class="close text-2xl font-black text-black dark:text-white">&times;</button>
             </div>
             <form id="registerForm" class="space-y-4">
                 <div>
-                    <label for="registerUsername" class="block text-sm font-bold uppercase tracking-wide mb-2">Username:</label>
-                    <input type="text" id="registerUsername" name="username" required 
-                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
-                           style="box-shadow: 2px 2px 0px 0px #000000;">
+                    <label for="registerUsername" class="block text-sm font-bold mb-2 uppercase text-black dark:text-white">Username:</label>
+                    <input type="text" id="registerUsername" name="username" required class="input-swiss w-full px-4 py-3 text-black dark:text-white">
                 </div>
                 <div>
-                    <label for="registerEmail" class="block text-sm font-bold uppercase tracking-wide mb-2">Email:</label>
-                    <input type="email" id="registerEmail" name="email" required 
-                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
-                           style="box-shadow: 2px 2px 0px 0px #000000;">
+                    <label for="registerEmail" class="block text-sm font-bold mb-2 uppercase text-black dark:text-white">Email:</label>
+                    <input type="email" id="registerEmail" name="email" required class="input-swiss w-full px-4 py-3 text-black dark:text-white">
                 </div>
                 <div>
-                    <label for="registerPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Password:</label>
-                    <input type="password" id="registerPassword" name="password" required 
-                           class="w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"
-                           style="box-shadow: 2px 2px 0px 0px #000000;">
-                    <small class="text-gray-600 text-xs font-mono">Minimum 6 characters</small>
+                    <label for="registerPassword" class="block text-sm font-bold mb-2 uppercase text-black dark:text-white">Password:</label>
+                    <input type="password" id="registerPassword" name="password" required class="input-swiss w-full px-4 py-3 text-black dark:text-white">
+                    <small class="text-gray-500 text-xs font-mono block mt-1">Minimum 6 characters</small>
                 </div>
-                <button type="submit" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
+                <button type="submit" class="btn-brutal btn-brutal-primary w-full py-3.5 mt-2">
                     Register
                 </button>
             </form>
-            <div id="registerError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm" style="box-shadow: 4px 4px 0px 0px #dc2626;"></div>
+            <div id="registerError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm"></div>
         </div>
     </div>
 
     <!-- Footer -->
-    <footer class="bg-black text-white border-t-4 border-black">
+    <footer class="text-black dark:text-white">
         <div class="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
-            <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+            <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
                 <!-- Brand -->
                 <div>
                     <div class="flex items-center space-x-4 mb-4">
-                        <div class="bg-white p-1">
-                            <img src="/logo.jpg" alt="AetherMeet Logo" class="h-6 w-6 object-contain" style="display: block;">
+                        <div class="bg-white p-1" style="border: 2px solid #000;">
+                            <img src="/logo.jpg" alt="AetherMeet Logo" class="h-6 w-6 object-contain" style="display: block; border: none !important;">
                         </div>
-                        <h3 class="text-xl font-black uppercase tracking-tight">AetherMeet</h3>
+                        <h3 class="text-xl font-bold font-display">AetherMeet</h3>
                     </div>
-                    <p class="text-gray-300 text-sm">
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">
                         Secure & ephemeral team chat rooms with democratic controls.
                     </p>
                 </div>
 
                 <!-- Features -->
                 <div>
-                    <h4 class="text-lg font-bold uppercase tracking-wide mb-4">Features</h4>
-                    <ul class="space-y-2 text-sm text-gray-300">
+                    <h4 class="text-lg font-bold mb-4 font-display">Features</h4>
+                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                         <li>▣ Temporary Chat Rooms</li>
                         <li>◉ Secure Authentication</li>
                         <li>▢ Democratic Voting</li>
                         <li>▦ PDF Export</li>
-                        <li class="text-yellow-400 font-bold">● Personal Notes (Coming Soon)</li>
+                        <li class="text-yellow-600 dark:text-yellow-400 font-bold">● Personal Notes (Coming Soon)</li>
                     </ul>
                 </div>
 
                 <!-- Quick Actions -->
                 <div>
-                    <h4 class="text-lg font-bold uppercase tracking-wide mb-4">Quick Actions</h4>
+                    <h4 class="text-lg font-bold mb-4 font-display">Quick Actions</h4>
                     <div class="space-y-3">
-                        <button id="footerLoginBtn" class="btn-brutal w-full px-4 py-2 bg-white text-black border-2 border-white font-bold uppercase tracking-wide text-sm">
+                        <button id="footerLoginBtn" class="btn-brutal btn-brutal-white w-full py-2 text-sm">
                             Sign In
                         </button>
-                        <button id="footerRegisterBtn" class="btn-brutal w-full px-4 py-2 bg-gray-800 text-white border-2 border-white font-bold uppercase tracking-wide text-sm">
+                        <button id="footerRegisterBtn" class="btn-brutal btn-brutal-black w-full py-2 text-sm">
                             Get Started
                         </button>
                     </div>
@@ -489,8 +424,8 @@
             </div>
 
             <!-- Bottom -->
-            <div class="border-t border-gray-600 mt-8 pt-8 text-center">
-                <p class="text-gray-400 text-xs font-mono">
+            <div class="border-t border-black dark:border-white mt-8 pt-8 text-center">
+                <p class="text-gray-500 dark:text-gray-400 text-xs font-mono">
                     © 2025 AetherMeet. Free forever. Made With All-Nighters. ▣
                 </p>
             </div>
@@ -506,7 +441,6 @@
     <script>
         // Theme toggle functionality
         const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
         const themeText = document.getElementById('themeText');
         
         // Check for saved theme preference or default to light
@@ -515,7 +449,6 @@
         // Apply theme on page load
         if (currentTheme === 'dark') {
             document.documentElement.classList.add('dark');
-            //themeIcon.textContent = '☀️';
             themeText.textContent = 'LIGHT';
         }
         
@@ -526,13 +459,11 @@
             if (isDark) {
                 // Switch to light theme
                 document.documentElement.classList.remove('dark');
-              //  themeIcon.textContent = '🌙';
                 themeText.textContent = 'DARK';
                 localStorage.setItem('theme', 'light');
             } else {
                 // Switch to dark theme
                 document.documentElement.classList.add('dark');
-                //themeIcon.textContent = '☀️';
                 themeText.textContent = 'LIGHT';
                 localStorage.setItem('theme', 'dark');
             }

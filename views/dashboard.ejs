@@ -7,15 +7,22 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/compiled.css">
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
                         'mono': ['JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', 'monospace'],
-                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                        'sans': ['Outfit', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
+                        'display': ['Space Grotesk', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    spacing: {
+                        '4.5': '1.125rem',
+                        '5.5': '1.375rem',
+                        '6.5': '1.625rem'
                     }
                 }
             }
@@ -32,101 +39,46 @@
             font-variation-settings: 'wght' 400;
         }
         
-        .btn-brutal {
-            box-shadow: 4px 4px 0px 0px #000000;
-            transition: all 0.2s ease;
-        }
-        .btn-brutal:hover {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px 0px #000000;
-        }
-        .btn-brutal:active {
-            transform: translate(4px, 4px);
-            box-shadow: 0px 0px 0px 0px #000000;
-        }
-        .card-brutal {
-            box-shadow: 8px 8px 0px 0px #000000;
-            transition: all 0.2s ease;
-        }
-        .card-brutal:hover {
-            transform: translate(2px, 2px);
-            box-shadow: 4px 4px 0px 0px #000000;
-        }
-        .input-brutal {
-            box-shadow: 2px 2px 0px 0px #000000;
+        /* Local display fonts */
+        h1, h2, h3, h4 {
+            font-family: 'Space Grotesk', sans-serif !important;
         }
         
-        /* Dark theme styles */
-        .dark {
-            background-color: #1a1a1a;
-            color: #ffffff;
-        }
-        .dark .bg-white { background-color: #2a2a2a !important; }
-        .dark .bg-gray-100 { background-color: #3a3a3a !important; }
-        .dark .bg-gray-200 { background-color: #4a4a4a !important; }
-        .dark .bg-gray-50 { background-color: #2a2a2a !important; }
-        .dark .bg-yellow-50 { background-color: #4a4a2a !important; }
-        .dark .bg-blue-50 { background-color: #2a2a4a !important; }
-        .dark .bg-yellow-100 { background-color: #4a4a2a !important; }
-        .dark .bg-red-100 { background-color: #4a2a2a !important; }
-        .dark .bg-green-100 { background-color: #2a4a2a !important; }
-        .dark .bg-red-50 { background-color: #4a2a2a !important; }
-        .dark .bg-yellow-400 { background-color: #6a6a2a !important; }
-        .dark .text-black { color: #ffffff !important; }
-        .dark .text-gray-600 { color: #cccccc !important; }
-        .dark .text-gray-500 { color: #aaaaaa !important; }
-        .dark .text-gray-700 { color: #dddddd !important; }
-        .dark .text-gray-800 { color: #ffffff !important; }
-        .dark .text-red-700 { color: #ff9999 !important; }
-        .dark .text-red-800 { color: #ffaaaa !important; }
-        .dark .border-black { border-color: #ffffff !important; }
-        .dark .border-gray-400 { border-color: #666666 !important; }
-        .dark .border-red-500 { border-color: #ff6666 !important; }
-        .dark #themeToggle { background-color: #2a2a2a !important; color: #ffffff !important; border-color: #ffffff !important; }
-        .dark .btn-brutal { box-shadow: 4px 4px 0px 0px #ffffff !important; }
-        .dark .btn-brutal:hover { box-shadow: 2px 2px 0px 0px #ffffff !important; }
-        .dark .card-brutal { box-shadow: 8px 8px 0px 0px #ffffff !important; }
-        .dark .card-brutal:hover { box-shadow: 4px 4px 0px 0px #ffffff !important; }
-        .dark .input-brutal { box-shadow: 2px 2px 0px 0px #ffffff !important; }
-        .dark .placeholder-gray-500::placeholder { color: #aaaaaa !important; }
-        .dark .placeholder-gray-600::placeholder { color: #999999 !important; }
-        
-        /* Logo styles */
+        /* Logo styling */
         .logo img {
-            max-width: 100%;
-            height: auto;
+            border: 2px solid #000000;
         }
-        .dark .logo {
-            background-color: #ffffff !important;
+        html.dark .logo img {
+            border: 2px solid #FFFFFF;
         }
     </style>
 </head>
-<body class="bg-white text-black font-sans min-h-screen transition-colors duration-300">
+<body class="bg-white text-black font-sans min-h-screen transition-colors duration-300 dark:bg-zinc-950 dark:text-white">
     <!-- Theme Toggle -->
     <div class="fixed top-2 right-2 md:top-4 md:right-4 z-50">
-        <button id="themeToggle" class="btn-brutal px-2 py-1.5 md:px-4 md:py-2 bg-white border-2 border-black font-bold uppercase tracking-wide text-xs md:text-sm hover:bg-gray-100">
+        <button id="themeToggle" class="btn-brutal btn-brutal-white px-2 py-1.5 md:px-4 md:py-2 text-xs md:text-sm">
             <span id="themeText">DARK</span>
         </button>
     </div>
 
     <!-- Header -->
-    <header class="bg-white border-b-4 border-black px-4 md:px-6 py-4">
+    <header class="px-4 md:px-6 py-4">
         <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-4">
             <div class="flex items-center space-x-2 md:space-x-4">
                 <div class="logo bg-white p-1">
-                    <img src="/logo.jpg" alt="AetherMeet Logo" class="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 object-contain border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000; display: block;">
+                    <img src="/logo.jpg" alt="AetherMeet Logo" class="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 object-contain" style="display: block;">
                 </div>
                 <div>
-                    <h1 class="text-xl md:text-2xl lg:text-3xl font-black uppercase tracking-tight">AetherMeet</h1>
-                    <p class="text-xs md:text-sm text-gray-600 font-mono">Dashboard</p>
+                    <h1 class="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight font-display">AetherMeet</h1>
+                    <p class="text-xs md:text-sm text-gray-600 dark:text-gray-400 font-mono">Dashboard</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2 md:space-x-4 flex-wrap">
-                <span id="welcomeUser" class="font-mono text-xs md:text-sm hidden sm:block">Welcome, User!</span>
-                <a href="/notes" class="btn-brutal px-3 py-1.5 md:px-4 md:py-2 bg-yellow-400 text-black border-2 border-black font-bold uppercase tracking-wide text-xs md:text-sm">
+                <span id="welcomeUser" class="font-mono text-xs md:text-sm hidden sm:block font-bold">Welcome, User!</span>
+                <a href="/notes" class="btn-brutal btn-brutal-primary px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm">
                     Notes
                 </a>
-                <button id="logoutBtn" class="btn-brutal px-3 py-1.5 md:px-4 md:py-2 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-xs md:text-sm">
+                <button id="logoutBtn" class="btn-brutal btn-brutal-white px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm">
                     Logout
                 </button>
             </div>
@@ -137,60 +89,60 @@
     <main class="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             <!-- Create Room Section -->
-            <section class="card-brutal bg-white border-2 border-black p-6">
-                <h2 class="text-xl font-black uppercase tracking-tight mb-6">Create New Room</h2>
+            <section class="card-brutal p-6">
+                <h2 class="text-xl font-bold tracking-tight mb-6 font-display uppercase">Create New Room</h2>
                 <div class="space-y-4">
-                    <button id="createInstantBtn" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide text-sm">
+                    <button id="createInstantBtn" class="btn-brutal btn-brutal-black w-full px-6 py-3 text-sm">
                         Create Instant Room
                     </button>
-                    <button id="createScheduledBtn" class="btn-brutal w-full px-6 py-3 bg-white text-black border-2 border-black font-bold uppercase tracking-wide text-sm">
+                    <button id="createScheduledBtn" class="btn-brutal btn-brutal-white w-full px-6 py-3 text-sm">
                         Schedule Room
                     </button>
                 </div>
             </section>
 
             <!-- Join Room Section -->
-            <section class="card-brutal bg-white border-2 border-black p-6">
-                <h2 class="text-xl font-black uppercase tracking-tight mb-6">Join Room</h2>
+            <section class="card-brutal p-6">
+                <h2 class="text-xl font-bold tracking-tight mb-6 font-display uppercase">Join Room</h2>
                 <form id="joinRoomForm" class="space-y-4">
                     <div>
-                        <label for="roomCode" class="block text-sm font-bold uppercase tracking-wide mb-2">Room Code:</label>
+                        <label for="roomCode" class="block text-xs font-bold uppercase mb-2">Room Code:</label>
                         <input type="text" id="roomCode" name="roomCode" placeholder="Enter 6-digit room code" maxlength="6" required 
                                value="<%= typeof roomCode !== 'undefined' ? roomCode : '' %>"
-                               class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50 font-mono">
+                               class="input-brutal w-full px-4 py-3 uppercase">
                     </div>
-                    <button type="submit" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide text-sm">
+                    <button type="submit" class="btn-brutal btn-brutal-black w-full px-6 py-3 text-sm">
                         Find Room
                     </button>
                 </form>
             </section>
 
             <!-- My Rooms Section -->
-            <section class="card-brutal bg-white border-2 border-black p-6 md:col-span-2 lg:col-span-1">
-                <h2 class="text-xl font-black uppercase tracking-tight mb-6">My Rooms</h2>
+            <section class="card-brutal p-6 md:col-span-2 lg:col-span-1">
+                <h2 class="text-xl font-bold tracking-tight mb-6 font-display uppercase">My Rooms</h2>
                 <div id="myRoomsList" class="space-y-3 max-h-64 overflow-y-auto">
-                    <p class="text-gray-600 font-mono text-sm">Loading your rooms...</p>
+                    <p class="text-gray-600 dark:text-gray-400 font-mono text-sm">Loading your rooms...</p>
                 </div>
             </section>
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t-4 border-black px-4 md:px-6 py-6 md:py-8 mt-8 md:mt-12">
+    <footer class="px-4 md:px-6 py-6 md:py-8 mt-8 md:mt-12">
         <div class="max-w-6xl mx-auto">
             <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                 <div class="flex items-center space-x-2 md:space-x-4">
-                    <div class="bg-white p-1">
-                        <img src="/logo.jpg" alt="AetherMeet Logo" class="h-6 w-6 md:h-8 md:w-8 lg:h-10 lg:w-10 object-contain border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000; display: block;">
+                    <div class="bg-white p-1" style="border: 2px solid #000;">
+                        <img src="/logo.jpg" alt="AetherMeet Logo" class="h-6 w-6 md:h-8 md:w-8 lg:h-10 lg:w-10 object-contain" style="display: block;">
                     </div>
                     <div>
-                        <h3 class="text-base md:text-xl font-black uppercase tracking-tight">AetherMeet</h3>
-                        <p class="text-xs text-gray-600 font-mono">Secure & Ephemeral Team Chat Rooms</p>
+                        <h3 class="text-base md:text-xl font-bold font-display">AetherMeet</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 font-mono">Secure & Ephemeral Team Chat Rooms</p>
                     </div>
                 </div>
                 <div class="text-center md:text-right">
-                    <p class="text-xs md:text-sm font-mono text-gray-600">&copy; 2025 AetherMeet. All rights reserved.</p>
-                    <p class="text-xs font-mono text-gray-500 mt-1">Built with security and privacy in mind</p>
+                    <p class="text-xs md:text-sm font-mono text-gray-600 dark:text-gray-400">&copy; 2025 AetherMeet. All rights reserved.</p>
+                    <p class="text-xs font-mono text-gray-500 dark:text-gray-500 mt-1">Built with security and privacy in mind Fr. ▣</p>
                 </div>
             </div>
         </div>
@@ -198,136 +150,123 @@
 
     <!-- Create Instant Room Modal -->
     <div id="instantRoomModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-lg w-full mx-4 max-h-screen overflow-y-auto transform transition-all duration-300" style="box-shadow: 16px 16px 0px 0px #000000;">
+        <div class="modal-content-swiss max-w-lg w-full mx-4 max-h-screen overflow-y-auto transform transition-all duration-300">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-3xl font-black uppercase tracking-tight text-black">⚡ Create Instant Room</h3>
-                <button class="close text-3xl font-black text-black hover:text-red-600 transition-colors duration-200 btn-brutal-small px-3 py-1 bg-red-100 border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000;">&times;</button>
+                <h3 class="text-2xl md:text-3xl font-extrabold uppercase font-display text-black dark:text-white">⚡ Create Instant Room</h3>
+                <button class="close btn-brutal btn-brutal-danger px-3 py-1 text-xl font-bold">&times;</button>
             </div>
-            <form id="instantRoomForm" class="space-y-6">
+            <form id="instantRoomForm" class="space-y-5">
                 <div>
-                    <label for="instantRoomName" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">🏠 Room Name:</label>
+                    <label for="instantRoomName" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">🏠 Room Name:</label>
                     <input type="text" id="instantRoomName" name="name" required 
-                           class="input-brutal w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-green-50 transition-all duration-200 font-mono"
-                           style="box-shadow: 4px 4px 0px 0px #000000;"
+                           class="input-brutal w-full px-4 py-3"
                            placeholder="Enter your room name">
                 </div>
                 <div>
-                    <label for="instantRoomDescription" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">Description (Optional):</label>
+                    <label for="instantRoomDescription" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">Description (Optional):</label>
                     <textarea id="instantRoomDescription" name="description" rows="3"
-                              class="input-brutal w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-green-50 transition-all duration-200 font-mono"
-                              style="box-shadow: 4px 4px 0px 0px #000000;"
+                              class="input-brutal w-full px-4 py-3"
                               placeholder="Describe what this room is for..."></textarea>
                 </div>
                 <div>
-                    <label for="instantPrimaryPassword" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">🔑 Primary Password:</label>
+                    <label for="instantPrimaryPassword" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">🔑 Primary Password:</label>
                     <input type="text" id="instantPrimaryPassword" name="primaryPassword" required 
-                           class="input-brutal w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-green-50 transition-all duration-200 font-mono"
-                           style="box-shadow: 4px 4px 0px 0px #000000;"
+                           class="input-brutal w-full px-4 py-3"
                            placeholder="Enter dictionary word">
-                    <small class="text-gray-700 text-xs font-black uppercase tracking-wider bg-yellow-100 px-2 py-1 border-2 border-black inline-block mt-2" style="box-shadow: 2px 2px 0px 0px #000000;">📚 Must be a valid English dictionary word</small>
+                    <small class="text-xs font-bold uppercase bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-400 px-2.5 py-1 border border-yellow-400 inline-block mt-2 font-mono">📚 Must be a valid English dictionary word</small>
                 </div>
                 <div>
-                    <label for="instantSecondaryPassword" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">Secondary Password (Optional):</label>
+                    <label for="instantSecondaryPassword" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">Secondary Password (Optional):</label>
                     <input type="text" id="instantSecondaryPassword" name="secondaryPassword" 
-                           class="input-brutal w-full px-4 py-4 border-4 border-black bg-white text-black placeholder-gray-600 focus:outline-none focus:bg-green-50 transition-all duration-200 font-mono"
-                           style="box-shadow: 4px 4px 0px 0px #000000;"
+                           class="input-brutal w-full px-4 py-3"
                            placeholder="Optional second word">
-                    <small class="text-gray-700 text-xs font-black uppercase tracking-wider bg-blue-100 px-2 py-1 border-2 border-black inline-block mt-2" style="box-shadow: 2px 2px 0px 0px #000000;">📖 Also must be a valid English dictionary word</small>
+                    <small class="text-xs font-bold uppercase bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-400 px-2.5 py-1 border border-blue-400 inline-block mt-2 font-mono">📖 Also must be a valid English dictionary word</small>
                 </div>
                 <div>
-                    <label for="instantAdmissionType" class="block text-sm font-black uppercase tracking-wider mb-3 text-black">🚪 Admission Control:</label>
+                    <label for="instantAdmissionType" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">🚪 Admission Control:</label>
                     <select id="instantAdmissionType" name="admissionType" 
-                            class="input-brutal w-full px-4 py-4 border-4 border-black bg-white text-black focus:outline-none focus:bg-green-50 transition-all duration-200 font-mono"
-                            style="box-shadow: 4px 4px 0px 0px #000000;">
+                            class="input-brutal w-full px-4 py-3 font-mono">
                         <option value="owner_approval">👑 Owner Approval</option>
                         <option value="democratic_voting">Democratic Voting</option>
                     </select>
                 </div>
-                <button type="submit" class="btn-brutal w-full px-6 py-4 bg-black text-white border-4 border-black font-black uppercase tracking-wider text-lg hover:bg-gray-800 transition-all duration-200">
+                <button type="submit" class="btn-brutal btn-brutal-primary w-full py-4 mt-2 font-bold text-base">
                     ⚡ CREATE ROOM NOW
                 </button>
             </form>
-            <div id="instantRoomError" class="hidden bg-red-100 border-4 border-red-600 text-red-800 p-4 mt-6 font-mono text-sm font-bold" style="box-shadow: 6px 6px 0px 0px #dc2626;">
+            <div id="instantRoomError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm font-bold">
                 <span class="font-black">ERROR:</span> <span id="instantRoomErrorText"></span>
             </div>
         </div>
     </div>
 
     <!-- Create Scheduled Room Modal -->
-    <div id="scheduledRoomModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-lg w-full mx-4 max-h-screen overflow-y-auto" style="box-shadow: 12px 12px 0px 0px #000000;">
+    <div id="scheduledRoomModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="modal-content-swiss max-w-lg w-full mx-4 max-h-screen overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-black uppercase tracking-tight">Schedule Room</h3>
-                <button class="close text-2xl font-bold">&times;</button>
+                <h3 class="text-2xl font-extrabold uppercase font-display text-black dark:text-white">📅 Schedule Room</h3>
+                <button class="close btn-brutal btn-brutal-danger px-3 py-1 text-xl font-bold">&times;</button>
             </div>
             <form id="scheduledRoomForm" class="space-y-4">
                 <div>
-                    <label for="scheduledRoomName" class="block text-sm font-bold uppercase tracking-wide mb-2">Room Name:</label>
-                    <input type="text" id="scheduledRoomName" name="name" required 
-                           class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50">
+                    <label for="scheduledRoomName" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">Room Name:</label>
+                    <input type="text" id="scheduledRoomName" name="name" required class="input-brutal w-full px-4 py-3">
                 </div>
                 <div>
-                    <label for="scheduledRoomDescription" class="block text-sm font-bold uppercase tracking-wide mb-2">Description (Optional):</label>
-                    <textarea id="scheduledRoomDescription" name="description" rows="3"
-                              class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50"></textarea>
+                    <label for="scheduledRoomDescription" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">Description (Optional):</label>
+                    <textarea id="scheduledRoomDescription" name="description" rows="3" class="input-brutal w-full px-4 py-3"></textarea>
                 </div>
                 <div>
-                    <label for="scheduledTime" class="block text-sm font-bold uppercase tracking-wide mb-2">Scheduled Time:</label>
-                    <input type="datetime-local" id="scheduledTime" name="scheduledTime" required 
-                           class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black focus:outline-none focus:bg-gray-50">
+                    <label for="scheduledTime" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">Scheduled Time:</label>
+                    <input type="datetime-local" id="scheduledTime" name="scheduledTime" required class="input-brutal w-full px-4 py-3 font-mono">
                 </div>
                 <div>
-                    <label for="scheduledPrimaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Primary Password:</label>
-                    <input type="text" id="scheduledPrimaryPassword" name="primaryPassword" required 
-                           class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50">
-                    <small class="text-gray-600 text-xs font-mono">Must be a valid English dictionary word</small>
+                    <label for="scheduledPrimaryPassword" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">Primary Password:</label>
+                    <input type="text" id="scheduledPrimaryPassword" name="primaryPassword" required class="input-brutal w-full px-4 py-3">
+                    <small class="text-gray-500 text-xs font-mono block mt-1">Must be a valid English dictionary word</small>
                 </div>
                 <div>
-                    <label for="scheduledSecondaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Secondary Password (Optional):</label>
-                    <input type="text" id="scheduledSecondaryPassword" name="secondaryPassword" 
-                           class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50">
-                    <small class="text-gray-600 text-xs font-mono">Also must be a valid English dictionary word</small>
+                    <label for="scheduledSecondaryPassword" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">Secondary Password (Optional):</label>
+                    <input type="text" id="scheduledSecondaryPassword" name="secondaryPassword" class="input-brutal w-full px-4 py-3">
+                    <small class="text-gray-500 text-xs font-mono block mt-1">Also must be a valid English dictionary word</small>
                 </div>
                 <div>
-                    <label for="scheduledAdmissionType" class="block text-sm font-bold uppercase tracking-wide mb-2">Admission Control:</label>
-                    <select id="scheduledAdmissionType" name="admissionType" 
-                            class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black focus:outline-none focus:bg-gray-50">
+                    <label for="scheduledAdmissionType" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">Admission Control:</label>
+                    <select id="scheduledAdmissionType" name="admissionType" class="input-brutal w-full px-4 py-3 font-mono">
                         <option value="owner_approval">Owner Approval</option>
                         <option value="democratic_voting">Democratic Voting</option>
                     </select>
                 </div>
-                <button type="submit" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
+                <button type="submit" class="btn-brutal btn-brutal-primary w-full py-4 mt-2 font-bold text-base">
                     Schedule Room
                 </button>
             </form>
-            <div id="scheduledRoomError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm" style="box-shadow: 4px 4px 0px 0px #dc2626;"></div>
+            <div id="scheduledRoomError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm"></div>
         </div>
     </div>
 
     <!-- Join Room Details Modal -->
-    <div id="joinRoomModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white border-4 border-black p-8 max-w-md w-full mx-4" style="box-shadow: 12px 12px 0px 0px #000000;">
+    <div id="joinRoomModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="modal-content-swiss max-w-md w-full mx-4">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-black uppercase tracking-tight">Join Room</h3>
-                <button class="close text-2xl font-bold">&times;</button>
+                <h3 class="text-2xl font-extrabold uppercase font-display text-black dark:text-white">Join Room</h3>
+                <button class="close btn-brutal btn-brutal-danger px-3 py-1 text-xl font-bold">&times;</button>
             </div>
-            <div id="roomDetails" class="mb-6"></div>
+            <div id="roomDetails" class="mb-6 bg-gray-50 dark:bg-zinc-800 p-4 border border-black dark:border-white font-mono text-sm"></div>
             <form id="joinRoomPasswordForm" class="space-y-4">
                 <div>
-                    <label for="joinPrimaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Primary Password:</label>
-                    <input type="text" id="joinPrimaryPassword" name="primaryPassword" required 
-                           class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50">
+                    <label for="joinPrimaryPassword" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">Primary Password:</label>
+                    <input type="text" id="joinPrimaryPassword" name="primaryPassword" required class="input-brutal w-full px-4 py-3">
                 </div>
                 <div id="secondaryPasswordGroup" class="hidden">
-                    <label for="joinSecondaryPassword" class="block text-sm font-bold uppercase tracking-wide mb-2">Secondary Password:</label>
-                    <input type="text" id="joinSecondaryPassword" name="secondaryPassword" 
-                           class="input-brutal w-full px-4 py-3 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:bg-gray-50">
+                    <label for="joinSecondaryPassword" class="block text-xs font-bold uppercase mb-2 text-black dark:text-white">Secondary Password:</label>
+                    <input type="text" id="joinSecondaryPassword" name="secondaryPassword" class="input-brutal w-full px-4 py-3">
                 </div>
-                <button type="submit" class="btn-brutal w-full px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide">
+                <button type="submit" class="btn-brutal btn-brutal-primary w-full py-4 mt-2 font-bold text-base">
                     Join Room
                 </button>
             </form>
-            <div id="joinRoomError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm" style="box-shadow: 4px 4px 0px 0px #dc2626;"></div>
+            <div id="joinRoomError" class="hidden bg-red-100 border-2 border-red-500 text-red-800 p-4 mt-4 font-mono text-sm"></div>
         </div>
     </div>
 
@@ -369,7 +308,6 @@
                         window.location.href = `/room/${data.roomCode}`;
                     } else {
                         alert('Your admission request was denied.');
-                        // Stay on dashboard
                     }
                 }
             });
@@ -392,28 +330,24 @@
             // Apply theme on page load
             if (currentTheme === 'dark') {
                 document.documentElement.classList.add('dark');
-                document.body.classList.add('dark');
                 themeText.textContent = 'LIGHT';
             } else {
                 document.documentElement.classList.remove('dark');
-                document.body.classList.remove('dark');
                 themeText.textContent = 'DARK';
             }
             
             // Theme toggle event listener
             themeToggle.addEventListener('click', () => {
-                const isDark = document.body.classList.contains('dark');
+                const isDark = document.documentElement.classList.contains('dark');
                 
                 if (isDark) {
                     // Switch to light theme
                     document.documentElement.classList.remove('dark');
-                    document.body.classList.remove('dark');
                     themeText.textContent = 'DARK';
                     localStorage.setItem('theme', 'light');
                 } else {
                     // Switch to dark theme
                     document.documentElement.classList.add('dark');
-                    document.body.classList.add('dark');
                     themeText.textContent = 'LIGHT';
                     localStorage.setItem('theme', 'dark');
                 }
