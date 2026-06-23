@@ -217,6 +217,15 @@
           </div>
         </div>
 
+        <!-- Reply Preview Container -->
+        <div id="replyPreviewContainer" class="hidden bg-gray-100 dark:bg-zinc-800 border-l-4 border-yellow-400 p-2 mb-3 flex justify-between items-start" style="box-shadow: 2px 2px 0px 0px var(--shadow-color)">
+          <div class="flex-1 overflow-hidden">
+            <div class="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Replying to <span id="replyPreviewUsername" class="text-black dark:text-white"></span></div>
+            <div id="replyPreviewContent" class="text-sm font-mono text-black dark:text-white truncate mt-1"></div>
+          </div>
+          <button id="cancelReplyBtn" class="ml-2 text-gray-500 hover:text-red-500 font-bold px-2">✕</button>
+        </div>
+
         <!-- Message Input -->
         <div class="flex space-x-2 items-center">
           <!-- Media Buttons -->

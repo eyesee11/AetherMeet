@@ -222,7 +222,10 @@ const options = {
   cert: fs.readFileSync("cert/server.cert"),
 };
 
-https.createServer(options, app).listen(443, () => {
+const httpsServer = https.createServer(options, app);
+io.attach(httpsServer);
+
+httpsServer.listen(443, () => {
   console.log("HTTPS server running on port 443");
 });
 

@@ -31,6 +31,39 @@ function showToast(message, type = "info") {
   }, 5000);
 }
 
+function customConfirm(message) {
+  return new Promise((resolve) => {
+    let toastContainer = document.getElementById("toastContainer");
+    if (!toastContainer) {
+      toastContainer = document.createElement("div");
+      toastContainer.id = "toastContainer";
+      toastContainer.className = "fixed top-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none";
+      document.body.appendChild(toastContainer);
+    }
+    
+    const toast = document.createElement("div");
+    toast.className = `toast toast-warning flex flex-col items-start`;
+    toast.style.pointerEvents = "auto";
+    toast.innerHTML = `
+        <div class="font-bold font-mono text-sm mb-3">${message}</div>
+        <div class="flex space-x-2 w-full justify-end">
+            <button id="cancelBtn" class="px-3 py-1 bg-gray-200 dark:bg-zinc-700 text-black dark:text-white font-bold text-xs border border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)] transition-all">Cancel</button>
+            <button id="okBtn" class="px-3 py-1 bg-black dark:bg-white text-white dark:text-black font-bold text-xs border border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)] transition-all">Confirm</button>
+        </div>
+    `;
+    toastContainer.appendChild(toast);
+
+    const onResolve = (val) => {
+      toast.classList.add("hiding");
+      setTimeout(() => toast.remove(), 300);
+      resolve(val);
+    };
+
+    toast.querySelector("#okBtn").addEventListener("click", () => onResolve(true));
+    toast.querySelector("#cancelBtn").addEventListener("click", () => onResolve(false));
+  });
+}
+
 // Check if this is a demo room
 const urlParams = new URLSearchParams(window.location.search);
 const isDemoRoom = urlParams.get("demo") === "true";
@@ -116,6 +149,13 @@ const shareLinkModal = document.getElementById("shareLinkModal");
 // Room state
 let currentRoom = null;
 let isOwner = false;
+let currentReplyTo = null;
+
+// Reply elements
+const replyPreviewContainer = document.getElementById("replyPreviewContainer");
+const replyPreviewUsername = document.getElementById("replyPreviewUsername");
+const replyPreviewContent = document.getElementById("replyPreviewContent");
+const cancelReplyBtn = document.getElementById("cancelReplyBtn");
 
 // Media state
 let mediaRecorder = null;
@@ -326,6 +366,13 @@ socket.on("newMessage", (message) => {
   scrollToBottom();
 });
 
+socket.on("messageDeleted", (data) => {
+  const msgEl = document.querySelector(`.message-wrapper[data-id="${data.messageId}"]`);
+  if (msgEl) {
+    msgEl.remove();
+  }
+});
+
 socket.on("userJoined", (data) => {
   displaySystemMessage(`${data.username} joined the room`);
   memberCount.textContent = `Members: ${data.memberCount}`;
@@ -526,8 +573,7 @@ cancelRecording.addEventListener("click", cancelAudioRecording);
 // Share link event listeners
 shareLinkBtn.addEventListener("click", showShareLink);
 
-// Use more specific selectors to avoid ID conflicts
-document.addEventListener("click", (e) => {
+document.addEventListener("click", async (e) => {
   // Handle copy link button in share modal
   if (e.target.id === "copyLinkBtn" && e.target.closest("#shareLinkModal")) {
     copyShareLink();
@@ -535,6 +581,31 @@ document.addEventListener("click", (e) => {
   // Handle copy code button in share modal
   if (e.target.id === "copyCodeBtn" && e.target.closest("#shareLinkModal")) {
     copyRoomCode();
+  }
+  
+  // Handle reply button click
+  const replyBtn = e.target.closest(".reply-btn");
+  if (replyBtn) {
+    const messageId = replyBtn.getAttribute("data-id");
+    const username = replyBtn.getAttribute("data-user");
+    const content = replyBtn.getAttribute("data-content");
+    
+    currentReplyTo = messageId;
+    if (replyPreviewContainer && replyPreviewUsername && replyPreviewContent) {
+      replyPreviewUsername.textContent = username;
+      replyPreviewContent.innerHTML = content;
+      replyPreviewContainer.classList.remove("hidden");
+      messageInput.focus();
+    }
+  }
+
+  // Handle delete button click
+  const deleteBtn = e.target.closest(".delete-btn");
+  if (deleteBtn) {
+    if (await customConfirm("Are you sure you want to delete this message?")) {
+      const messageId = deleteBtn.getAttribute("data-id");
+      socket.emit("deleteMessage", { messageId });
+    }
   }
 });
 
@@ -567,7 +638,7 @@ function copyShareLink() {
     navigator.clipboard
       .writeText(shareLink)
       .then(() => {
-        showNotification("✅ Share link copied to clipboard!");
+        showToast("✅ Share link copied to clipboard!", "success");
       })
       .catch(() => {
         fallbackCopyTextToClipboard(shareLink, "share link");
@@ -583,7 +654,7 @@ function copyRoomCode() {
     navigator.clipboard
       .writeText(roomCode)
       .then(() => {
-        showNotification("✅ Room code copied to clipboard!");
+        showToast("✅ Room code copied to clipboard!", "success");
       })
       .catch(() => {
         fallbackCopyTextToClipboard(roomCode, "room code");
@@ -606,35 +677,24 @@ function fallbackCopyTextToClipboard(text, itemName) {
   try {
     const successful = document.execCommand("copy");
     if (successful) {
-      showNotification(
+      showToast(
         `✅ ${
           itemName.charAt(0).toUpperCase() + itemName.slice(1)
-        } copied to clipboard!`
+        } copied to clipboard!`,
+        "success"
       );
     } else {
-      showError(`Failed to copy ${itemName}`);
+      showToast(`Failed to copy ${itemName}`, "error");
     }
   } catch (err) {
-    showError(`Failed to copy ${itemName}`);
+    showToast(`Failed to copy ${itemName}`, "error");
   }
 
   document.body.removeChild(textArea);
 }
 
 function showNotification(message) {
-  const notificationDiv = document.createElement("div");
-  notificationDiv.className =
-    "fixed top-4 right-4 bg-green-500 text-white p-3 border-2 border-black font-mono text-sm z-50";
-  notificationDiv.style.boxShadow = "3px 3px 0px 0px #000000";
-  notificationDiv.textContent = message;
-
-  document.body.appendChild(notificationDiv);
-
-  setTimeout(() => {
-    if (notificationDiv.parentNode) {
-      notificationDiv.parentNode.removeChild(notificationDiv);
-    }
-  }, 3000);
+  showToast(message, "success");
 }
 
 // Message handling
@@ -654,7 +714,23 @@ function sendMessage(content, type = "text", mediaData = null) {
     }
   }
 
+  if (currentReplyTo) {
+    messageData.replyTo = currentReplyTo;
+    cancelReply();
+  }
+
   socket.emit("sendMessage", messageData);
+}
+
+function cancelReply() {
+  currentReplyTo = null;
+  if (replyPreviewContainer) {
+    replyPreviewContainer.classList.add("hidden");
+  }
+}
+
+if (cancelReplyBtn) {
+  cancelReplyBtn.addEventListener("click", cancelReply);
 }
 
 // Media handling functions
@@ -1033,17 +1109,17 @@ async function savePdfToNotes() {
     showError("Failed to prepare PDF for notes. Please try again");
   }
 } // Leave room
-leaveRoomBtn.addEventListener("click", () => {
+leaveRoomBtn.addEventListener("click", async () => {
   if (isDemoRoom) {
     // Demo rooms: simple confirmation
     if (
-      confirm(
+      await customConfirm(
         "Are you sure you want to leave the demo room? Demo rooms are destroyed when the last member leaves."
       )
     ) {
       socket.emit("leaveRoom", "leave");
       // Show immediate feedback
-      showNotification("Leaving demo room...");
+      showToast("Leaving demo room...", "info");
       // Redirect after a short delay to allow socket processing
       setTimeout(() => {
         window.location.href = "/";
@@ -1054,10 +1130,10 @@ leaveRoomBtn.addEventListener("click", () => {
     showModal(leaveRoomModal);
   } else {
     // Regular authenticated user
-    if (confirm("Are you sure you want to leave the room?")) {
+    if (await customConfirm("Are you sure you want to leave the room?")) {
       socket.emit("leaveRoom", "leave");
       // Show immediate feedback
-      showNotification("Leaving room...");
+      showToast("Leaving room...", "info");
       // Redirect after a short delay to allow socket processing
       setTimeout(() => {
         window.location.href = "/dashboard";
@@ -1067,9 +1143,9 @@ leaveRoomBtn.addEventListener("click", () => {
 });
 
 // Owner leave options (only for authenticated rooms)
-document.getElementById("destroyRoomBtn").addEventListener("click", () => {
+document.getElementById("destroyRoomBtn").addEventListener("click", async () => {
   if (
-    confirm(
+    await customConfirm(
       "Are you sure you want to end the room for everyone? This cannot be undone."
     )
   ) {
@@ -1080,9 +1156,9 @@ document.getElementById("destroyRoomBtn").addEventListener("click", () => {
 
 document
   .getElementById("transferOwnershipBtn")
-  .addEventListener("click", () => {
+  .addEventListener("click", async () => {
     if (
-      confirm("Are you sure you want to transfer ownership and leave the room?")
+      await customConfirm("Are you sure you want to transfer ownership and leave the room?")
     ) {
       socket.emit("leaveRoom", "transfer");
       closeModal(leaveRoomModal);
@@ -1093,8 +1169,8 @@ document.getElementById("cancelLeaveBtn").addEventListener("click", () => {
   closeModal(leaveRoomModal);
 });
 
-// Close modal handlers
-document.addEventListener("click", (e) => {
+// Use more specific selectors to avoid ID conflicts
+document.addEventListener("click", async (e) => {
   if (e.target.classList.contains("close")) {
     closeModal(e.target.closest(".fixed"));
   }
@@ -1115,15 +1191,44 @@ function displayMessage(message) {
     ? JSON.parse(localStorage.getItem("demoUser") || "{}")
     : user;
   const isOwnMessage = message.username === currentUser.username;
+  const isRoomOwner = isOwner || (currentRoom && currentUser.username === currentRoom.owner);
+  const canDelete = isOwnMessage || isRoomOwner;
 
-  messageDiv.className = `p-3 mb-2 border-2 border-black ${
-    isOwnMessage ? "bg-gray-200 ml-8" : "bg-white mr-8"
+  messageDiv.className = `message-wrapper p-3 mb-2 border-2 border-black dark:border-white relative group ${
+    isOwnMessage
+      ? "bg-yellow-100 dark:bg-yellow-900 ml-8"
+      : "bg-white dark:bg-zinc-800 mr-8"
   }`;
-  messageDiv.style.boxShadow = "2px 2px 0px 0px #000000";
+  messageDiv.style.boxShadow = "2px 2px 0px 0px var(--shadow-color)";
+  if (message._id) {
+    messageDiv.setAttribute("data-id", message._id);
+  }
 
   const timestamp = new Date(message.timestamp).toLocaleTimeString();
 
   let messageContent = "";
+  
+  // Render reply block if exists
+  let replyHtml = "";
+  if (message.metadata && message.metadata.replyTo) {
+    const rm = message.metadata.replyTo;
+    if (rm && !rm.isDeleted) {
+      replyHtml = `
+        <div class="mb-2 p-2 bg-gray-100 dark:bg-zinc-700 border-l-4 border-yellow-400 text-xs">
+          <div class="font-bold text-gray-700 dark:text-gray-300">Replying to ${rm.username}</div>
+          <div class="font-mono text-gray-600 dark:text-gray-400 truncate">${escapeHtml(rm.content || '')}</div>
+        </div>
+      `;
+    }
+  }
+
+  // Action buttons
+  const actionsHtml = `
+    <div class="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white dark:bg-zinc-800 border border-black dark:border-white p-1" style="box-shadow: 1px 1px 0px var(--shadow-color)">
+      <button class="reply-btn px-2 py-0.5 hover:bg-gray-200 dark:hover:bg-zinc-600 text-xs font-bold" data-id="${message._id}" data-user="${message.username}" data-content="${escapeHtml(message.content || 'Media message')}">↩️</button>
+      ${canDelete ? `<button class="delete-btn px-2 py-0.5 hover:bg-red-200 dark:hover:bg-red-900 text-xs font-bold text-red-500" data-id="${message._id}">🗑️</button>` : ''}
+    </div>
+  `;
 
   // Use messageType field from the message object
   const messageType = message.messageType || message.type || "text";
@@ -1131,42 +1236,48 @@ function displayMessage(message) {
   // If it's supposed to be a media message but has no mediaUrl, treat as text
   if (messageType !== "text" && !message.mediaUrl) {
     messageContent = `
-            <div class="flex justify-between items-center mb-1">
-                <span class="font-bold text-sm uppercase tracking-wide">${
+            ${replyHtml}
+            ${actionsHtml}
+            <div class="flex justify-between items-center mb-1 pr-16">
+                <span class="font-bold text-sm uppercase tracking-wide text-black dark:text-white">${
                   message.username
                 }</span>
-                <span class="text-xs font-mono text-gray-600">${timestamp}</span>
+                <span class="text-xs font-mono text-gray-600 dark:text-gray-400">${timestamp}</span>
             </div>
-            <div class="font-mono text-sm">${escapeHtml(message.content)}</div>
+            <div class="font-mono text-sm text-black dark:text-white">${escapeHtml(message.content)}</div>
             <div class="text-xs text-red-500 mt-1">⚠️ Media file not available</div>
         `;
   } else if (messageType === "text") {
     messageContent = `
-            <div class="flex justify-between items-center mb-1">
-                <span class="font-bold text-sm uppercase tracking-wide">${
+            ${replyHtml}
+            ${actionsHtml}
+            <div class="flex justify-between items-center mb-1 pr-16">
+                <span class="font-bold text-sm uppercase tracking-wide text-black dark:text-white">${
                   message.username
                 }</span>
-                <span class="text-xs font-mono text-gray-600">${timestamp}</span>
+                <span class="text-xs font-mono text-gray-600 dark:text-gray-400">${timestamp}</span>
             </div>
-            <div class="font-mono text-sm">${escapeHtml(message.content)}</div>
+            <div class="font-mono text-sm text-black dark:text-white">${escapeHtml(message.content)}</div>
         `;
   } else if (messageType === "image") {
     messageContent = `
-            <div class="flex justify-between items-center mb-1">
-                <span class="font-bold text-sm uppercase tracking-wide">${
+            ${replyHtml}
+            ${actionsHtml}
+            <div class="flex justify-between items-center mb-1 pr-16">
+                <span class="font-bold text-sm uppercase tracking-wide text-black dark:text-white">${
                   message.username
                 }</span>
-                <span class="text-xs font-mono text-gray-600">${timestamp}</span>
+                <span class="text-xs font-mono text-gray-600 dark:text-gray-400">${timestamp}</span>
             </div>
-            <div class="font-mono text-sm mb-2">${escapeHtml(
+            <div class="font-mono text-sm mb-2 text-black dark:text-white">${escapeHtml(
               message.content
             )}</div>
             <img src="${message.mediaUrl}" alt="${message.mediaName}" 
-                 class="max-w-full h-auto border-2 border-black cursor-pointer hover:border-gray-600 media-view"
+                 class="max-w-full h-auto border-2 border-black dark:border-white cursor-pointer hover:border-gray-600 media-view"
                  data-url="${message.mediaUrl}"
-                 style="box-shadow: 2px 2px 0px 0px #000000;">
+                 style="box-shadow: 2px 2px 0px 0px var(--shadow-color);">
             <div class="flex justify-between items-center mt-1">
-                <div class="font-mono text-xs text-gray-500">${
+                <div class="font-mono text-xs text-gray-500 dark:text-gray-400">${
                   message.mediaName
                 } (${formatFileSize(message.mediaSize)})</div>
                 <button class="download-btn px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
@@ -1185,16 +1296,18 @@ function displayMessage(message) {
     const audioDur = message.audioDuration || 0;
 
     messageContent = `
-            <div class="flex justify-between items-center mb-1">
-                <span class="font-bold text-sm uppercase tracking-wide">${
+            ${replyHtml}
+            ${actionsHtml}
+            <div class="flex justify-between items-center mb-1 pr-16">
+                <span class="font-bold text-sm uppercase tracking-wide text-black dark:text-white">${
                   message.username
                 }</span>
-                <span class="text-xs font-mono text-gray-600">${timestamp}</span>
+                <span class="text-xs font-mono text-gray-600 dark:text-gray-400">${timestamp}</span>
             </div>
-            <div class="font-mono text-sm mb-2">${escapeHtml(
+            <div class="font-mono text-sm mb-2 text-black dark:text-white">${escapeHtml(
               audioContent
             )}</div>
-            <div class="bg-gray-100 border-2 border-black p-2" style="box-shadow: 1px 1px 0px 0px #000000;">
+            <div class="bg-gray-100 dark:bg-zinc-700 border-2 border-black dark:border-white p-2" style="box-shadow: 1px 1px 0px 0px var(--shadow-color);">
                 <audio controls class="w-full">
                     <source src="${message.mediaUrl}" type="audio/webm">
                     <source src="${message.mediaUrl}" type="audio/mp4">
@@ -1202,7 +1315,7 @@ function displayMessage(message) {
                     Your browser does not support audio playback.
                 </audio>
                 <div class="flex justify-between items-center mt-2">
-                    <div class="font-mono text-xs text-gray-500">
+                    <div class="font-mono text-xs text-gray-500 dark:text-gray-400">
                         ${audioName} • Duration: ${formatDuration(
       audioDur
     )} • ${formatFileSize(audioSize)}
@@ -1219,22 +1332,24 @@ function displayMessage(message) {
         `;
   } else if (messageType === "video") {
     messageContent = `
-            <div class="flex justify-between items-center mb-1">
-                <span class="font-bold text-sm uppercase tracking-wide">${
+            ${replyHtml}
+            ${actionsHtml}
+            <div class="flex justify-between items-center mb-1 pr-16">
+                <span class="font-bold text-sm uppercase tracking-wide text-black dark:text-white">${
                   message.username
                 }</span>
-                <span class="text-xs font-mono text-gray-600">${timestamp}</span>
+                <span class="text-xs font-mono text-gray-600 dark:text-gray-400">${timestamp}</span>
             </div>
-            <div class="font-mono text-sm mb-2">${escapeHtml(
+            <div class="font-mono text-sm mb-2 text-black dark:text-white">${escapeHtml(
               message.content
             )}</div>
-            <video controls class="max-w-full h-auto border-2 border-black" style="box-shadow: 2px 2px 0px 0px #000000;">
+            <video controls class="max-w-full h-auto border-2 border-black dark:border-white" style="box-shadow: 2px 2px 0px 0px var(--shadow-color);">
                 <source src="${message.mediaUrl}" type="video/mp4">
                 <source src="${message.mediaUrl}" type="video/webm">
                 Your browser does not support video playback.
             </video>
             <div class="flex justify-between items-center mt-1">
-                <div class="font-mono text-xs text-gray-500">${
+                <div class="font-mono text-xs text-gray-500 dark:text-gray-400">${
                   message.mediaName
                 } (${formatFileSize(message.mediaSize)})</div>
                 <button class="download-btn px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold border border-black"
@@ -1252,19 +1367,21 @@ function displayMessage(message) {
     const fileContent = message.content || `📎 ${fileName}`;
 
     messageContent = `
-            <div class="flex justify-between items-center mb-1">
-                <span class="font-bold text-sm uppercase tracking-wide">${
+            ${replyHtml}
+            ${actionsHtml}
+            <div class="flex justify-between items-center mb-1 pr-16">
+                <span class="font-bold text-sm uppercase tracking-wide text-black dark:text-white">${
                   message.username
                 }</span>
-                <span class="text-xs font-mono text-gray-600">${timestamp}</span>
+                <span class="text-xs font-mono text-gray-600 dark:text-gray-400">${timestamp}</span>
             </div>
-            <div class="font-mono text-sm mb-2">${escapeHtml(fileContent)}</div>
-            <div class="bg-gray-100 border-2 border-black p-3 hover:bg-gray-200"
-                 style="box-shadow: 1px 1px 0px 0px #000000;">
+            <div class="font-mono text-sm mb-2 text-black dark:text-white">${escapeHtml(fileContent)}</div>
+            <div class="bg-gray-100 dark:bg-zinc-700 border-2 border-black dark:border-white p-3 hover:bg-gray-200 dark:hover:bg-zinc-600"
+                 style="box-shadow: 1px 1px 0px 0px var(--shadow-color);">
                 <div class="flex justify-between items-center">
                     <div>
-                        <div class="font-bold text-sm">📎 ${fileName}</div>
-                        <div class="font-mono text-xs text-gray-500">${formatFileSize(
+                        <div class="font-bold text-sm text-black dark:text-white">📎 ${fileName}</div>
+                        <div class="font-mono text-xs text-gray-500 dark:text-gray-400">${formatFileSize(
                           fileSize
                         )}</div>
                     </div>
@@ -1295,8 +1412,8 @@ function displayMessage(message) {
 function displaySystemMessage(content) {
   const messageDiv = document.createElement("div");
   messageDiv.className =
-    "p-2 mb-2 bg-gray-100 border-2 border-gray-400 italic text-center text-sm font-mono text-gray-600";
-  messageDiv.style.boxShadow = "1px 1px 0px 0px #6b7280";
+    "p-2 mb-2 bg-gray-100 dark:bg-zinc-800 border-2 border-gray-400 dark:border-zinc-600 italic text-center text-sm font-mono text-gray-600 dark:text-gray-400";
+  messageDiv.style.boxShadow = "1px 1px 0px 0px var(--shadow-color)";
 
   messageDiv.innerHTML = `
         <div>${escapeHtml(content)}</div>
@@ -1310,10 +1427,12 @@ function updateMembersList(members) {
 
   members.forEach((member) => {
     const memberDiv = document.createElement("div");
-    memberDiv.className = `p-2 mb-2 bg-white border-2 border-black ${
-      member.username === currentRoom.owner ? "bg-yellow-100" : ""
+    memberDiv.className = `p-2 mb-2 border-2 border-black dark:border-white ${
+      member.username === currentRoom.owner
+        ? "bg-yellow-100 dark:bg-yellow-900"
+        : "bg-white dark:bg-zinc-800"
     }`;
-    memberDiv.style.boxShadow = "1px 1px 0px 0px #000000";
+    memberDiv.style.boxShadow = "1px 1px 0px 0px var(--shadow-color)";
 
     const isOwner = member.username === currentRoom.owner;
     const canRemove = isOwner === false && user.username === currentRoom.owner;
@@ -1321,10 +1440,10 @@ function updateMembersList(members) {
     memberDiv.innerHTML = `
             <div class="flex justify-between items-center">
                 <div>
-                    <span class="font-mono text-sm">${member.username}</span>
+                    <span class="font-mono text-sm text-black dark:text-white">${member.username}</span>
                     ${
                       isOwner
-                        ? '<span class="text-yellow-600 ml-2">👑</span>'
+                        ? '<span class="text-yellow-600 dark:text-yellow-400 ml-2">👑</span>'
                         : ""
                     }
                 </div>
@@ -1352,7 +1471,7 @@ function updateMembersList(members) {
       e.preventDefault();
       e.stopPropagation();
       const username = this.getAttribute("data-username");
-      removeUser(username);
+      handleRemoveMember(username);
     });
   });
 }
@@ -1512,7 +1631,7 @@ async function fetchPendingAdmissions() {
 function playNotificationSound() {
   try {
     const audio = new Audio(
-      "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKzn7bReFQU7k9nywHYpBSl+zPLaizsIHGS57OihUBELTKXh8bRgHQU+mt7yvHEoCCN7yvHajTsJHmW87OWhTxELTaXi8bRgGwU+m9/zvHAoBCN7yvLajzwJH2W98OSgTxEKTaXi8rNgGgU9m97zu3AoBCR8yvHajjsJH2e98eWgUBELTqfj87NhGgU9nN/zvm8pBCR8y/HajDsJH2e98eWfUBELTqfj87RhGwU9nN/zvnApBSR8y/HajDwJH2i+8eWfTxELTqfj8rRiGwU+nd/zvm8pBSR9y/HajDwKIGi+8OWfTxEMT6fj8rRiGwU+nd/zv28qBSR9y/HajDwKIGm+8OWfTxEMT6fj8rRiGwU+nt/zv3AqBSR9y/HajDwKIGq+8OWfTxEMUKfj8rNiGwU+nt/zv3AqBSV9y/HajDwKIWq+8OWfTxEMUKfj8rNiGwU/nt/zwHAqBSV9y/HajDwKIWq+8OWfThEMUKfj8rNiGwU/nt/zwHAqBSV+y/HajDwKIWq+8OWfThEMUKfj8rNjGwVAnt/zwHAqBSV+y/HajDwKIWq+8OWfThEMUKjj8rNjGwVAn9/zwHEqBSV+y/HajDwKIWq+8OWfThEMUKjj8rNjGwVAn9/zwHEqBSV+y/HajDwKIWu+8OWfThEMUKjj8rNjGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ/y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8Q=="
+      "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKzn7bReFQU7k9nywHYpBSl+zPLaizsIHGS57OihUBELTKXh8bRgHQU+mt7yvHEoCCN7yvHajTsJHmW87OWhTxELTaXi8bRgGwU+m9/zvHAoBCN7yvLajzwJH2W98OSgTxEKTaXi8rNgGgU9m97zu3AoBCR8yvHajjsJH2e98eWgUBELTqfj87NhGgU9nN/zvm8pBCR8y/HajDsJH2e98eWfUBELTqfj87RhGwU9nN/zvnApBSR8y/HajDwJH2i+8eWfTxEMT6fj8rRiGwU+nd/zv28qBSR9y/HajDwKIGi+8OWfTxEMT6fj8rRiGwU+nt/zv3AqBSR9y/HajDwKIGq+8OWfTxEMUKfj8rNiGwU+nt/zv3AqBSV9y/HajDwKIWq+8OWfTxEMUKfj8rNiGwU/nt/zwHAqBSV9y/HajDwKIWq+8OWfThEMUKfj8rNiGwU/nt/zwHAqBSV+y/HajDwKIWq+8OWfThEMUKfj8rNjGwVAnt/zwHAqBSV+y/HajDwKIWq+8OWfThEMUKjj8rNjGwVAn9/zwHEqBSV+y/HajDwKIWq+8OWfThEMUKjj8rNjGwVAn9/zwHEqBSV+y/HajDwKIWu+8OWfThEMUKjj8rNjGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ+y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAn9/zwHEqBSZ/y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWu+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8rNkGwVAoN/zwHEqBSZ/y/HajDwKIWy+8OWeTREMUKjj8Q=="
     );
     audio.play().catch(() => {});
   } catch (error) {
@@ -1530,8 +1649,8 @@ window.approveAdmission = function (username, decision) {
 };
 
 // Remove user from room (owner only)
-function removeUser(username) {
-  if (!confirm(`Are you sure you want to remove ${username} from the room?`)) {
+async function handleRemoveMember(username) {
+  if (!await customConfirm(`Are you sure you want to remove ${username} from the room?`)) {
     return;
   }
 
@@ -1581,26 +1700,12 @@ window.downloadFile = function (url, filename) {
     }, 100);
   } catch (error) {
     console.error("Download error:", error);
-    showError("Failed to download file");
+    showToast("Failed to download file", "error");
   }
 };
 
 function showError(message) {
-  // Create error notification
-  const errorDiv = document.createElement("div");
-  errorDiv.className =
-    "fixed top-4 right-4 bg-red-500 text-white p-3 border-2 border-black font-mono text-sm z-50";
-  errorDiv.style.boxShadow = "3px 3px 0px 0px #000000";
-  errorDiv.textContent = message;
-
-  document.body.appendChild(errorDiv);
-
-  // Remove after 5 seconds
-  setTimeout(() => {
-    if (errorDiv.parentNode) {
-      errorDiv.parentNode.removeChild(errorDiv);
-    }
-  }, 5000);
+  showToast(message, "error");
 }
 
 // Handle page unload

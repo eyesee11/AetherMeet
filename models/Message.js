@@ -116,6 +116,10 @@ messageSchema.statics.getRoomMessages = function(roomId, limit = 50, before = nu
     return this.find(query)
         .sort({ timestamp: -1 })
         .limit(limit)
+        .populate({
+            path: 'metadata.replyTo',
+            select: 'username content messageType isDeleted'
+        })
         .lean();
 };
 

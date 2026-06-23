@@ -114,7 +114,7 @@ module.exports = (io) => {
         // Send message
         socket.on('sendMessage', async (data) => {
             try {
-                const { content, messageType = 'text', mediaUrl, mediaName, mediaSize, audioDuration } = data;
+                const { content, messageType = 'text', mediaUrl, mediaName, mediaSize, audioDuration, replyTo } = data;
                 const roomCode = socket.currentRoom;
 
                 if (!roomCode) {
@@ -189,7 +189,10 @@ module.exports = (io) => {
                     mediaName: message.mediaName,
                     mediaSize: message.mediaSize,
                     audioDuration: message.audioDuration,
-                    timestamp: message.timestamp
+                    timestamp: message.timestamp,
+                    metadata: {
+                        replyTo: replyTo || null
+                    }
                 });
 
                 await newMessage.save();
@@ -204,13 +207,53 @@ module.exports = (io) => {
                     mediaName: newMessage.mediaName,
                     mediaSize: newMessage.mediaSize,
                     audioDuration: newMessage.audioDuration,
-                    timestamp: newMessage.timestamp
+                    timestamp: newMessage.timestamp,
+                    metadata: newMessage.metadata ? (newMessage.metadata.toObject ? newMessage.metadata.toObject() : newMessage.metadata) : {}
                 };
+                
+                // If there's a replyTo, fetch the original message snippet
+                if (replyTo) {
+                    const originalMessage = await Message.findById(replyTo).select('username content messageType isDeleted').lean();
+                    if (originalMessage) {
+                        messageToSend.metadata.replyTo = originalMessage;
+                    } else {
+                        messageToSend.metadata.replyTo = null;
+                    }
+                }
                 
                 io.to(roomCode).emit('newMessage', messageToSend);
 
             } catch (error) {
                 socket.emit('error', { message: 'Failed to send message' });
+            }
+        });
+
+        // Delete message
+        socket.on('deleteMessage', async (data) => {
+            try {
+                const { messageId } = data;
+                const roomCode = socket.currentRoom;
+
+                if (!roomCode || !messageId) return;
+
+                const room = await Room.findOne({ roomCode, isActive: true });
+                if (!room) return;
+
+                const message = await Message.findById(messageId);
+                if (!message || message.roomId.toString() !== room._id.toString()) return;
+
+                const isOwner = room.owner === socket.user.username;
+                if (!message.canDelete(socket.user.username, isOwner)) {
+                    socket.emit('error', { message: 'Not authorized to delete this message' });
+                    return;
+                }
+
+                await Message.findByIdAndDelete(messageId);
+
+                io.to(roomCode).emit('messageDeleted', { messageId });
+
+            } catch (error) {
+                socket.emit('error', { message: 'Failed to delete message' });
             }
         });
 

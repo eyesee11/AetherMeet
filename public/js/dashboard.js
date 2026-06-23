@@ -9,6 +9,35 @@ if (!token) {
     window.location.href = '/';
 }
 
+// Toast Notification System
+function showToast(message, type = "info") {
+  let toastContainer = document.getElementById("toastContainer");
+  if (!toastContainer) {
+    toastContainer = document.createElement("div");
+    toastContainer.id = "toastContainer";
+    toastContainer.className = "fixed top-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none";
+    document.body.appendChild(toastContainer);
+  }
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.style.pointerEvents = "auto";
+  toast.innerHTML = `
+        <div class="flex items-center justify-between">
+            <span class="font-bold font-mono text-sm">${message}</span>
+            <button class="toast-close-btn ml-4 text-xl font-black hover:scale-110 transition-transform">×</button>
+        </div>
+    `;
+  toastContainer.appendChild(toast);
+  toast.querySelector(".toast-close-btn").addEventListener("click", function () {
+    toast.classList.add("hiding");
+    setTimeout(() => toast.remove(), 300);
+  });
+  setTimeout(() => {
+    toast.classList.add("hiding");
+    setTimeout(() => toast.remove(), 300);
+  }, 5000);
+}
+
 // DOM Elements
 const welcomeUser = document.getElementById('welcomeUser');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -79,11 +108,11 @@ async function checkAndJoinRoom(roomCode) {
             
             openModal(joinRoomModal);
         } else {
-            alert(data.message || 'Room not found or not active');
+            showToast(data.message || 'Room not found or not active', "error");
         }
     } catch (error) {
         console.error('Room check error:', error);
-        alert('Failed to check room. Please try again.');
+        showToast('Failed to check room. Please try again.', "error");
     }
 }
 
@@ -187,7 +216,7 @@ instantRoomForm.addEventListener('submit', async (e) => {
         
         if (data.success) {
             closeModal(instantRoomModal);
-            alert(`Room created successfully! Room Code: ${data.room.roomCode}`);
+            showToast(`Room created successfully! Room Code: ${data.room.roomCode}`, "success");
             loadMyRooms();
             // Navigate to room
             window.location.href = `/room/${data.room.roomCode}`;
@@ -235,7 +264,7 @@ scheduledRoomForm.addEventListener('submit', async (e) => {
         
         if (data.success) {
             closeModal(scheduledRoomModal);
-            alert(`Room scheduled successfully! Room Code: ${data.room.roomCode}\\nScheduled for: ${new Date(data.room.scheduledTime).toLocaleString()}`);
+            showToast(`Room scheduled successfully! Room Code: ${data.room.roomCode}`, "success");
             loadMyRooms();
         } else {
             showError(scheduledRoomError, data.message);
@@ -253,7 +282,7 @@ joinRoomForm.addEventListener('submit', async (e) => {
     const roomCode = document.getElementById('roomCode').value.toUpperCase();
     
     if (roomCode.length !== 6) {
-        alert('Room code must be exactly 6 characters.');
+        showToast('Room code must be exactly 6 characters.', "error");
         return;
     }
     
@@ -291,7 +320,7 @@ joinRoomPasswordForm.addEventListener('submit', async (e) => {
                 window.location.href = `/room/${roomCode}`;
             } else if (data.status === 'pending') {
                 closeModal(joinRoomModal);
-                alert(data.message);
+                showToast(data.message, "info");
             }
         } else {
             showError(joinRoomError, data.message);

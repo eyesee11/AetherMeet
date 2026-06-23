@@ -402,25 +402,18 @@ html.dark .btn-swiss-primary {
     font-weight: 700;
 }
 
-.toast-success {
-    background-color: #4ADE80 !important; /* Flat brutalist green */
-    color: #000000 !important;
+html.dark .toast {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
 }
 
-.toast-error {
-    background-color: #F87171 !important; /* Flat brutalist red */
-    color: #000000 !important;
-}
-
-.toast-info {
-    background-color: #60A5FA !important; /* Flat brutalist blue */
-    color: #000000 !important;
-}
-
-.toast-warning {
-    background-color: #FBBF24 !important; /* Flat brutalist orange/yellow */
-    color: #000000 !important;
-}
+/* We remove colored backgrounds and use an icon or border variation if needed, 
+   but for now we just rely on standard black/white theme */
+.toast-success { border-left: 8px solid #4ADE80 !important; }
+.toast-error { border-left: 8px solid #F87171 !important; }
+.toast-info { border-left: 8px solid #60A5FA !important; }
+.toast-warning { border-left: 8px solid #FBBF24 !important; }
 
 /* Chat Messages */
 .message-swiss {
